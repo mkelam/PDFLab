@@ -1,5 +1,5 @@
-// Stub API client for frontend-only development
-// This will be replaced with actual API calls when backend is ready
+// Real API client connecting to PDFLab backend
+// Backend running on http://localhost:3006
 
 export interface ConversionJob {
   jobId: string;
@@ -16,12 +16,16 @@ export interface ConversionResponse {
   originalFile?: string
   processingTime: string
   fileCount?: number
+  jobId?: string
 }
 
 export interface ValidationResult {
   valid: boolean
   error?: string
 }
+
+// Get API URL from environment or default to localhost:3006
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
 /**
  * Validate PDF file before upload
@@ -69,74 +73,56 @@ export function formatFileSize(bytes: number): string {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
-export class ApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = 'http://localhost:3001') {
-    this.baseUrl = baseUrl;
-  }
-
-  // Stub: Convert PDF to format
-  async convertPDF(file: File, outputFormat: string): Promise<ConversionJob> {
-    console.log('API Stub: convertPDF', file.name, outputFormat);
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Return mock response
-    return {
-      jobId: `stub-${Date.now()}`,
-      status: 'pending',
-      progress: 0,
-    };
-  }
-
-  // Stub: Merge PDFs
-  async mergePDFs(files: File[]): Promise<ConversionJob> {
-    console.log('API Stub: mergePDFs', files.length, 'files');
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    return {
-      jobId: `merge-${Date.now()}`,
-      status: 'pending',
-      progress: 0,
-    };
-  }
-
-  // Stub: Check job status
-  async getJobStatus(jobId: string): Promise<ConversionJob> {
-    console.log('API Stub: getJobStatus', jobId);
-
-    // Simulate completed job after 3 seconds
-    const jobAge = Date.now() - parseInt(jobId.split('-')[1] || '0');
-
-    if (jobAge > 3000) {
-      return {
-        jobId,
-        status: 'completed',
-        progress: 100,
-        downloadUrl: '/api/download/stub-file.pdf',
-      };
-    }
-
-    return {
-      jobId,
-      status: 'processing',
-      progress: Math.min(90, Math.floor((jobAge / 3000) * 100)),
-    };
-  }
-
-  // Stub: Download file
-  async downloadFile(jobId: string): Promise<Blob> {
-    console.log('API Stub: downloadFile', jobId);
-
-    // Return empty blob
-    return new Blob(['Stub file content'], { type: 'application/pdf' });
-  }
+/**
+ * Get auth token from localStorage
+ */
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('authToken')
 }
 
-export const api = new ApiClient();
+/**
+ * Poll job status until completion
+ */
+async function pollJobStatus(jobId: string, onProgress?: (progress: number) => void): Promise<any> {
+  const maxAttempts = 60 // 60 attempts = 60 seconds max
+  let attempts = 0
+
+  while (attempts < maxAttempts) {
+    const token = getAuthToken()
+    const response = await fetch(`${API_URL}/api/status/${jobId}`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to check job status')
+    }
+
+    const data = await response.json()
+
+    // Update progress callback
+    if (onProgress && data.progress) {
+      onProgress(data.progress)
+    }
+
+    // Check if job is complete
+    if (data.status === 'completed') {
+      return data
+    }
+
+    if (data.status === 'failed') {
+      throw new Error(data.error || 'Conversion failed')
+    }
+
+    // Wait 1 second before next poll
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    attempts++
+  }
+
+  throw new Error('Job timed out')
+}
 
 // Modern API interface matching component expectations
 export const pdflabAPI = {
@@ -147,17 +133,49 @@ export const pdflabAPI = {
     file: File,
     format: 'pptx' | 'docx' | 'xlsx'
   ): Promise<ConversionResponse> {
-    console.log('Converting PDF to', format, file.name);
+    const startTime = Date.now()
+    const token = getAuthToken()
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Map format to conversion type
+    const conversionTypeMap = {
+      'pptx': 'pdf_to_pptx',
+      'docx': 'pdf_to_docx',
+      'xlsx': 'pdf_to_xlsx'
+    }
+
+    // Upload and start conversion
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('conversion_type', conversionTypeMap[format])
+
+    const uploadResponse = await fetch(`${API_URL}/api/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData
+    })
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json()
+      throw new Error(error.error || error.message || 'Upload failed')
+    }
+
+    const uploadData = await uploadResponse.json()
+    const jobId = uploadData.job_id
+
+    // Poll for completion
+    const result = await pollJobStatus(jobId)
+
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
 
     return {
       success: true,
       message: `Successfully converted to ${format.toUpperCase()}`,
-      outputFile: `converted-${file.name.replace('.pdf', `.${format}`)}`,
+      outputFile: result.output_file,
       originalFile: file.name,
-      processingTime: '2.8 seconds'
+      processingTime: `${processingTime} seconds`,
+      jobId
     }
   },
 
@@ -165,16 +183,42 @@ export const pdflabAPI = {
    * Convert PDF to images
    */
   async convertPDFToImages(file: File): Promise<ConversionResponse> {
-    console.log('Converting PDF to images:', file.name);
+    const startTime = Date.now()
+    const token = getAuthToken()
 
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Upload and start conversion
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('conversion_type', 'pdf_to_images')
+
+    const uploadResponse = await fetch(`${API_URL}/api/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData
+    })
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json()
+      throw new Error(error.error || error.message || 'Upload failed')
+    }
+
+    const uploadData = await uploadResponse.json()
+    const jobId = uploadData.job_id
+
+    // Poll for completion
+    const result = await pollJobStatus(jobId)
+
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
 
     return {
       success: true,
       message: 'Successfully converted to images',
-      outputFile: `${file.name.replace('.pdf', '')}-images.zip`,
+      outputFile: result.output_file,
       originalFile: file.name,
-      processingTime: '3.2 seconds'
+      processingTime: `${processingTime} seconds`,
+      jobId
     }
   },
 
@@ -182,27 +226,194 @@ export const pdflabAPI = {
    * Merge multiple PDFs
    */
   async mergePDFs(files: File[]): Promise<ConversionResponse> {
-    console.log('Merging', files.length, 'PDF files');
+    const startTime = Date.now()
+    const token = getAuthToken()
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    if (files.length < 2) {
+      throw new Error('At least 2 PDF files are required for merging')
+    }
+
+    // Upload and start merge
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+
+    const uploadResponse = await fetch(`${API_URL}/api/merge`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData
+    })
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json()
+      throw new Error(error.error || error.message || 'Merge failed')
+    }
+
+    const uploadData = await uploadResponse.json()
+    const jobId = uploadData.job_id
+
+    // Poll for completion
+    const result = await pollJobStatus(jobId)
+
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
 
     return {
       success: true,
       message: `Successfully merged ${files.length} PDF files`,
-      outputFile: 'merged-document.pdf',
-      processingTime: '1.5 seconds',
-      fileCount: files.length
+      outputFile: result.output_file,
+      processingTime: `${processingTime} seconds`,
+      fileCount: files.length,
+      jobId
     }
   },
 
   /**
    * Trigger file download
    */
-  triggerDownload(outputFile: string, originalFileName: string): void {
-    console.log('Downloading:', outputFile, 'as', originalFileName);
+  async triggerDownload(outputFile: string, originalFileName: string): Promise<void> {
+    const token = getAuthToken()
 
-    // In a real implementation, this would download from the server
-    // For now, just show an alert
-    alert(`Download would start for: ${originalFileName}\\n\\nNote: This is a frontend-only demo. Connect to a backend API for actual file downloads.`);
+    // Extract job ID from output file path (format: /download/JOB_ID)
+    const jobId = outputFile.replace('/download/', '')
+
+    const response = await fetch(`${API_URL}/api/download/${jobId}`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Download failed' }))
+      throw new Error(error.error || 'Download failed')
+    }
+
+    // Get the blob
+    const blob = await response.blob()
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = originalFileName
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
   }
 };
+
+export class ApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string = API_URL) {
+    this.baseUrl = baseUrl;
+  }
+
+  // Convert PDF to format
+  async convertPDF(file: File, outputFormat: string): Promise<ConversionJob> {
+    const token = getAuthToken()
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('conversion_type', `pdf_to_${outputFormat}`)
+
+    const response = await fetch(`${this.baseUrl}/api/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Conversion failed')
+    }
+
+    const data = await response.json()
+
+    return {
+      jobId: data.job_id,
+      status: 'pending',
+      progress: 0,
+    };
+  }
+
+  // Merge PDFs
+  async mergePDFs(files: File[]): Promise<ConversionJob> {
+    const token = getAuthToken()
+
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+
+    const response = await fetch(`${this.baseUrl}/api/merge`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Merge failed')
+    }
+
+    const data = await response.json()
+
+    return {
+      jobId: data.job_id,
+      status: 'pending',
+      progress: 0,
+    };
+  }
+
+  // Check job status
+  async getJobStatus(jobId: string): Promise<ConversionJob> {
+    const token = getAuthToken()
+
+    const response = await fetch(`${this.baseUrl}/api/status/${jobId}`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to get job status')
+    }
+
+    const data = await response.json()
+
+    return {
+      jobId: data.job_id,
+      status: data.status,
+      progress: data.progress,
+      downloadUrl: data.output_file,
+      errorMessage: data.error
+    };
+  }
+
+  // Download file
+  async downloadFile(jobId: string): Promise<Blob> {
+    const token = getAuthToken()
+
+    const response = await fetch(`${this.baseUrl}/api/download/${jobId}`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Download failed')
+    }
+
+    return await response.blob();
+  }
+}
+
+export const api = new ApiClient();

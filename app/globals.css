@@ -61,19 +61,26 @@
 /* Clean glass utilities - NO blur, 50% black cards, 15% white borders */
 @layer utilities {
   .glass {
-    @apply bg-card/50 border border-white/15 rounded-xl;
+    background-color: oklch(0 0 0 / 0.5);
+    border: 1px solid oklch(1 0 0 / 0.15);
+    @apply rounded-xl;
   }
 
   .glass-strong {
-    @apply bg-card/50 border border-white/15 rounded-xl;
+    background-color: oklch(0 0 0 / 0.5);
+    border: 1px solid oklch(1 0 0 / 0.15);
+    @apply rounded-xl;
   }
 
   .glass-subtle {
-    @apply bg-card/50 border border-white/15 rounded-xl;
+    background-color: oklch(0 0 0 / 0.5);
+    border: 1px solid oklch(1 0 0 / 0.15);
+    @apply rounded-xl;
   }
 
   .glass-nav {
-    @apply bg-background/85 border-b border-white/15;
+    background-color: oklch(0.05 0 0 / 0.85);
+    border-bottom: 1px solid oklch(1 0 0 / 0.15);
   }
 
   .text-gradient {
