@@ -3,38 +3,42 @@
 @tailwind utilities;
 
 :root {
-  /* Dark-first color palette - Black theme with white cards */
-  --background: 0 0% 0%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 2%;
-  --popover: 0 0% 0%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 180 100% 30%; /* Teal accent */
-  --primary-foreground: 0 0% 5%;
-  --secondary: 0 0% 12%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 65%;
-  --accent: 180 100% 30%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
-  --ring: 0 0% 84%;
-  --radius: 0.5rem;
+  /* OKLCH color space - Clean dark theme */
+  --background: oklch(0.05 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.6 0.1 180); /* Teal accent */
+  --primary-foreground: oklch(0.95 0 0);
+  --secondary: oklch(0.12 0 0);
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.12 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.6 0.1 180);
+  --accent-foreground: oklch(0.95 0 0);
+  --destructive: oklch(0.5 0.2 25);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: oklch(1 0 0 / 0.12);
+  --input: oklch(0.15 0 0);
+  --ring: oklch(0.84 0 0);
+  --radius: 0.75rem;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+    outline-color: oklch(0.84 0 0 / 0.5);
   }
   body {
     @apply bg-background text-foreground;
-    /* Background overlay opacity set to 70% for subtle circuit board visibility */
-    background: linear-gradient(rgba(12, 12, 12, 0.7), rgba(12, 12, 12, 0.7)), url("/images/circuit-board-bg.png")
-      center / cover no-repeat fixed, rgb(12, 12, 12);
+    /* Background overlay opacity set to 50% for circuit board visibility */
+    background: linear-gradient(
+      oklch(0.05 0 0 / 0.5),
+      oklch(0.05 0 0 / 0.5)
+    ), url("/images/circuit-board-bg.png") center / cover no-repeat fixed,
+    oklch(0.05 0 0);
     min-height: 100vh;
     position: relative;
   }
@@ -54,22 +58,22 @@
   }
 }
 
-/* Enhanced glassmorphic utilities for better visibility against circuit board */
+/* Clean glass utilities - NO blur, 50% black cards, 15% white borders */
 @layer utilities {
   .glass {
-    @apply bg-card/[0.15] backdrop-blur-lg border border-white/20;
+    @apply bg-card/50 border border-white/15 rounded-xl;
   }
 
   .glass-strong {
-    @apply bg-card/70 backdrop-blur-lg border border-border/50;
+    @apply bg-card/50 border border-white/15 rounded-xl;
   }
 
   .glass-subtle {
-    @apply bg-card/30 backdrop-blur-sm border border-border/30;
+    @apply bg-card/50 border border-white/15 rounded-xl;
   }
 
   .glass-nav {
-    @apply bg-background/85 backdrop-blur-lg border-b border-border/40;
+    @apply bg-background/85 border-b border-white/15;
   }
 
   .text-gradient {
