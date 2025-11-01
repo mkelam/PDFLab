@@ -4,22 +4,49 @@ import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
+import path from 'path'
+import ejs from 'ejs'
 import { testConnection, syncDatabase } from './config/database'
 import { connectRedis, closeQueues } from './config/redis'
 import { apiLimiter } from './middleware/ratelimit.middleware'
 
+// Import models to ensure they're registered with Sequelize
+import './models/AdminAuditLog'
+import './models/SystemHealthLog'
+
 // Import routes
 import authRoutes from './routes/auth.routes'
 import conversionRoutes from './routes/conversion.routes'
-// NOTE: PayFast routes temporarily disabled due to tsx module cache issue
-// TODO: Uncomment after restarting machine or clearing tsx cache
-// import payfastRoutes from './routes/payfast.routes'
+import payfastRoutes from './routes/payfast.routes'
+import adminRoutes from './routes/admin.routes'
+import conversionAdminRoutes from './routes/conversion.admin.routes'
+import paymentAdminRoutes from './routes/payment.admin.routes'
+import systemAdminRoutes from './routes/system.admin.routes'
+import analyticsAdminRoutes from './routes/analytics.admin.routes'
+import auditAdminRoutes from './routes/audit.admin.routes'
 
 // Load environment variables
 dotenv.config()
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
+
+// =====================
+// View Engine Setup
+// =====================
+
+// Set views directory
+app.set('views', path.join(__dirname, 'views', 'pages'))
+app.set('view engine', 'ejs')
+
+// Helper function to render with layout
+const renderWithLayout = async (view: string, data: any = {}): Promise<string> => {
+  const layoutPath = path.join(__dirname, 'views', 'layouts', 'main.ejs')
+  const viewPath = path.join(__dirname, 'views', 'pages', `${view}.ejs`)
+
+  const body = await ejs.renderFile(viewPath, data)
+  return ejs.renderFile(layoutPath, { ...data, body })
+}
 
 // =====================
 // Middleware
@@ -29,7 +56,7 @@ const PORT = parseInt(process.env.PORT || '3001')
 app.use(helmet())
 
 // CORS configuration
-const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
+const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
   'http://localhost:3000',
   'http://localhost:3002'
 ]
@@ -48,12 +75,16 @@ app.use(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Disposition', 'Content-Type']
   })
 )
 
 // Compression
 app.use(compression())
+
+// Serve static files (for circuit board background)
+app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images')))
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }))
@@ -103,28 +134,42 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 
   const statusCode = health.status === 'OK' ? 200 : 503
-  res.status(statusCode).json(health)
+
+  // Render HTML page
+  const html = await renderWithLayout('health', {
+    title: 'System Health Check - PDFLab API',
+    health
+  })
+  res.status(statusCode).send(html)
 })
 
 // API routes
 app.use('/api/auth', authRoutes)
-// NOTE: PayFast routes temporarily disabled - uncomment after restart
-// app.use('/api/payfast', payfastRoutes)
+app.use('/api/payfast', payfastRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/admin', conversionAdminRoutes)
+app.use('/api/admin/payments', paymentAdminRoutes)
+app.use('/api/admin/system', systemAdminRoutes)
+app.use('/api/admin/analytics', analyticsAdminRoutes)
+app.use('/api/admin/audit-logs', auditAdminRoutes)
 app.use('/api', conversionRoutes)
 
 // Root route
-app.get('/', (req: Request, res: Response) => {
-  res.json({
-    name: 'PDFLab API',
-    version: '1.0.0',
-    status: 'running',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      payfast: '/api/payfast',
-      conversion: '/api'
-    }
+app.get('/', async (req: Request, res: Response) => {
+  const html = await renderWithLayout('home', {
+    title: 'PDFLab API - Home',
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT
   })
+  res.send(html)
+})
+
+// User management page (admin panel)
+app.get('/users', async (req: Request, res: Response) => {
+  const html = await renderWithLayout('admin-users', {
+    title: 'User Management - PDFLab API'
+  })
+  res.send(html)
 })
 
 // 404 handler
@@ -183,16 +228,32 @@ const startServer = async () => {
       await syncDatabase(false) // Don't force recreate tables
     }
 
-    // Connect to Redis
+    // Connect to Redis (optional for testing)
     const redisConnected = await connectRedis()
     if (!redisConnected) {
-      throw new Error('Failed to connect to Redis')
+      console.warn('⚠ Redis not available - job queue disabled')
+      console.warn('⚠ PDF conversions will not work without Redis')
+    } else {
+      // Initialize Bull queues first
+      const { initializeQueues } = await import('./config/redis')
+      initializeQueues()
+
+      // Then import and initialize job workers
+      const { initializeConversionWorker } = await import('./jobs/conversion.job')
+      const { initializeCleanupWorker } = await import('./jobs/cleanup.job')
+
+      initializeConversionWorker()
+      initializeCleanupWorker()
+
+      console.log('✓ Job workers initialized')
     }
 
-    // Import job workers (this will start processing)
-    await import('./jobs/conversion.job')
-    await import('./jobs/cleanup.job')
-    console.log('✓ Job workers initialized')
+    // Initialize monthly quota reset cron job
+    const { initializeQuotaResetJob } = await import('./jobs/quota-reset.job')
+    const quotaResetJob = initializeQuotaResetJob()
+    if (quotaResetJob) {
+      console.log('✓ Monthly quota reset scheduled')
+    }
 
     // Start Express server
     app.listen(PORT, () => {

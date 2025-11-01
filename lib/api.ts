@@ -290,14 +290,30 @@ export const pdflabAPI = {
       throw new Error(error.error || 'Download failed')
     }
 
-    // Get the blob
+    // Get the blob and content-disposition header
     const blob = await response.blob()
+
+    // Try to get filename from Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition')
+    let downloadFileName = originalFileName
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+      if (filenameMatch && filenameMatch[1]) {
+        downloadFileName = filenameMatch[1]
+        console.log('✅ Using filename from Content-Disposition:', downloadFileName)
+      } else {
+        console.log('⚠️ Content-Disposition found but no filename extracted:', contentDisposition)
+      }
+    } else {
+      console.log('❌ No Content-Disposition header found, using original filename:', originalFileName)
+    }
 
     // Create download link
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = originalFileName
+    a.download = downloadFileName
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)

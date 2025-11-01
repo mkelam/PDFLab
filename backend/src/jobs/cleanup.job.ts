@@ -1,7 +1,7 @@
 import { Job } from 'bull'
 import path from 'path'
 import fs from 'fs/promises'
-import { cleanupQueue } from '../config/redis'
+import { getCleanupQueue } from '../config/redis'
 import { ConversionJob } from '../models'
 
 interface CleanupJobData {
@@ -10,10 +10,23 @@ interface CleanupJobData {
 }
 
 /**
- * Process file cleanup jobs
- * Deletes uploaded and converted files after expiration (1 hour)
+ * Initialize cleanup job worker
  */
-cleanupQueue.process(async (job: Job<CleanupJobData>) => {
+export const initializeCleanupWorker = () => {
+  const cleanupQueue = getCleanupQueue()
+
+  if (!cleanupQueue) {
+    console.warn('⚠ Cannot initialize cleanup worker - Redis not available')
+    return
+  }
+
+  console.log('✓ Initializing cleanup worker...')
+
+  /**
+   * Process file cleanup jobs
+   * Deletes uploaded and converted files after expiration (1 hour)
+   */
+  cleanupQueue.process(async (job: Job<CleanupJobData>) => {
   const { job_id, user_id } = job.data
 
   console.log(`[Cleanup Worker] Processing cleanup for job ${job_id}`)
@@ -29,14 +42,14 @@ cleanupQueue.process(async (job: Job<CleanupJobData>) => {
 
     // 2. Define paths to delete
     const userUploadDir = path.join(
-      process.env.STORAGE_PATH || './storage',
+      process.env['STORAGE_PATH'] || './storage',
       'uploads',
       user_id,
       job_id
     )
 
     const userOutputDir = path.join(
-      process.env.STORAGE_PATH || './storage',
+      process.env['STORAGE_PATH'] || './storage',
       'outputs',
       user_id,
       job_id
@@ -69,8 +82,8 @@ cleanupQueue.process(async (job: Job<CleanupJobData>) => {
     // 5. Update database - clear file paths
     await ConversionJob.update(
       {
-        input_file: null,
-        output_file: null
+        input_file: undefined,
+        output_file: undefined
       },
       { where: { id: job_id } }
     )
@@ -88,13 +101,15 @@ cleanupQueue.process(async (job: Job<CleanupJobData>) => {
   }
 })
 
-// Event listeners
-cleanupQueue.on('completed', (job, result) => {
-  console.log(`✓ Cleanup job ${job.id} completed:`, result)
-})
+  // Event listeners
+  cleanupQueue.on('completed', (job, result) => {
+    console.log(`✓ Cleanup job ${job.id} completed:`, result)
+  })
 
-cleanupQueue.on('failed', (job, error) => {
-  console.error(`✗ Cleanup job ${job?.id} failed:`, error.message)
-})
+  cleanupQueue.on('failed', (job, error) => {
+    console.error(`✗ Cleanup job ${job?.id} failed:`, error.message)
+  })
+}
 
-export default cleanupQueue
+// DO NOT initialize on module load - let server.ts call this after Redis connects
+// initializeCleanupWorker()

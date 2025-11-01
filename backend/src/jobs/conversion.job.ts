@@ -1,6 +1,6 @@
 import { Job } from 'bull'
 import path from 'path'
-import { conversionQueue, cleanupQueue } from '../config/redis'
+import { getConversionQueue, getCleanupQueue } from '../config/redis'
 import { cloudConvertService } from '../services/cloudconvert.service'
 import { ConversionJob, JobStatus, User, UsageLog } from '../models'
 
@@ -19,9 +19,28 @@ interface ConversionJobData {
 }
 
 /**
- * Process conversion jobs from the queue
+ * Export the conversion queue for external use
  */
-conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
+export const conversionQueue = getConversionQueue()
+
+/**
+ * Initialize conversion job worker
+ */
+export const initializeConversionWorker = () => {
+  const conversionQueue = getConversionQueue()
+  const cleanupQueue = getCleanupQueue()
+
+  if (!conversionQueue || !cleanupQueue) {
+    console.warn('⚠ Cannot initialize conversion worker - Redis not available')
+    return
+  }
+
+  console.log('✓ Initializing conversion worker...')
+
+  /**
+   * Process conversion jobs from the queue
+   */
+  conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
   const { job_id, user_id, input_file, output_format, conversion_type, options } = job.data
 
   console.log(`[Conversion Worker] Processing job ${job_id} for user ${user_id}`)
@@ -43,7 +62,7 @@ conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
 
     // 2. Define output path
     const outputDir = path.join(
-      process.env.STORAGE_PATH || './storage',
+      process.env['STORAGE_PATH'] || './storage',
       'outputs',
       user_id,
       job_id
@@ -64,10 +83,10 @@ conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
       // Single file conversion
       result = await cloudConvertService.convertFile({
         inputFormat: 'pdf',
-        outputFormat: output_format,
+        outputFormat: output_format as 'pptx' | 'docx' | 'xlsx' | 'png' | 'jpg',
         inputFilePath: input_file,
         outputFilePath: outputFile,
-        webhookUrl: `${process.env.API_URL}/webhook/cloudconvert`,
+        webhookUrl: `${process.env['API_URL']}/webhook/cloudconvert`,
         options: options || {}
       })
     } else {
@@ -75,7 +94,22 @@ conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
     }
 
     if (!result.success) {
-      throw new Error(result.error || 'CloudConvert operation failed')
+      // Provide specific error messages for common issues
+      let errorMessage = result.error || 'CloudConvert operation failed'
+
+      // XLSX conversion specific error handling
+      if (output_format === 'xlsx') {
+        // Check if error is related to missing table data
+        if (errorMessage.toLowerCase().includes('table') ||
+            errorMessage.toLowerCase().includes('no data') ||
+            errorMessage.toLowerCase().includes('empty')) {
+          errorMessage = 'XLSX conversion failed: This PDF does not contain table data that can be converted to Excel format. Please try converting to DOCX or PPTX instead, or use a PDF with structured table content.'
+        } else {
+          errorMessage = `XLSX conversion failed: ${errorMessage}. Note: XLSX format requires PDFs with table data. Consider using DOCX or PPTX for better results.`
+        }
+      }
+
+      throw new Error(errorMessage)
     }
 
     job.progress(90)
@@ -155,17 +189,19 @@ conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
   }
 })
 
-// Queue event listeners (already defined in redis.ts, but adding specific logging)
-conversionQueue.on('completed', (job, result) => {
-  console.log(`✓ Conversion job ${job.id} completed:`, result)
-})
+  // Queue event listeners (already defined in redis.ts, but adding specific logging)
+  conversionQueue.on('completed', (job, result) => {
+    console.log(`✓ Conversion job ${job.id} completed:`, result)
+  })
 
-conversionQueue.on('failed', (job, error) => {
-  console.error(`✗ Conversion job ${job?.id} failed:`, error.message)
-})
+  conversionQueue.on('failed', (job, error) => {
+    console.error(`✗ Conversion job ${job?.id} failed:`, error.message)
+  })
 
-conversionQueue.on('stalled', (job) => {
-  console.warn(`⚠ Conversion job ${job.id} stalled - will be retried`)
-})
+  conversionQueue.on('stalled', (job) => {
+    console.warn(`⚠ Conversion job ${job.id} stalled - will be retried`)
+  })
+}
 
-export default conversionQueue
+// DO NOT initialize on module load - let server.ts call this after Redis connects
+// initializeConversionWorker()
