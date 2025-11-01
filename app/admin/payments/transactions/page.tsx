@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { AdminCard } from '@/components/admin/AdminCard'
-import { AdminBadge } from '@/components/admin/AdminBadge'
-import { AdminButton } from '@/components/admin/AdminButton'
-import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
 import { TransactionDetailModal } from '@/components/admin/TransactionDetailModal'
-import { Search, Download, ChevronLeft, ChevronRight, DollarSign, CheckCircle, XCircle } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Search, Download, ChevronLeft, ChevronRight, DollarSign, CheckCircle, XCircle, Receipt } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
@@ -104,22 +103,22 @@ export default function TransactionsPage() {
     fetchTransactions()
   }
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case 'complete': return 'success'
-      case 'failed': return 'error'
-      case 'pending': return 'warning'
-      case 'cancelled': return 'default'
-      default: return 'default'
+      case 'complete': return 'default'
+      case 'failed': return 'destructive'
+      case 'pending': return 'secondary'
+      case 'cancelled': return 'outline'
+      default: return 'outline'
     }
   }
 
-  const getTypeBadgeVariant = (type: string) => {
+  const getTypeBadgeVariant = (type: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (type) {
-      case 'subscription': return 'info'
-      case 'subscription_payment': return 'success'
-      case 'refund': return 'error'
-      default: return 'default'
+      case 'subscription': return 'default'
+      case 'subscription_payment': return 'default'
+      case 'refund': return 'destructive'
+      default: return 'outline'
     }
   }
 
@@ -129,142 +128,158 @@ export default function TransactionsPage() {
 
   return (
     <AdminLayout>
-      <AdminPageHeader
-        title="Payment Transactions"
-        description="View all payment transactions and ITN logs"
-      />
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Payment Transactions</h1>
+        <p className="text-muted-foreground">View all payment transactions and ITN logs</p>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-green-500/20 rounded-lg">
-              <CheckCircle size={20} className="text-green-400" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <CheckCircle size={20} className="text-green-400" />
+              </div>
+              <span className="text-muted-foreground text-sm">Completed Today</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">Completed Today</span>
-          </div>
-          <p className="text-2xl font-bold text-white">{stats.complete_today}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">{stats.complete_today}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-red-500/20 rounded-lg">
-              <XCircle size={20} className="text-red-400" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-red-500/20 rounded-lg">
+                <XCircle size={20} className="text-red-400" />
+              </div>
+              <span className="text-muted-foreground text-sm">Failed Today</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">Failed Today</span>
-          </div>
-          <p className="text-2xl font-bold text-white">{stats.failed_today}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">{stats.failed_today}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-[oklch(0.65_0.20_270)]/20 rounded-lg">
-              <DollarSign size={20} className="text-[oklch(0.65_0.20_270)]" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-primary/20 rounded-lg">
+                <DollarSign size={20} className="text-primary" />
+              </div>
+              <span className="text-muted-foreground text-sm">Total Revenue (USD)</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">Total Revenue (USD)</span>
-          </div>
-          <p className="text-2xl font-bold text-white">${stats.total_revenue}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">${stats.total_revenue}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <AdminCard>
-        {/* Search and Filters */}
-        <div className="mb-6 flex flex-col md:flex-row gap-4">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[oklch(0.60_0.01_250)]" size={20} />
-              <input
-                type="text"
-                placeholder="Search by transaction ID, email, or PayFast ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white placeholder-[oklch(0.60_0.01_250)] focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-              />
+      <Card className="glass-strong border-border/50">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-primary" />
+            Transactions
+          </CardTitle>
+          <CardDescription>View all payment transactions and PayFast ITN logs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search by transaction ID, email, or PayFast ID..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+              <Button type="submit" size="default">Search</Button>
+            </form>
+
+            <div className="flex gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="all">All Status</option>
+                <option value="complete">Complete</option>
+                <option value="failed">Failed</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="px-4 py-2 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="all">All Types</option>
+                <option value="subscription">Subscription</option>
+                <option value="subscription_payment">Subscription Payment</option>
+                <option value="one_time">One-Time</option>
+                <option value="refund">Refund</option>
+              </select>
             </div>
-            <AdminButton type="submit" size="md">Search</AdminButton>
-          </form>
-
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="all">All Status</option>
-              <option value="complete">Complete</option>
-              <option value="failed">Failed</option>
-              <option value="pending">Pending</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="all">All Types</option>
-              <option value="subscription">Subscription</option>
-              <option value="subscription_payment">Subscription Payment</option>
-              <option value="one_time">One-Time</option>
-              <option value="refund">Refund</option>
-            </select>
           </div>
-        </div>
 
-        {/* Transactions Table */}
-        {loading ? (
-          <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">Loading transactions...</div>
-        ) : transactions.length === 0 ? (
-          <AdminEmptyState
-            title="No transactions found"
-            description="Try adjusting your search or filters"
-          />
-        ) : (
+          {/* Transactions Table */}
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading transactions...</div>
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-12">
+              <Receipt className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No transactions found</h3>
+              <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            </div>
+          ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[oklch(0.25_0.01_250)] text-left">
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Date</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Transaction ID</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">User</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Type</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Amount</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Status</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Actions</th>
+                  <tr className="border-b border-border text-left">
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Date</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Transaction ID</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">User</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Type</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Amount</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-[oklch(0.25_0.01_250)] hover:bg-[oklch(0.20_0.01_250)] transition">
-                      <td className="py-4 text-sm text-[oklch(0.90_0.01_250)]">
+                    <tr key={transaction.id} className="border-b border-border hover:bg-muted/50 transition">
+                      <td className="py-4 text-sm text-foreground">
                         {new Date(transaction.created_at).toLocaleDateString()}
                       </td>
-                      <td className="py-4 text-sm text-[oklch(0.90_0.01_250)] font-mono">
+                      <td className="py-4 text-sm text-foreground font-mono">
                         {transaction.transaction_id.substring(0, 16)}...
                       </td>
-                      <td className="py-4 text-white">{transaction.email_address}</td>
+                      <td className="py-4 text-foreground">{transaction.email_address}</td>
                       <td className="py-4">
-                        <AdminBadge variant={getTypeBadgeVariant(transaction.payment_type)} size="sm">
+                        <Badge variant={getTypeBadgeVariant(transaction.payment_type)}>
                           {transaction.payment_type.replace('_', ' ')}
-                        </AdminBadge>
+                        </Badge>
                       </td>
-                      <td className="py-4 text-[oklch(0.90_0.01_250)]">
+                      <td className="py-4 text-foreground">
                         ${parseFloat(transaction.amount_net.toString()).toFixed(2)} {transaction.currency}
                       </td>
                       <td className="py-4">
-                        <AdminBadge variant={getStatusBadgeVariant(transaction.status)}>
+                        <Badge variant={getStatusBadgeVariant(transaction.status)}>
                           {transaction.status}
-                        </AdminBadge>
+                        </Badge>
                       </td>
                       <td className="py-4">
-                        <AdminButton
+                        <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedTransactionId(transaction.id)}
                         >
                           View Details
-                        </AdminButton>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -274,11 +289,11 @@ export default function TransactionsPage() {
 
             {/* Pagination */}
             <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-[oklch(0.60_0.01_250)]">
+              <div className="text-sm text-muted-foreground">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} transactions
               </div>
               <div className="flex items-center gap-2">
-                <AdminButton
+                <Button
                   variant="secondary"
                   size="sm"
                   disabled={pagination.page === 1}
@@ -286,11 +301,11 @@ export default function TransactionsPage() {
                 >
                   <ChevronLeft size={16} />
                   Previous
-                </AdminButton>
-                <span className="text-sm text-white px-4">
+                </Button>
+                <span className="text-sm text-foreground px-4">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
-                <AdminButton
+                <Button
                   variant="secondary"
                   size="sm"
                   disabled={pagination.page === pagination.totalPages}
@@ -298,12 +313,13 @@ export default function TransactionsPage() {
                 >
                   Next
                   <ChevronRight size={16} />
-                </AdminButton>
+                </Button>
               </div>
             </div>
           </>
-        )}
-      </AdminCard>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Transaction Detail Modal */}
       {selectedTransactionId && (

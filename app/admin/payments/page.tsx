@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { AdminCard } from '@/components/admin/AdminCard'
-import { AdminBadge } from '@/components/admin/AdminBadge'
-import { AdminButton } from '@/components/admin/AdminButton'
-import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
 import { SubscriptionDetailModal } from '@/components/admin/SubscriptionDetailModal'
-import { Search, Download, ChevronLeft, ChevronRight, DollarSign, TrendingUp, Users, XCircle } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Search, Download, ChevronLeft, ChevronRight, DollarSign, TrendingUp, Users, XCircle, CreditCard } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
@@ -106,23 +105,23 @@ export default function PaymentsPage() {
     fetchSubscriptions()
   }
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case 'active': return 'success'
-      case 'canceled': return 'error'
-      case 'past_due': return 'warning'
-      case 'trialing': return 'info'
-      case 'pending': return 'default'
-      default: return 'default'
+      case 'active': return 'default'
+      case 'canceled': return 'destructive'
+      case 'past_due': return 'secondary'
+      case 'trialing': return 'default'
+      case 'pending': return 'outline'
+      default: return 'outline'
     }
   }
 
-  const getPlanBadgeVariant = (plan: string) => {
+  const getPlanBadgeVariant = (plan: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (plan) {
-      case 'enterprise': return 'success'
-      case 'pro': return 'info'
-      case 'starter': return 'warning'
-      default: return 'default'
+      case 'enterprise': return 'default'
+      case 'pro': return 'default'
+      case 'starter': return 'secondary'
+      default: return 'outline'
     }
   }
 
@@ -167,166 +166,184 @@ export default function PaymentsPage() {
 
   return (
     <AdminLayout>
-      <AdminPageHeader
-        title="Payment & Subscription Management"
-        description="Manage all subscriptions, payments, and billing"
-        actions={
-          <AdminButton variant="secondary" size="sm" onClick={handleExportCSV}>
-            <Download size={16} />
-            Export CSV
-          </AdminButton>
-        }
-      />
+      {/* Page Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Payment & Subscription Management</h1>
+          <p className="text-muted-foreground">Manage all subscriptions, payments, and billing</p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={handleExportCSV}>
+          <Download size={16} />
+          Export CSV
+        </Button>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-green-500/20 rounded-lg">
-              <Users size={20} className="text-green-400" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <Users size={20} className="text-green-400" />
+              </div>
+              <span className="text-muted-foreground text-sm">Active Subscriptions</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">Active Subscriptions</span>
-          </div>
-          <p className="text-2xl font-bold text-white">{stats.active}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">{stats.active}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-[oklch(0.65_0.20_270)]/20 rounded-lg">
-              <DollarSign size={20} className="text-[oklch(0.65_0.20_270)]" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-primary/20 rounded-lg">
+                <DollarSign size={20} className="text-primary" />
+              </div>
+              <span className="text-muted-foreground text-sm">MRR (USD)</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">MRR (USD)</span>
-          </div>
-          <p className="text-2xl font-bold text-white">${stats.mrr}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">${stats.mrr}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-yellow-500/20 rounded-lg">
-              <TrendingUp size={20} className="text-yellow-400" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-yellow-500/20 rounded-lg">
+                <TrendingUp size={20} className="text-yellow-400" />
+              </div>
+              <span className="text-muted-foreground text-sm">Past Due</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">Past Due</span>
-          </div>
-          <p className="text-2xl font-bold text-white">{stats.past_due}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">{stats.past_due}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-[oklch(0.18_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-red-500/20 rounded-lg">
-              <XCircle size={20} className="text-red-400" />
+        <Card className="glass-strong border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-red-500/20 rounded-lg">
+                <XCircle size={20} className="text-red-400" />
+              </div>
+              <span className="text-muted-foreground text-sm">Canceled</span>
             </div>
-            <span className="text-[oklch(0.60_0.01_250)] text-sm">Canceled</span>
-          </div>
-          <p className="text-2xl font-bold text-white">{stats.canceled}</p>
-        </div>
+            <p className="text-2xl font-bold text-foreground">{stats.canceled}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <AdminCard>
-        {/* Search and Filters */}
-        <div className="mb-6 flex flex-col md:flex-row gap-4">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[oklch(0.60_0.01_250)]" size={20} />
-              <input
-                type="text"
-                placeholder="Search by email, subscription ID, or PayFast token..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white placeholder-[oklch(0.60_0.01_250)] focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-              />
+      <Card className="glass-strong border-border/50">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-primary" />
+            Subscriptions
+          </CardTitle>
+          <CardDescription>Search and filter all active and past subscriptions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search by email, subscription ID, or PayFast token..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+              <Button type="submit" size="default">Search</Button>
+            </form>
+
+            <div className="flex gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="canceled">Canceled</option>
+                <option value="past_due">Past Due</option>
+                <option value="trialing">Trialing</option>
+                <option value="pending">Pending</option>
+              </select>
+
+              <select
+                value={planFilter}
+                onChange={(e) => setPlanFilter(e.target.value)}
+                className="px-4 py-2 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="all">All Plans</option>
+                <option value="free">Free</option>
+                <option value="starter">Starter</option>
+                <option value="pro">Pro</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
             </div>
-            <AdminButton type="submit" size="md">Search</AdminButton>
-          </form>
-
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="canceled">Canceled</option>
-              <option value="past_due">Past Due</option>
-              <option value="trialing">Trialing</option>
-              <option value="pending">Pending</option>
-            </select>
-
-            <select
-              value={planFilter}
-              onChange={(e) => setPlanFilter(e.target.value)}
-              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="all">All Plans</option>
-              <option value="free">Free</option>
-              <option value="starter">Starter</option>
-              <option value="pro">Pro</option>
-              <option value="enterprise">Enterprise</option>
-            </select>
           </div>
-        </div>
 
-        {/* Subscriptions Table */}
-        {loading ? (
-          <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">Loading subscriptions...</div>
-        ) : subscriptions.length === 0 ? (
-          <AdminEmptyState
-            title="No subscriptions found"
-            description="Try adjusting your search or filters"
-          />
-        ) : (
+          {/* Subscriptions Table */}
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading subscriptions...</div>
+          ) : subscriptions.length === 0 ? (
+            <div className="text-center py-12">
+              <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No subscriptions found</h3>
+              <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            </div>
+          ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[oklch(0.25_0.01_250)] text-left">
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">User</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Plan</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Status</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Amount</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Next Billing</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Started</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Actions</th>
+                  <tr className="border-b border-border text-left">
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">User</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Plan</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Amount</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Next Billing</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Started</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {subscriptions.map((sub) => (
-                    <tr key={sub.id} className="border-b border-[oklch(0.25_0.01_250)] hover:bg-[oklch(0.20_0.01_250)] transition">
+                    <tr key={sub.id} className="border-b border-border hover:bg-muted/50 transition">
                       <td className="py-4">
                         <div>
-                          <div className="text-white">{sub.user?.email}</div>
+                          <div className="text-foreground">{sub.user?.email}</div>
                           {sub.user?.name && (
-                            <div className="text-sm text-[oklch(0.60_0.01_250)]">{sub.user.name}</div>
+                            <div className="text-sm text-muted-foreground">{sub.user.name}</div>
                           )}
                         </div>
                       </td>
                       <td className="py-4">
-                        <AdminBadge variant={getPlanBadgeVariant(sub.plan)}>
+                        <Badge variant={getPlanBadgeVariant(sub.plan)}>
                           {sub.plan}
-                        </AdminBadge>
+                        </Badge>
                       </td>
                       <td className="py-4">
-                        <AdminBadge variant={getStatusBadgeVariant(sub.status)}>
+                        <Badge variant={getStatusBadgeVariant(sub.status)}>
                           {sub.status}
-                        </AdminBadge>
+                        </Badge>
                       </td>
-                      <td className="py-4 text-[oklch(0.90_0.01_250)]">
+                      <td className="py-4 text-foreground">
                         ${parseFloat(sub.amount.toString()).toFixed(2)} {sub.currency}
                       </td>
-                      <td className="py-4 text-[oklch(0.60_0.01_250)] text-sm">
+                      <td className="py-4 text-muted-foreground text-sm">
                         {formatDate(sub.next_billing_date)}
                       </td>
-                      <td className="py-4 text-[oklch(0.60_0.01_250)] text-sm">
+                      <td className="py-4 text-muted-foreground text-sm">
                         {formatDate(sub.started_at)}
                       </td>
                       <td className="py-4">
-                        <AdminButton
+                        <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedSubscriptionId(sub.id)}
                         >
                           View Details
-                        </AdminButton>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -336,11 +353,11 @@ export default function PaymentsPage() {
 
             {/* Pagination */}
             <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-[oklch(0.60_0.01_250)]">
+              <div className="text-sm text-muted-foreground">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} subscriptions
               </div>
               <div className="flex items-center gap-2">
-                <AdminButton
+                <Button
                   variant="secondary"
                   size="sm"
                   disabled={pagination.page === 1}
@@ -348,11 +365,11 @@ export default function PaymentsPage() {
                 >
                   <ChevronLeft size={16} />
                   Previous
-                </AdminButton>
-                <span className="text-sm text-white px-4">
+                </Button>
+                <span className="text-sm text-foreground px-4">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
-                <AdminButton
+                <Button
                   variant="secondary"
                   size="sm"
                   disabled={pagination.page === pagination.totalPages}
@@ -360,12 +377,13 @@ export default function PaymentsPage() {
                 >
                   Next
                   <ChevronRight size={16} />
-                </AdminButton>
+                </Button>
               </div>
             </div>
           </>
-        )}
-      </AdminCard>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Subscription Detail Modal */}
       {selectedSubscriptionId && (

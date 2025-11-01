@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { AdminCard } from '@/components/admin/AdminCard'
-import { AdminBadge } from '@/components/admin/AdminBadge'
-import { AdminButton } from '@/components/admin/AdminButton'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Server,
   Database,
@@ -108,7 +108,7 @@ export default function SystemHealthPage() {
       case 'critical':
         return <AlertCircle size={24} className="text-red-400" />
       default:
-        return <Activity size={24} className="text-[oklch(0.60_0.01_250)]" />
+        return <Activity size={24} className="text-muted-foreground" />
     }
   }
 
@@ -121,7 +121,7 @@ export default function SystemHealthPage() {
       case 'critical':
         return 'text-red-400'
       default:
-        return 'text-[oklch(0.60_0.01_250)]'
+        return 'text-muted-foreground'
     }
   }
 
@@ -209,204 +209,241 @@ export default function SystemHealthPage() {
 
   return (
     <AdminLayout>
-      <AdminPageHeader
-        title="System Health & Monitoring"
-        description="Monitor system components and perform maintenance operations"
-        actions={
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">System Health & Monitoring</h1>
+            <p className="text-muted-foreground">Monitor system components and perform maintenance operations</p>
+          </div>
           <div className="flex gap-2">
-            <AdminButton
-              variant={autoRefresh ? 'primary' : 'secondary'}
+            <Button
+              variant={autoRefresh ? 'default' : 'secondary'}
               size="sm"
               onClick={() => setAutoRefresh(!autoRefresh)}
             >
               {autoRefresh ? 'Auto-Refresh ON' : 'Auto-Refresh OFF'}
-            </AdminButton>
-            <AdminButton variant="secondary" size="sm" onClick={fetchHealth}>
+            </Button>
+            <Button variant="secondary" size="sm" onClick={fetchHealth}>
               <RefreshCw size={16} />
               Refresh
-            </AdminButton>
+            </Button>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {loading && !health ? (
-        <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">
+        <div className="text-center py-12 text-muted-foreground">
           Loading system health...
         </div>
       ) : !health ? (
-        <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">
+        <div className="text-center py-12 text-muted-foreground">
           Failed to load system health
         </div>
       ) : (
         <>
           {/* Overall Status */}
           <div className="mb-8">
-            <AdminCard>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div>{getStatusIcon(health.overall_status)}</div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">
-                      System Status: <span className={getStatusColor(health.overall_status)}>
-                        {health.overall_status.toUpperCase()}
-                      </span>
-                    </h3>
-                    <p className="text-sm text-[oklch(0.60_0.01_250)]">
-                      Last updated: {new Date(health.last_updated).toLocaleString()}
-                    </p>
+            <Card className="glass-strong border-border/50">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div>{getStatusIcon(health.overall_status)}</div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">
+                        System Status: <span className={getStatusColor(health.overall_status)}>
+                          {health.overall_status.toUpperCase()}
+                        </span>
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Last updated: {new Date(health.last_updated).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </AdminCard>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Component Health Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* CloudConvert Health */}
-            <AdminCard>
-              <div className="flex items-center gap-3 mb-4">
-                <Cloud size={24} className="text-[oklch(0.65_0.20_270)]" />
-                <h3 className="text-lg font-semibold text-white">CloudConvert API</h3>
-                <AdminBadge variant={health.components.cloudconvert.status === 'healthy' ? 'success' : 'error'}>
-                  {health.components.cloudconvert.status}
-                </AdminBadge>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Success Rate (24h)</span>
-                  <span className="text-white">{(parseFloat(health.components.cloudconvert.success_rate) * 100).toFixed(1)}%</span>
+            <Card className="glass-strong border-border/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Cloud className="w-5 h-5 text-primary" />
+                  CloudConvert API
+                </CardTitle>
+                <CardDescription>
+                  <Badge variant={health.components.cloudconvert.status === 'healthy' ? 'default' : 'destructive'}>
+                    {health.components.cloudconvert.status}
+                  </Badge>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Success Rate (24h)</span>
+                    <span className="text-foreground">{(parseFloat(health.components.cloudconvert.success_rate) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Jobs (24h)</span>
+                    <span className="text-foreground">{health.components.cloudconvert.total_jobs_24h}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Completed / Failed</span>
+                    <span className="text-foreground">
+                      {health.components.cloudconvert.completed_24h} / {health.components.cloudconvert.failed_24h}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Total Jobs (24h)</span>
-                  <span className="text-white">{health.components.cloudconvert.total_jobs_24h}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Completed / Failed</span>
-                  <span className="text-white">
-                    {health.components.cloudconvert.completed_24h} / {health.components.cloudconvert.failed_24h}
-                  </span>
-                </div>
-              </div>
-            </AdminCard>
+              </CardContent>
+            </Card>
 
             {/* Redis Queue Health */}
-            <AdminCard>
-              <div className="flex items-center gap-3 mb-4">
-                <Server size={24} className="text-[oklch(0.65_0.20_270)]" />
-                <h3 className="text-lg font-semibold text-white">Redis Queue</h3>
-                <AdminBadge variant={health.components.redis.status === 'healthy' ? 'success' : 'warning'}>
-                  {health.components.redis.status}
-                </AdminBadge>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Waiting / Active</span>
-                  <span className="text-white">{health.components.redis.waiting} / {health.components.redis.active}</span>
+            <Card className="glass-strong border-border/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Server className="w-5 h-5 text-primary" />
+                  Redis Queue
+                </CardTitle>
+                <CardDescription>
+                  <Badge variant={health.components.redis.status === 'healthy' ? 'default' : 'secondary'}>
+                    {health.components.redis.status}
+                  </Badge>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Waiting / Active</span>
+                    <span className="text-foreground">{health.components.redis.waiting} / {health.components.redis.active}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Completed Today</span>
+                    <span className="text-foreground">{health.components.redis.completed_today}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Failed Today</span>
+                    <span className="text-foreground">{health.components.redis.failed_today}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Completed Today</span>
-                  <span className="text-white">{health.components.redis.completed_today}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Failed Today</span>
-                  <span className="text-white">{health.components.redis.failed_today}</span>
-                </div>
-              </div>
-            </AdminCard>
+              </CardContent>
+            </Card>
 
             {/* Database Health */}
-            <AdminCard>
-              <div className="flex items-center gap-3 mb-4">
-                <Database size={24} className="text-[oklch(0.65_0.20_270)]" />
-                <h3 className="text-lg font-semibold text-white">Database</h3>
-                <AdminBadge variant={health.components.database.status === 'healthy' ? 'success' : 'warning'}>
-                  {health.components.database.status}
-                </AdminBadge>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Active Connections</span>
-                  <span className="text-white">
-                    {health.components.database.connections.active} / {health.components.database.connections.max}
-                  </span>
+            <Card className="glass-strong border-border/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Database className="w-5 h-5 text-primary" />
+                  Database
+                </CardTitle>
+                <CardDescription>
+                  <Badge variant={health.components.database.status === 'healthy' ? 'default' : 'secondary'}>
+                    {health.components.database.status}
+                  </Badge>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Active Connections</span>
+                    <span className="text-foreground">
+                      {health.components.database.connections.active} / {health.components.database.connections.max}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Idle Connections</span>
+                    <span className="text-foreground">{health.components.database.connections.idle}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Usage</span>
+                    <span className="text-foreground">{health.components.database.usage_percent}%</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Idle Connections</span>
-                  <span className="text-white">{health.components.database.connections.idle}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Usage</span>
-                  <span className="text-white">{health.components.database.usage_percent}%</span>
-                </div>
-              </div>
-            </AdminCard>
+              </CardContent>
+            </Card>
 
             {/* Storage Health */}
-            <AdminCard>
-              <div className="flex items-center gap-3 mb-4">
-                <HardDrive size={24} className="text-[oklch(0.65_0.20_270)]" />
-                <h3 className="text-lg font-semibold text-white">Storage</h3>
-                <AdminBadge variant={health.components.storage.status === 'healthy' ? 'success' : 'warning'}>
-                  {health.components.storage.status}
-                </AdminBadge>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Used / Capacity</span>
-                  <span className="text-white">
-                    {health.components.storage.total_gb} GB / {health.components.storage.capacity_gb} GB
-                  </span>
+            <Card className="glass-strong border-border/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <HardDrive className="w-5 h-5 text-primary" />
+                  Storage
+                </CardTitle>
+                <CardDescription>
+                  <Badge variant={health.components.storage.status === 'healthy' ? 'default' : 'secondary'}>
+                    {health.components.storage.status}
+                  </Badge>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Used / Capacity</span>
+                    <span className="text-foreground">
+                      {health.components.storage.total_gb} GB / {health.components.storage.capacity_gb} GB
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Usage</span>
+                    <span className="text-foreground">{health.components.storage.usage_percent}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Files</span>
+                    <span className="text-foreground">{health.components.storage.file_count}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Usage</span>
-                  <span className="text-white">{health.components.storage.usage_percent}%</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[oklch(0.60_0.01_250)]">Total Files</span>
-                  <span className="text-white">{health.components.storage.file_count}</span>
-                </div>
-              </div>
-            </AdminCard>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Manual Operations */}
-          <AdminCard>
-            <h3 className="text-lg font-semibold text-white mb-4">Manual Operations</h3>
-            <div className="flex flex-wrap gap-3">
-              <AdminButton
-                variant="secondary"
-                size="sm"
-                onClick={handleTestConversion}
-                disabled={operationLoading}
-              >
-                <PlayCircle size={16} />
-                Test Conversion
-              </AdminButton>
+          <Card className="glass-strong border-border/50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="w-5 h-5 text-primary" />
+                Manual Operations
+              </CardTitle>
+              <CardDescription>System maintenance and testing tools</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleTestConversion}
+                  disabled={operationLoading}
+                >
+                  <PlayCircle size={16} />
+                  Test Conversion
+                </Button>
 
-              <AdminButton
-                variant="warning"
-                size="sm"
-                onClick={handleClearCache}
-                disabled={operationLoading}
-              >
-                <RefreshCw size={16} />
-                Clear Cache
-              </AdminButton>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleClearCache}
+                  disabled={operationLoading}
+                >
+                  <RefreshCw size={16} />
+                  Clear Cache
+                </Button>
 
-              <AdminButton
-                variant="danger"
-                size="sm"
-                onClick={handleCleanupStorage}
-                disabled={operationLoading}
-              >
-                <Trash2 size={16} />
-                Cleanup Storage
-              </AdminButton>
-            </div>
-            <p className="text-sm text-[oklch(0.60_0.01_250)] mt-4">
-              All operations require confirmation and are logged to audit trail
-            </p>
-          </AdminCard>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleCleanupStorage}
+                  disabled={operationLoading}
+                >
+                  <Trash2 size={16} />
+                  Cleanup Storage
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                All operations require confirmation and are logged to audit trail
+              </p>
+            </CardContent>
+          </Card>
         </>
       )}
     </AdminLayout>

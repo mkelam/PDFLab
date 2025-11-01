@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { AdminCard } from '@/components/admin/AdminCard'
-import { AdminBadge } from '@/components/admin/AdminBadge'
-import { AdminButton } from '@/components/admin/AdminButton'
-import { Users, TrendingUp, FileText, DollarSign, RefreshCw } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Users, TrendingUp, FileText, DollarSign, RefreshCw, BarChart3 } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
@@ -122,32 +122,35 @@ export default function AnalyticsPage() {
     const val = parseFloat(change)
     if (val > 0) return 'text-green-400'
     if (val < 0) return 'text-red-400'
-    return 'text-[oklch(0.60_0.01_250)]'
+    return 'text-muted-foreground'
   }
 
   return (
     <AdminLayout>
-      <AdminPageHeader
-        title="Analytics Dashboard"
-        description="Business intelligence and usage insights"
-        actions={
-          <AdminButton variant="secondary" size="sm" onClick={fetchAnalytics}>
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">Business intelligence and usage insights</p>
+          </div>
+          <Button variant="secondary" size="sm" onClick={fetchAnalytics}>
             <RefreshCw size={16} />
             Refresh
-          </AdminButton>
-        }
-      />
+          </Button>
+        </div>
+      </div>
 
       {/* Tab Navigation */}
-      <div className="mb-8 flex gap-2 border-b border-[oklch(0.25_0.01_250)]">
+      <div className="mb-8 flex gap-2 border-b border-border">
         {['overview', 'users', 'conversions', 'revenue', 'features'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 font-medium transition ${
               activeTab === tab
-                ? 'border-b-2 border-[oklch(0.65_0.20_270)] text-white'
-                : 'text-[oklch(0.60_0.01_250)] hover:text-white'
+                ? 'border-b-2 border-primary text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -156,7 +159,7 @@ export default function AnalyticsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">Loading analytics...</div>
+        <div className="text-center py-12 text-muted-foreground">Loading analytics...</div>
       ) : (
         <>
           {/* Overview Tab */}
@@ -164,84 +167,108 @@ export default function AnalyticsPage() {
             <div className="space-y-8">
               {/* Key Metrics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <AdminCard>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-[oklch(0.65_0.20_270)]/20 rounded-lg">
-                      <Users size={20} className="text-[oklch(0.65_0.20_270)]" />
+                <Card className="glass-strong border-border/50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Users size={20} className="text-primary" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">Total Users</span>
                     </div>
-                    <span className="text-sm text-[oklch(0.60_0.01_250)]">Total Users</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{formatNumber(overview.metrics.total_users.value)}</p>
-                  <p className={`text-sm ${getChangeColor(overview.metrics.total_users.change_percent)}`}>
-                    {overview.metrics.total_users.change_percent}% vs previous period
-                  </p>
-                </AdminCard>
+                    <p className="text-2xl font-bold text-foreground">{formatNumber(overview.metrics.total_users.value)}</p>
+                    <p className={`text-sm ${getChangeColor(overview.metrics.total_users.change_percent)}`}>
+                      {overview.metrics.total_users.change_percent}% vs previous period
+                    </p>
+                  </CardContent>
+                </Card>
 
-                <AdminCard>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-green-500/20 rounded-lg">
-                      <TrendingUp size={20} className="text-green-400" />
+                <Card className="glass-strong border-border/50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-green-500/20 rounded-lg">
+                        <TrendingUp size={20} className="text-green-400" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">Active Users</span>
                     </div>
-                    <span className="text-sm text-[oklch(0.60_0.01_250)]">Active Users</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{formatNumber(overview.metrics.active_users.value)}</p>
-                  <p className="text-sm text-[oklch(0.60_0.01_250)]">Last 30 days</p>
-                </AdminCard>
+                    <p className="text-2xl font-bold text-foreground">{formatNumber(overview.metrics.active_users.value)}</p>
+                    <p className="text-sm text-muted-foreground">Last 30 days</p>
+                  </CardContent>
+                </Card>
 
-                <AdminCard>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-blue-500/20 rounded-lg">
-                      <FileText size={20} className="text-blue-400" />
+                <Card className="glass-strong border-border/50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-blue-500/20 rounded-lg">
+                        <FileText size={20} className="text-blue-400" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">Total Conversions</span>
                     </div>
-                    <span className="text-sm text-[oklch(0.60_0.01_250)]">Total Conversions</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">{formatNumber(overview.metrics.total_conversions.value)}</p>
-                  <p className={`text-sm ${getChangeColor(overview.metrics.total_conversions.change_percent)}`}>
-                    {overview.metrics.total_conversions.change_percent}% vs previous period
-                  </p>
-                </AdminCard>
+                    <p className="text-2xl font-bold text-foreground">{formatNumber(overview.metrics.total_conversions.value)}</p>
+                    <p className={`text-sm ${getChangeColor(overview.metrics.total_conversions.change_percent)}`}>
+                      {overview.metrics.total_conversions.change_percent}% vs previous period
+                    </p>
+                  </CardContent>
+                </Card>
 
-                <AdminCard>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-green-500/20 rounded-lg">
-                      <DollarSign size={20} className="text-green-400" />
+                <Card className="glass-strong border-border/50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-green-500/20 rounded-lg">
+                        <DollarSign size={20} className="text-green-400" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">MRR (USD)</span>
                     </div>
-                    <span className="text-sm text-[oklch(0.60_0.01_250)]">MRR (USD)</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">${overview.metrics.mrr.value}</p>
-                  <p className="text-sm text-[oklch(0.60_0.01_250)]">Monthly Recurring Revenue</p>
-                </AdminCard>
+                    <p className="text-2xl font-bold text-foreground">${overview.metrics.mrr.value}</p>
+                    <p className="text-sm text-muted-foreground">Monthly Recurring Revenue</p>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* Conversion Types Distribution */}
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Conversion Types Distribution</h3>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  {overview.conversion_types.map((type) => (
-                    <div key={type.type} className="bg-[oklch(0.15_0.01_250)] p-4 rounded-lg">
-                      <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">
-                        {type.type.replace('_', ' ').replace('pdf-to-', 'PDF→').toUpperCase()}
-                      </p>
-                      <p className="text-xl font-bold text-white">{formatNumber(type.count)}</p>
-                      <p className="text-sm text-[oklch(0.60_0.01_250)]">{type.percentage}%</p>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
-
-              {/* User Growth */}
-              {overview.charts.user_growth.length > 0 && (
-                <AdminCard>
-                  <h3 className="text-lg font-semibold text-white mb-4">User Growth</h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {overview.charts.user_growth.map((day: any) => (
-                      <div key={day.date} className="flex justify-between items-center text-sm">
-                        <span className="text-[oklch(0.60_0.01_250)]">{day.date}</span>
-                        <span className="text-white">{day.signups} signups</span>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                    Conversion Types Distribution
+                  </CardTitle>
+                  <CardDescription>Breakdown of conversion types</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    {overview.conversion_types.map((type) => (
+                      <div key={type.type} className="bg-input p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {type.type.replace('_', ' ').replace('pdf-to-', 'PDF→').toUpperCase()}
+                        </p>
+                        <p className="text-xl font-bold text-foreground">{formatNumber(type.count)}</p>
+                        <p className="text-sm text-muted-foreground">{type.percentage}%</p>
                       </div>
                     ))}
                   </div>
-                </AdminCard>
+                </CardContent>
+              </Card>
+
+              {/* User Growth */}
+              {overview.charts.user_growth.length > 0 && (
+                <Card className="glass-strong border-border/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      User Growth
+                    </CardTitle>
+                    <CardDescription>Daily signup trend</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {overview.charts.user_growth.map((day: any) => (
+                        <div key={day.date} className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">{day.date}</span>
+                          <span className="text-foreground">{day.signups} signups</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
           )}
@@ -249,73 +276,113 @@ export default function AnalyticsPage() {
           {/* Users Tab */}
           {activeTab === 'users' && users && (
             <div className="space-y-8">
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">User Distribution by Plan</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {users.distribution_by_plan.map((item: any) => (
-                    <div key={item.plan} className="bg-[oklch(0.15_0.01_250)] p-4 rounded-lg">
-                      <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">{item.plan}</p>
-                      <p className="text-2xl font-bold text-white">{formatNumber(item.count)}</p>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Users className="w-5 h-5 text-primary" />
+                    User Distribution by Plan
+                  </CardTitle>
+                  <CardDescription>Active users across subscription tiers</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {users.distribution_by_plan.map((item: any) => (
+                      <div key={item.plan} className="bg-input p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">{item.plan}</p>
+                        <p className="text-2xl font-bold text-foreground">{formatNumber(item.count)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Churn Rate Trend (Last 12 Months)</h3>
-                <div className="space-y-2">
-                  {users.churn_rate_trend.map((month: any) => (
-                    <div key={month.month} className="flex justify-between items-center text-sm">
-                      <span className="text-[oklch(0.60_0.01_250)]">{month.month}</span>
-                      <span className="text-white">{month.churn_rate}%</span>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    Churn Rate Trend (Last 12 Months)
+                  </CardTitle>
+                  <CardDescription>Monthly subscription cancellations</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {users.churn_rate_trend.map((month: any) => (
+                      <div key={month.month} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{month.month}</span>
+                        <span className="text-foreground">{month.churn_rate}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
           {/* Conversions Tab */}
           {activeTab === 'conversions' && conversions && (
             <div className="space-y-8">
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Success Rate Trend (Last 7 Days)</h3>
-                <div className="space-y-2">
-                  {conversions.success_rate_trend.map((day: any) => (
-                    <div key={day.date} className="flex justify-between items-center text-sm">
-                      <span className="text-[oklch(0.60_0.01_250)]">{day.date}</span>
-                      <span className="text-white">
-                        {day.success_rate}% ({day.successful}/{day.total})
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
-
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">File Size Distribution</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {conversions.file_size_distribution.map((item: any) => (
-                    <div key={item.size_range} className="bg-[oklch(0.15_0.01_250)] p-4 rounded-lg">
-                      <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">{item.size_range}</p>
-                      <p className="text-xl font-bold text-white">{formatNumber(item.count)}</p>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
-
-              {conversions.failed_reasons.length > 0 && (
-                <AdminCard>
-                  <h3 className="text-lg font-semibold text-white mb-4">Top Failed Conversion Reasons</h3>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    Success Rate Trend (Last 7 Days)
+                  </CardTitle>
+                  <CardDescription>Daily conversion success metrics</CardDescription>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-2">
-                    {conversions.failed_reasons.map((item: any) => (
-                      <div key={item.error_type} className="flex justify-between items-center text-sm">
-                        <span className="text-[oklch(0.60_0.01_250)]">{item.error_type}</span>
-                        <span className="text-white">{item.count}</span>
+                    {conversions.success_rate_trend.map((day: any) => (
+                      <div key={day.date} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{day.date}</span>
+                        <span className="text-foreground">
+                          {day.success_rate}% ({day.successful}/{day.total})
+                        </span>
                       </div>
                     ))}
                   </div>
-                </AdminCard>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                    File Size Distribution
+                  </CardTitle>
+                  <CardDescription>Conversions by file size range</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {conversions.file_size_distribution.map((item: any) => (
+                      <div key={item.size_range} className="bg-input p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">{item.size_range}</p>
+                        <p className="text-xl font-bold text-foreground">{formatNumber(item.count)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {conversions.failed_reasons.length > 0 && (
+                <Card className="glass-strong border-border/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-primary" />
+                      Top Failed Conversion Reasons
+                    </CardTitle>
+                    <CardDescription>Common error types</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {conversions.failed_reasons.map((item: any) => (
+                        <div key={item.error_type} className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">{item.error_type}</span>
+                          <span className="text-foreground">{item.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
           )}
@@ -323,91 +390,131 @@ export default function AnalyticsPage() {
           {/* Revenue Tab */}
           {activeTab === 'revenue' && revenue && (
             <div className="space-y-8">
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">MRR Trend (Last 12 Months)</h3>
-                <div className="space-y-2">
-                  {revenue.mrr_trend.map((month: any) => (
-                    <div key={month.month} className="flex justify-between items-center text-sm">
-                      <span className="text-[oklch(0.60_0.01_250)]">{month.month}</span>
-                      <span className="text-white">${month.mrr}</span>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                    MRR Trend (Last 12 Months)
+                  </CardTitle>
+                  <CardDescription>Monthly recurring revenue over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {revenue.mrr_trend.map((month: any) => (
+                      <div key={month.month} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{month.month}</span>
+                        <span className="text-foreground">${month.mrr}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Revenue by Plan</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {revenue.revenue_by_plan.map((item: any) => (
-                    <div key={item.plan} className="bg-[oklch(0.15_0.01_250)] p-4 rounded-lg">
-                      <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">{item.plan}</p>
-                      <p className="text-xl font-bold text-white">${item.revenue}</p>
-                      <p className="text-sm text-[oklch(0.60_0.01_250)]">{item.count} subscriptions</p>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                    Revenue by Plan
+                  </CardTitle>
+                  <CardDescription>Revenue breakdown by subscription tier</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {revenue.revenue_by_plan.map((item: any) => (
+                      <div key={item.plan} className="bg-input p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">{item.plan}</p>
+                        <p className="text-xl font-bold text-foreground">${item.revenue}</p>
+                        <p className="text-sm text-muted-foreground">{item.count} subscriptions</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Subscription Trend (Last 12 Months)</h3>
-                <div className="space-y-2">
-                  {revenue.subscription_trend.map((month: any) => (
-                    <div key={month.month} className="flex justify-between items-center text-sm">
-                      <span className="text-[oklch(0.60_0.01_250)]">{month.month}</span>
-                      <span className="text-white">
-                        +{month.new_subscriptions} / -{month.cancellations}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    Subscription Trend (Last 12 Months)
+                  </CardTitle>
+                  <CardDescription>New subscriptions vs cancellations</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {revenue.subscription_trend.map((month: any) => (
+                      <div key={month.month} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{month.month}</span>
+                        <span className="text-foreground">
+                          +{month.new_subscriptions} / -{month.cancellations}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
           {/* Features Tab */}
           {activeTab === 'features' && features && (
             <div className="space-y-8">
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Feature Usage</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {features.usage.map((item: any) => (
-                    <div key={item.type} className="bg-[oklch(0.15_0.01_250)] p-4 rounded-lg">
-                      <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">
-                        {item.type.replace('_', ' ').replace('pdf-to-', 'PDF→').toUpperCase()}
-                      </p>
-                      <p className="text-2xl font-bold text-white">{formatNumber(item.count)}</p>
-                    </div>
-                  ))}
-                </div>
-              </AdminCard>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                    Feature Usage
+                  </CardTitle>
+                  <CardDescription>Most popular conversion types</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {features.usage.map((item: any) => (
+                      <div key={item.type} className="bg-input p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {item.type.replace('_', ' ').replace('pdf-to-', 'PDF→').toUpperCase()}
+                        </p>
+                        <p className="text-2xl font-bold text-foreground">{formatNumber(item.count)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <AdminCard>
-                <h3 className="text-lg font-semibold text-white mb-4">Power Users (Top 10)</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[oklch(0.25_0.01_250)] text-left">
-                        <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Email</th>
-                        <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Plan</th>
-                        <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Conversions</th>
-                        <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Last Active</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {features.power_users.map((user: any) => (
-                        <tr key={user.id} className="border-b border-[oklch(0.25_0.01_250)]">
-                          <td className="py-3 text-white">{user.email}</td>
-                          <td className="py-3"><AdminBadge variant="info" size="sm">{user.plan}</AdminBadge></td>
-                          <td className="py-3 text-white">{formatNumber(user.conversion_count)}</td>
-                          <td className="py-3 text-[oklch(0.60_0.01_250)] text-sm">
-                            {new Date(user.last_active).toLocaleDateString()}
-                          </td>
+              <Card className="glass-strong border-border/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Users className="w-5 h-5 text-primary" />
+                    Power Users (Top 10)
+                  </CardTitle>
+                  <CardDescription>Highest conversion activity users</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border text-left">
+                          <th className="pb-3 text-sm font-medium text-muted-foreground">Email</th>
+                          <th className="pb-3 text-sm font-medium text-muted-foreground">Plan</th>
+                          <th className="pb-3 text-sm font-medium text-muted-foreground">Conversions</th>
+                          <th className="pb-3 text-sm font-medium text-muted-foreground">Last Active</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </AdminCard>
+                      </thead>
+                      <tbody>
+                        {features.power_users.map((user: any) => (
+                          <tr key={user.id} className="border-b border-border">
+                            <td className="py-3 text-foreground">{user.email}</td>
+                            <td className="py-3"><Badge variant="default">{user.plan}</Badge></td>
+                            <td className="py-3 text-foreground">{formatNumber(user.conversion_count)}</td>
+                            <td className="py-3 text-muted-foreground text-sm">
+                              {new Date(user.last_active).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </>

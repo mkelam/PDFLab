@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { AdminCard } from '@/components/admin/AdminCard'
-import { AdminBadge } from '@/components/admin/AdminBadge'
-import { AdminButton } from '@/components/admin/AdminButton'
-import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
 import { ConversionJobDetailModal } from '@/components/admin/ConversionJobDetailModal'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Search, Download, RefreshCw, ChevronLeft, ChevronRight, FileText, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
@@ -176,16 +175,16 @@ export default function ConversionsPage() {
     }
   }
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case 'completed':
-        return 'success'
+        return 'default'
       case 'failed':
-        return 'error'
+        return 'destructive'
       case 'processing':
-        return 'info'
+        return 'default'
       default:
-        return 'warning'
+        return 'secondary'
     }
   }
 
@@ -197,214 +196,232 @@ export default function ConversionsPage() {
 
   return (
     <AdminLayout>
-      <AdminPageHeader
-        title="Conversion Job Monitoring"
-        description="Monitor and manage all PDF conversion jobs"
-        actions={
-          <>
-            <AdminButton variant="secondary" size="sm" onClick={fetchJobs}>
+      {/* Page Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Conversion Job Monitoring</h1>
+          <p className="text-muted-foreground">Monitor and manage all PDF conversion jobs</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={fetchJobs}>
+            <RefreshCw size={16} />
+            Refresh
+          </Button>
+          {selectedJobIds.size > 0 && (
+            <Button variant="secondary" size="sm" onClick={handleBulkRetry}>
               <RefreshCw size={16} />
-              Refresh
-            </AdminButton>
-            {selectedJobIds.size > 0 && (
-              <AdminButton variant="secondary" size="sm" onClick={handleBulkRetry}>
-                <RefreshCw size={16} />
-                Retry Selected ({selectedJobIds.size})
-              </AdminButton>
-            )}
-          </>
-        }
-      />
+              Retry Selected ({selectedJobIds.size})
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <AdminCard>
-          <div className="text-center">
-            <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">Pending</p>
-            <p className="text-3xl font-bold text-yellow-400">{stats.pending}</p>
-          </div>
-        </AdminCard>
-        <AdminCard>
-          <div className="text-center">
-            <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">Processing</p>
-            <p className="text-3xl font-bold text-blue-400">{stats.processing}</p>
-          </div>
-        </AdminCard>
-        <AdminCard>
-          <div className="text-center">
-            <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">Completed Today</p>
-            <p className="text-3xl font-bold text-green-400">{stats.completed_today}</p>
-          </div>
-        </AdminCard>
-        <AdminCard>
-          <div className="text-center">
-            <p className="text-sm text-[oklch(0.60_0.01_250)] mb-1">Failed Today</p>
-            <p className="text-3xl font-bold text-red-400">{stats.failed_today}</p>
-          </div>
-        </AdminCard>
+        <Card className="glass-strong border-border/50">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Pending</p>
+              <p className="text-3xl font-bold text-yellow-400">{stats.pending}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass-strong border-border/50">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Processing</p>
+              <p className="text-3xl font-bold text-blue-400">{stats.processing}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass-strong border-border/50">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Completed Today</p>
+              <p className="text-3xl font-bold text-green-400">{stats.completed_today}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass-strong border-border/50">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Failed Today</p>
+              <p className="text-3xl font-bold text-red-400">{stats.failed_today}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <AdminCard>
-        {/* Search and Filters */}
-        <div className="mb-6 flex flex-col md:flex-row gap-4">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[oklch(0.60_0.01_250)]" size={20} />
-              <input
-                type="text"
-                placeholder="Search by job ID or file name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white placeholder-[oklch(0.60_0.01_250)] focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-              />
+      <Card className="glass-strong border-border/50">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            Conversion Jobs
+          </CardTitle>
+          <CardDescription>Search and filter all conversion jobs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search by job ID or file name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+              <Button type="submit" size="default">Search</Button>
+            </form>
+
+            <div className="flex gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+              </select>
+
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="px-4 py-2 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="all">All Types</option>
+                <option value="pdf_to_pptx">PDF to PPTX</option>
+                <option value="pdf_to_docx">PDF to DOCX</option>
+                <option value="pdf_to_xlsx">PDF to XLSX</option>
+                <option value="pdf_to_images">PDF to Images</option>
+                <option value="pdf_merge">PDF Merge</option>
+              </select>
             </div>
-            <AdminButton type="submit" size="md">Search</AdminButton>
-          </form>
-
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-            </select>
-
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="all">All Types</option>
-              <option value="pdf_to_pptx">PDF to PPTX</option>
-              <option value="pdf_to_docx">PDF to DOCX</option>
-              <option value="pdf_to_xlsx">PDF to XLSX</option>
-              <option value="pdf_to_images">PDF to Images</option>
-              <option value="pdf_merge">PDF Merge</option>
-            </select>
           </div>
-        </div>
 
-        {/* Auto-refresh Toggle */}
-        <div className="mb-6 flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-[oklch(0.60_0.01_250)]">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="w-4 h-4 rounded border-[oklch(0.25_0.01_250)] bg-[oklch(0.15_0.01_250)] text-[oklch(0.65_0.20_270)] focus:ring-2 focus:ring-[oklch(0.65_0.20_270)]"
-            />
-            Auto-refresh
-          </label>
-          {autoRefresh && (
-            <select
-              value={refreshInterval}
-              onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
-              className="px-3 py-1 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded text-white text-sm focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
-            >
-              <option value="5">Every 5s</option>
-              <option value="10">Every 10s</option>
-              <option value="30">Every 30s</option>
-              <option value="60">Every 60s</option>
-            </select>
-          )}
-        </div>
+          {/* Auto-refresh Toggle */}
+          <div className="mb-6 flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={(e) => setAutoRefresh(e.target.checked)}
+                className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-primary"
+              />
+              Auto-refresh
+            </label>
+            {autoRefresh && (
+              <select
+                value={refreshInterval}
+                onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
+                className="px-3 py-1 bg-input border border-border rounded text-foreground text-sm focus:outline-none focus:border-primary"
+              >
+                <option value="5">Every 5s</option>
+                <option value="10">Every 10s</option>
+                <option value="30">Every 30s</option>
+                <option value="60">Every 60s</option>
+              </select>
+            )}
+          </div>
 
-        {/* Jobs Table */}
-        {loading ? (
-          <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">Loading jobs...</div>
-        ) : jobs.length === 0 ? (
-          <AdminEmptyState
-            title="No conversion jobs found"
-            description="Try adjusting your search or filters"
-          />
-        ) : (
+          {/* Jobs Table */}
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading jobs...</div>
+          ) : jobs.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No conversion jobs found</h3>
+              <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            </div>
+          ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[oklch(0.25_0.01_250)] text-left">
+                  <tr className="border-b border-border text-left">
                     <th className="pb-3 w-12">
                       <input
                         type="checkbox"
                         checked={selectedJobIds.size === jobs.length && jobs.length > 0}
                         onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-[oklch(0.25_0.01_250)] bg-[oklch(0.15_0.01_250)] text-[oklch(0.65_0.20_270)] focus:ring-2 focus:ring-[oklch(0.65_0.20_270)]"
+                        className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-primary"
                       />
                     </th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Status</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Type</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">File Name</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">User</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Size</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Progress</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Created</th>
-                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Actions</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Type</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">File Name</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">User</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Size</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Progress</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Created</th>
+                    <th className="pb-3 text-sm font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {jobs.map((job) => (
-                    <tr key={job.id} className="border-b border-[oklch(0.25_0.01_250)] hover:bg-[oklch(0.20_0.01_250)] transition">
+                    <tr key={job.id} className="border-b border-border hover:bg-muted/50 transition">
                       <td className="py-4">
                         <input
                           type="checkbox"
                           checked={selectedJobIds.has(job.id)}
                           onChange={() => handleSelectJob(job.id)}
-                          className="w-4 h-4 rounded border-[oklch(0.25_0.01_250)] bg-[oklch(0.15_0.01_250)] text-[oklch(0.65_0.20_270)] focus:ring-2 focus:ring-[oklch(0.65_0.20_270)]"
+                          className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-primary"
                         />
                       </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(job.status)}
-                          <AdminBadge variant={getStatusBadgeVariant(job.status)}>
+                          <Badge variant={getStatusBadgeVariant(job.status)}>
                             {job.status}
-                          </AdminBadge>
+                          </Badge>
                         </div>
                       </td>
-                      <td className="py-4 text-[oklch(0.90_0.01_250)] text-sm">
+                      <td className="py-4 text-foreground text-sm">
                         {job.type.replace(/_/g, ' ').toUpperCase()}
                       </td>
-                      <td className="py-4 text-white">
+                      <td className="py-4 text-foreground">
                         <div className="max-w-xs truncate" title={job.file_name}>
                           {job.file_name}
                         </div>
                       </td>
-                      <td className="py-4 text-[oklch(0.90_0.01_250)] text-sm">
+                      <td className="py-4 text-foreground text-sm">
                         {job.user?.email || '-'}
                       </td>
-                      <td className="py-4 text-[oklch(0.60_0.01_250)] text-sm">
+                      <td className="py-4 text-muted-foreground text-sm">
                         {formatFileSize(job.file_size)}
                       </td>
                       <td className="py-4">
                         {job.status === 'processing' ? (
                           <div className="w-20">
-                            <div className="bg-[oklch(0.25_0.01_250)] rounded-full h-2 overflow-hidden">
+                            <div className="bg-border rounded-full h-2 overflow-hidden">
                               <div
                                 className="bg-blue-500 h-full transition-all duration-300"
                                 style={{ width: `${job.progress}%` }}
                               />
                             </div>
-                            <p className="text-xs text-center mt-1 text-[oklch(0.60_0.01_250)]">{job.progress}%</p>
+                            <p className="text-xs text-center mt-1 text-muted-foreground">{job.progress}%</p>
                           </div>
                         ) : (
-                          <span className="text-[oklch(0.60_0.01_250)] text-sm">-</span>
+                          <span className="text-muted-foreground text-sm">-</span>
                         )}
                       </td>
-                      <td className="py-4 text-[oklch(0.60_0.01_250)] text-sm">
+                      <td className="py-4 text-muted-foreground text-sm">
                         {new Date(job.created_at).toLocaleString()}
                       </td>
                       <td className="py-4">
-                        <AdminButton
+                        <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedJobId(job.id)}
                         >
                           View
-                        </AdminButton>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -414,11 +431,11 @@ export default function ConversionsPage() {
 
             {/* Pagination */}
             <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-[oklch(0.60_0.01_250)]">
+              <div className="text-sm text-muted-foreground">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} jobs
               </div>
               <div className="flex items-center gap-2">
-                <AdminButton
+                <Button
                   variant="secondary"
                   size="sm"
                   disabled={pagination.page === 1}
@@ -426,11 +443,11 @@ export default function ConversionsPage() {
                 >
                   <ChevronLeft size={16} />
                   Previous
-                </AdminButton>
-                <span className="text-sm text-white px-4">
+                </Button>
+                <span className="text-sm text-foreground px-4">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
-                <AdminButton
+                <Button
                   variant="secondary"
                   size="sm"
                   disabled={pagination.page === pagination.totalPages}
@@ -438,12 +455,13 @@ export default function ConversionsPage() {
                 >
                   Next
                   <ChevronRight size={16} />
-                </AdminButton>
+                </Button>
               </div>
             </div>
           </>
-        )}
-      </AdminCard>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Job Detail Modal */}
       {selectedJobId && (
