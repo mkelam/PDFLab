@@ -108,21 +108,28 @@ services:
     # Worker runs the same server but processes queue jobs
     command: ["npm", "start"]
 
-  # Frontend (Next.js) - Will be added in Phase 2
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: pdflab-frontend
-  #   restart: unless-stopped
-  #   environment:
-  #     - NEXT_PUBLIC_API_URL=http://backend:3006
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - pdflab-network
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdflab-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3006
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pdflab-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
 
 volumes:
   mysql_data:
