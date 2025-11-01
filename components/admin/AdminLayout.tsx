@@ -25,21 +25,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.12_0.01_250)]">
-        <div className="text-white">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-foreground">Loading...</div>
       </div>
     )
   }
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.12_0.01_250)]">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="glass-strong p-8 rounded-lg text-center">
           <h1 className="text-2xl font-bold text-red-500 mb-4">Access Denied</h1>
-          <p className="text-gray-300 mb-4">You do not have permission to access the admin panel.</p>
+          <p className="text-muted-foreground mb-4">You do not have permission to access the admin panel.</p>
           <a
             href="/"
-            className="inline-block px-6 py-2 bg-[oklch(0.65_0.20_270)] text-white rounded-lg hover:bg-[oklch(0.70_0.20_270)] transition"
+            className="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition"
           >
             Return to Home
           </a>
@@ -49,7 +49,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[oklch(0.12_0.01_250)] text-[oklch(0.90_0.01_250)]">
+    <div className="min-h-screen text-foreground">
       {/* Admin Navigation */}
       <AdminNav />
 

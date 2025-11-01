@@ -29,8 +29,8 @@ function NavItem({ href, icon, label, active }: NavItemProps) {
       className={`
         flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
         ${active
-          ? 'bg-[oklch(0.65_0.20_270)] text-white'
-          : 'text-[oklch(0.60_0.01_250)] hover:bg-[oklch(0.18_0.01_250)] hover:text-white'
+          ? 'bg-primary text-white'
+          : 'text-muted-foreground hover:bg-white/10 hover:text-foreground'
         }
       `}
     >
@@ -56,27 +56,27 @@ export function AdminNav() {
 
   return (
     <>
-      {/* Top Bar */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-[oklch(0.18_0.01_250)] border-b border-[oklch(0.25_0.01_250)] z-50">
+      {/* Top Bar with glassmorphism */}
+      <div className="fixed top-0 left-0 right-0 h-16 glass-nav backdrop-blur-xl z-50">
         <div className="flex items-center justify-between h-full px-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[oklch(0.65_0.20_270)] rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">PL</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">PDFLab Admin</h1>
-              <p className="text-xs text-[oklch(0.60_0.01_250)]">Administration Panel</p>
+              <h1 className="text-lg font-bold text-foreground">PDFLab Admin</h1>
+              <p className="text-xs text-muted-foreground">Administration Panel</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-white">{user?.name || user?.email}</p>
-              <p className="text-xs text-[oklch(0.60_0.01_250)] capitalize">{user?.role?.replace('_', ' ')}</p>
+              <p className="text-sm font-medium text-foreground">{user?.name || user?.email}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user?.role?.replace('_', ' ')}</p>
             </div>
             <button
               onClick={logout}
-              className="p-2 rounded-lg hover:bg-[oklch(0.25_0.01_250)] text-[oklch(0.60_0.01_250)] hover:text-white transition"
+              className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition"
               title="Logout"
             >
               <LogOut size={20} />
@@ -85,8 +85,8 @@ export function AdminNav() {
         </div>
       </div>
 
-      {/* Sidebar */}
-      <div className="fixed left-0 top-16 bottom-0 w-64 bg-[oklch(0.18_0.01_250)] border-r border-[oklch(0.25_0.01_250)] overflow-y-auto">
+      {/* Sidebar with glassmorphism */}
+      <div className="fixed left-0 top-16 bottom-0 w-64 glass backdrop-blur-xl border-r border-white/15 overflow-y-auto">
         <nav className="p-4 space-y-2">
           {navItems.map((item) => (
             <NavItem
@@ -100,8 +100,8 @@ export function AdminNav() {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[oklch(0.25_0.01_250)] bg-[oklch(0.15_0.01_250)]">
-          <p className="text-xs text-[oklch(0.60_0.01_250)] text-center">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/15 bg-black/30">
+          <p className="text-xs text-muted-foreground text-center">
             PDFLab Admin v1.0.0
           </p>
         </div>
