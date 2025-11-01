@@ -5,12 +5,15 @@ import { Request } from 'express'
 
 /**
  * General API rate limiter
- * 100 requests per 15 minutes per IP
+ * 100 requests per 15 minutes per IP (production)
+ * 10000 requests per 15 minutes (development - essentially unlimited)
  * Note: Using in-memory store for now. TODO: Switch to Redis store when ready for production
  */
 export const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+  max: process.env.NODE_ENV === 'development'
+    ? 10000 // Very high limit for development
+    : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
   message: {
     error: 'Too many requests',
     message: 'You have exceeded the rate limit. Please try again later.',
@@ -62,11 +65,12 @@ export const uploadLimiter = rateLimit({
 /**
  * Authentication rate limiter
  * Prevents brute force attacks on login/register
- * 5 attempts per 15 minutes per IP
+ * 5 attempts per 15 minutes per IP (production)
+ * 1000 attempts per 15 minutes (development)
  */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: process.env.NODE_ENV === 'development' ? 1000 : 5,
   skipSuccessfulRequests: true,
   message: {
     error: 'Too many authentication attempts',

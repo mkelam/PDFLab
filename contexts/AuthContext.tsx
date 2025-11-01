@@ -9,6 +9,7 @@ interface User {
   id: string;
   email: string;
   name?: string;
+  role?: string;
   plan: string;
   conversions_used: number;
   conversions_limit: number;
@@ -22,12 +23,15 @@ interface LoginCredentials {
 
 interface SignupCredentials extends LoginCredentials {
   name?: string;
+  firstName?: string;
+  lastName?: string;
+  confirmPassword?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<{ user: User }>;
   logout: () => Promise<void>;
   signup: (credentials: SignupCredentials) => Promise<void>;
 }
@@ -53,7 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (response.ok) {
             const data = await response.json();
-            setUser(data.user);
+            // Python backend returns user data directly, not wrapped in data.user
+            setUser(data);
           } else {
             // Token invalid, clear it
             localStorage.removeItem('authToken');
@@ -83,12 +88,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Login failed');
+        throw new Error(data.detail || data.error || data.message || 'Login failed');
       }
 
-      // Store token and user data
-      localStorage.setItem('authToken', data.token);
-      setUser(data.user);
+      // Store access token (Python backend returns access_token, not token)
+      const token = data.access_token || data.token;
+      localStorage.setItem('authToken', token);
+
+      // Fetch user profile after successful login
+      const profileResponse = await fetch(`${API_URL}/api/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setUser(profileData);
+        return { user: profileData };
+      }
+
+      throw new Error('Failed to fetch user profile');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -105,23 +125,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (credentials: SignupCredentials) => {
     setIsLoading(true);
     try {
+      // Combine firstName and lastName into name for backend
+      const name = credentials.firstName && credentials.lastName
+        ? `${credentials.firstName} ${credentials.lastName}`
+        : credentials.name || credentials.email.split('@')[0];
+
       const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+          name: name
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Signup failed');
+        throw new Error(data.detail || data.error || data.message || 'Signup failed');
       }
 
-      // Store token and user data
-      localStorage.setItem('authToken', data.token);
-      setUser(data.user);
+      // Don't auto-login - let user verify email first
+      // The signup page will show the email verification message
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
@@ -152,7 +180,12 @@ export function useGuestOnly() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push('/dashboard');
+      // Redirect admin users to admin panel, regular users to dashboard
+      if (user.role && ['support', 'finance', 'admin', 'super_admin'].includes(user.role)) {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [user, isLoading, router]);
 }

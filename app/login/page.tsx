@@ -40,8 +40,22 @@ export default function LoginPage() {
           throw new Error(result.error || `${provider} authentication failed`)
         }
 
-        // Redirect will happen automatically via NextAuth
-        router.push("/dashboard")
+        // Check for redirect parameter in URL
+        const searchParams = new URLSearchParams(window.location.search)
+        const redirectUrl = searchParams.get('redirect')
+
+        // If redirect parameter exists, use it
+        if (redirectUrl) {
+          router.push(redirectUrl)
+          return
+        }
+
+        // Otherwise, determine redirect based on user role
+        if (result?.user?.role && ['support', 'finance', 'admin', 'super_admin'].includes(result.user.role)) {
+          router.push("/admin")
+        } else {
+          router.push("/dashboard")
+        }
       }
     } catch (error) {
       console.error(`${provider} login failed:`, error)
@@ -67,10 +81,24 @@ export default function LoginPage() {
       }
 
       // Attempt login
-      await login({ email, password })
+      const result = await login({ email, password })
 
-      // Redirect to dashboard on success
-      router.push("/dashboard")
+      // Check for redirect parameter in URL
+      const searchParams = new URLSearchParams(window.location.search)
+      const redirectUrl = searchParams.get('redirect')
+
+      // If redirect parameter exists, use it
+      if (redirectUrl) {
+        router.push(redirectUrl)
+        return
+      }
+
+      // Otherwise, determine redirect based on user role
+      if (result?.user?.role && ['support', 'finance', 'admin', 'super_admin'].includes(result.user.role)) {
+        router.push("/admin")
+      } else {
+        router.push("/dashboard")
+      }
     } catch (error) {
       console.error("Login failed:", error)
       setError(error instanceof Error ? error.message : "Login failed. Please try again.")

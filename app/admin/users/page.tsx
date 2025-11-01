@@ -1,94 +1,65 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useAuth, useRequireAuth } from "@/contexts/AuthContext"
-import { Navigation } from "@/components/Navigation"
-import {
-  User, Users, Mail, Calendar, Settings, Trash2, Edit, CheckCircle, XCircle,
-  Search, Filter, ChevronLeft, ChevronRight, RefreshCw, Shield, Activity
-} from "lucide-react"
-import Link from "next/link"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { AdminCard } from '@/components/admin/AdminCard'
+import { AdminBadge } from '@/components/admin/AdminBadge'
+import { AdminButton } from '@/components/admin/AdminButton'
+import { AdminEmptyState } from '@/components/admin/AdminEmptyState'
+import { UserDetailModal } from '@/components/admin/UserDetailModal'
+import { Search, Download, UserPlus, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
 
-// User interface matching backend
-interface ManagedUser {
-  id: number
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+
+interface User {
+  id: string
   email: string
-  full_name: string | null
-  email_verified: boolean
-  plan: 'free' | 'starter' | 'pro' | 'enterprise'
+  name?: string
+  role: string
+  plan: string
   conversions_used: number
   conversions_limit: number
   created_at: string
-  last_login: string | null
+  last_login?: string
 }
 
-interface DashboardStats {
-  users: {
-    total: number
-    byPlan: Array<{ plan: string; count: number }>
-    verified: number
-    unverified: number
-    newToday: number
-    newThisWeek: number
-    activeLastMonth: number
-  }
-  conversions: {
-    total: number
-    byStatus: Array<{ status: string; count: number }>
-  }
+interface Pagination {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
 }
 
-export default function UserManagementPage() {
-  const { user, isLoading: authLoading } = useRequireAuth()
-  const [users, setUsers] = useState<ManagedUser[]>([])
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 0
+  })
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [planFilter, setPlanFilter] = useState('all')
-  const [verifiedFilter, setVerifiedFilter] = useState('all')
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalUsers, setTotalUsers] = useState(0)
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
 
-  // Fetch dashboard stats
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem('authToken')
-      const response = await fetch('http://localhost:3015/api/admin/stats', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data.data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch stats:', error)
-    }
-  }
-
-  // Fetch users list
   const fetchUsers = async () => {
     try {
-      setIsLoading(true)
+      setLoading(true)
       const token = localStorage.getItem('authToken')
 
       const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(searchQuery && { search: searchQuery }),
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+        ...(search && { search }),
         ...(planFilter !== 'all' && { plan: planFilter }),
-        ...(verifiedFilter !== 'all' && { verified: verifiedFilter })
+        ...(roleFilter !== 'all' && { role: roleFilter })
       })
 
-      const response = await fetch(`http://localhost:3015/api/admin/users?${params}`, {
+      const response = await fetch(`${API_URL}/api/admin/users?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -96,404 +67,309 @@ export default function UserManagementPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setUsers(data.data.users)
-        setTotalPages(data.data.pagination.totalPages)
-        setTotalUsers(data.data.pagination.total)
-      } else {
-        console.error('Failed to fetch users')
+        setUsers(data.users || [])
+        setPagination(data.pagination)
       }
     } catch (error) {
-      console.error('Error fetching users:', error)
+      console.error('Failed to fetch users:', error)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  // Verify user email manually
-  const verifyUser = async (userId: number) => {
-    if (!confirm('Manually verify this user\'s email?')) return
+  useEffect(() => {
+    fetchUsers()
+  }, [pagination.page, planFilter, roleFilter])
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    setPagination(prev => ({ ...prev, page: 1 }))
+    fetchUsers()
+  }
+
+  const getPlanBadgeVariant = (plan: string) => {
+    switch (plan) {
+      case 'enterprise': return 'success'
+      case 'pro': return 'info'
+      case 'starter': return 'warning'
+      default: return 'default'
+    }
+  }
+
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case 'super_admin': return 'error'
+      case 'admin': return 'warning'
+      case 'finance': return 'info'
+      case 'support': return 'info'
+      default: return 'default'
+    }
+  }
+
+  const handleSelectAll = () => {
+    if (selectedUserIds.size === users.length) {
+      setSelectedUserIds(new Set())
+    } else {
+      setSelectedUserIds(new Set(users.map(u => u.id)))
+    }
+  }
+
+  const handleSelectUser = (userId: string) => {
+    const newSelected = new Set(selectedUserIds)
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId)
+    } else {
+      newSelected.add(userId)
+    }
+    setSelectedUserIds(newSelected)
+  }
+
+  const handleBulkQuotaReset = async () => {
+    const userIds = Array.from(selectedUserIds)
+    if (!confirm(`Reset quota for ${userIds.length} selected users?`)) return
 
     try {
       const token = localStorage.getItem('authToken')
-      const response = await fetch(`http://localhost:3015/api/admin/users/${userId}/verify`, {
+      const response = await fetch(`${API_URL}/api/admin/users/bulk-quota-reset`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userIds })
       })
 
       if (response.ok) {
-        alert('User verified successfully')
-        fetchUsers() // Refresh list
+        alert(`Successfully reset quota for ${userIds.length} users`)
+        setSelectedUserIds(new Set())
+        fetchUsers()
       } else {
-        const data = await response.json()
-        alert(data.error?.message || 'Failed to verify user')
+        const errorData = await response.json()
+        alert(errorData.message || 'Failed to reset quotas')
       }
     } catch (error) {
-      alert('Error verifying user')
+      console.error('Bulk quota reset error:', error)
+      alert('Failed to reset quotas')
     }
   }
 
-  // Reset user usage
-  const resetUsage = async (userId: number) => {
-    if (!confirm('Reset usage for this user?')) return
-
+  const handleExportCSV = async () => {
     try {
       const token = localStorage.getItem('authToken')
-      const response = await fetch(`http://localhost:3015/api/admin/users/${userId}/reset-usage`, {
-        method: 'POST',
+      const params = new URLSearchParams({
+        ...(search && { search }),
+        ...(planFilter !== 'all' && { plan: planFilter }),
+        ...(roleFilter !== 'all' && { role: roleFilter })
+      })
+
+      const response = await fetch(`${API_URL}/api/admin/users/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
 
       if (response.ok) {
-        alert('Usage reset successfully')
-        fetchUsers() // Refresh list
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
       } else {
-        alert('Failed to reset usage')
+        alert('Failed to export users')
       }
     } catch (error) {
-      alert('Error resetting usage')
+      console.error('Export error:', error)
+      alert('Failed to export users')
     }
-  }
-
-  // Delete user
-  const deleteUser = async (userId: number, email: string) => {
-    if (!confirm(`Permanently delete user ${email}? This cannot be undone.`)) return
-
-    try {
-      const token = localStorage.getItem('authToken')
-      const response = await fetch(`http://localhost:3015/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      if (response.ok) {
-        alert('User deleted successfully')
-        fetchUsers() // Refresh list
-      } else {
-        const data = await response.json()
-        alert(data.error?.message || 'Failed to delete user')
-      }
-    } catch (error) {
-      alert('Error deleting user')
-    }
-  }
-
-  // Initial load
-  useEffect(() => {
-    if (!authLoading && user) {
-      fetchStats()
-      fetchUsers()
-    }
-  }, [authLoading, user])
-
-  // Refetch on filter/page change
-  useEffect(() => {
-    if (!authLoading && user) {
-      fetchUsers()
-    }
-  }, [page, planFilter, verifiedFilter])
-
-  // Show loading state
-  if (authLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <AdminLayout>
+      <AdminPageHeader
+        title="User Management"
+        description="Manage all users, subscriptions, and permissions"
+        actions={
+          <>
+            <AdminButton variant="secondary" size="sm" onClick={handleExportCSV}>
+              <Download size={16} />
+              Export CSV
+            </AdminButton>
+            {selectedUserIds.size > 0 && (
+              <AdminButton variant="secondary" size="sm" onClick={handleBulkQuotaReset}>
+                <RefreshCw size={16} />
+                Reset Quota ({selectedUserIds.size})
+              </AdminButton>
+            )}
+          </>
+        }
+      />
 
-      <div className="pt-32 pb-12 px-6">
-        <div className="container mx-auto max-w-7xl">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-                <Shield className="w-8 h-8 text-primary" />
-                User Management
-              </h1>
-              <p className="text-muted-foreground">Manage user accounts, permissions, and usage</p>
+      <AdminCard>
+        {/* Search and Filters */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4">
+          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[oklch(0.60_0.01_250)]" size={20} />
+              <input
+                type="text"
+                placeholder="Search by email or name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white placeholder-[oklch(0.60_0.01_250)] focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
+              />
             </div>
-            <Link href="/dashboard">
-              <Button variant="outline">Back to Dashboard</Button>
-            </Link>
+            <AdminButton type="submit" size="md">Search</AdminButton>
+          </form>
+
+          <div className="flex gap-2">
+            <select
+              value={planFilter}
+              onChange={(e) => setPlanFilter(e.target.value)}
+              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
+            >
+              <option value="all">All Plans</option>
+              <option value="free">Free</option>
+              <option value="starter">Starter</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-4 py-2 bg-[oklch(0.15_0.01_250)] border border-[oklch(0.25_0.01_250)] rounded-lg text-white focus:outline-none focus:border-[oklch(0.65_0.20_270)]"
+            >
+              <option value="all">All Roles</option>
+              <option value="user">User</option>
+              <option value="support">Support</option>
+              <option value="finance">Finance</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
           </div>
-
-          {/* Stats Overview */}
-          {stats && (
-            <div className="grid md:grid-cols-4 gap-4 mb-8">
-              <Card className="glass-strong border-border/50">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Users</p>
-                      <p className="text-2xl font-bold">{stats.users.total}</p>
-                    </div>
-                    <Users className="w-8 h-8 text-primary opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-strong border-border/50">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Verified</p>
-                      <p className="text-2xl font-bold text-green-600">{stats.users.verified}</p>
-                    </div>
-                    <CheckCircle className="w-8 h-8 text-green-500 opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-strong border-border/50">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Unverified</p>
-                      <p className="text-2xl font-bold text-amber-600">{stats.users.unverified}</p>
-                    </div>
-                    <XCircle className="w-8 h-8 text-amber-500 opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-strong border-border/50">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Active (30d)</p>
-                      <p className="text-2xl font-bold text-blue-600">{stats.users.activeLastMonth}</p>
-                    </div>
-                    <Activity className="w-8 h-8 text-blue-500 opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Filters */}
-          <Card className="glass-strong border-border/50 mb-6">
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by email or name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <Select value={planFilter} onValueChange={setPlanFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Plans</SelectItem>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="starter">Starter</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="true">Verified</SelectItem>
-                    <SelectItem value="false">Unverified</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2 mt-4">
-                <Button
-                  onClick={fetchUsers}
-                  size="sm"
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Refresh
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Showing {users.length} of {totalUsers} users
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Users Table */}
-          <Card className="glass-strong border-border/50">
-            <CardHeader>
-              <CardTitle>Users</CardTitle>
-              <CardDescription>Manage all registered users</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading users...</p>
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">No users found</h3>
-                  <p className="text-muted-foreground">Try adjusting your filters</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">User</th>
-                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Plan</th>
-                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Usage</th>
-                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Joined</th>
-                        <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users.map((managedUser) => (
-                        <tr key={managedUser.id} className="border-b border-border/50 hover:bg-muted/50 transition">
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <User className="w-5 h-5 text-primary" />
-                              </div>
-                              <div>
-                                <p className="font-medium">{managedUser.email}</p>
-                                {managedUser.full_name && (
-                                  <p className="text-sm text-muted-foreground">{managedUser.full_name}</p>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            {managedUser.email_verified ? (
-                              <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
-                                Verified
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary">Unverified</Badge>
-                            )}
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge variant="outline" className="capitalize">
-                              {managedUser.plan}
-                            </Badge>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-sm">
-                              <span className="font-medium">{managedUser.conversions_used}</span>
-                              <span className="text-muted-foreground"> / {managedUser.conversions_limit}</span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(managedUser.created_at).toLocaleDateString()}
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center justify-end gap-2">
-                              {!managedUser.email_verified && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => verifyUser(managedUser.id)}
-                                  className="flex items-center gap-1"
-                                  title="Verify Email"
-                                >
-                                  <CheckCircle className="w-4 h-4" />
-                                </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => resetUsage(managedUser.id)}
-                                className="flex items-center gap-1"
-                                title="Reset Usage"
-                              >
-                                <RefreshCw className="w-4 h-4" />
-                              </Button>
-                              <Link href={`/admin/users/${managedUser.id}`}>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="flex items-center gap-1"
-                                  title="Edit User"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                              </Link>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => deleteUser(managedUser.id, managedUser.email)}
-                                className="flex items-center gap-1 text-destructive hover:text-destructive"
-                                title="Delete User"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
-                  <p className="text-sm text-muted-foreground">
-                    Page {page} of {totalPages}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
-      </div>
-    </div>
+
+        {/* Users Table */}
+        {loading ? (
+          <div className="text-center py-12 text-[oklch(0.60_0.01_250)]">Loading users...</div>
+        ) : users.length === 0 ? (
+          <AdminEmptyState
+            title="No users found"
+            description="Try adjusting your search or filters"
+          />
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[oklch(0.25_0.01_250)] text-left">
+                    <th className="pb-3 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedUserIds.size === users.length && users.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 rounded border-[oklch(0.25_0.01_250)] bg-[oklch(0.15_0.01_250)] text-[oklch(0.65_0.20_270)] focus:ring-2 focus:ring-[oklch(0.65_0.20_270)]"
+                      />
+                    </th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Email</th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Name</th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Role</th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Plan</th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Usage</th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Last Login</th>
+                    <th className="pb-3 text-sm font-medium text-[oklch(0.60_0.01_250)]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} className="border-b border-[oklch(0.25_0.01_250)] hover:bg-[oklch(0.20_0.01_250)] transition">
+                      <td className="py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedUserIds.has(user.id)}
+                          onChange={() => handleSelectUser(user.id)}
+                          className="w-4 h-4 rounded border-[oklch(0.25_0.01_250)] bg-[oklch(0.15_0.01_250)] text-[oklch(0.65_0.20_270)] focus:ring-2 focus:ring-[oklch(0.65_0.20_270)]"
+                        />
+                      </td>
+                      <td className="py-4 text-white">{user.email}</td>
+                      <td className="py-4 text-[oklch(0.90_0.01_250)]">{user.name || '-'}</td>
+                      <td className="py-4">
+                        <AdminBadge variant={getRoleBadgeVariant(user.role)}>
+                          {user.role.replace('_', ' ')}
+                        </AdminBadge>
+                      </td>
+                      <td className="py-4">
+                        <AdminBadge variant={getPlanBadgeVariant(user.plan)}>
+                          {user.plan}
+                        </AdminBadge>
+                      </td>
+                      <td className="py-4 text-[oklch(0.90_0.01_250)]">
+                        {user.conversions_used} / {user.conversions_limit === -1 ? '' : user.conversions_limit}
+                      </td>
+                      <td className="py-4 text-[oklch(0.60_0.01_250)] text-sm">
+                        {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                      </td>
+                      <td className="py-4">
+                        <AdminButton
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedUserId(user.id)}
+                        >
+                          View
+                        </AdminButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-[oklch(0.60_0.01_250)]">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+              </div>
+              <div className="flex items-center gap-2">
+                <AdminButton
+                  variant="secondary"
+                  size="sm"
+                  disabled={pagination.page === 1}
+                  onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </AdminButton>
+                <span className="text-sm text-white px-4">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <AdminButton
+                  variant="secondary"
+                  size="sm"
+                  disabled={pagination.page === pagination.totalPages}
+                  onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </AdminButton>
+              </div>
+            </div>
+          </>
+        )}
+      </AdminCard>
+
+      {/* User Detail Modal */}
+      {selectedUserId && (
+        <UserDetailModal
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          onUserUpdated={fetchUsers}
+        />
+      )}
+    </AdminLayout>
   )
 }
