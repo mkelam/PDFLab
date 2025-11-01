@@ -4,6 +4,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import https from 'https'
 import http from 'http'
+import AdmZip from 'adm-zip'
 
 dotenv.config()
 
@@ -115,41 +116,126 @@ export class CloudConvertService {
 
       console.log(`CloudConvert job completed: ${job.id}`)
 
-      // Download the converted file
+      // Download the converted file(s)
       const exportTask = job.tasks.find(task => task.name === 'export-file')
-      if (!exportTask || !exportTask.result?.files?.[0]) {
+      if (!exportTask || !exportTask.result?.files || exportTask.result.files.length === 0) {
         throw new Error('Export task or result not found')
       }
 
-      const file = exportTask.result.files[0]
-      const fileUrl = file.url
+      const files = exportTask.result.files
 
-      // Download file from URL
-      await new Promise<void>((resolve, reject) => {
-        const protocol = fileUrl.startsWith('https:') ? https : http
-        const writeStream = fs.createWriteStream(outputFilePath)
+      // For image conversions with multiple pages, CloudConvert returns multiple files
+      // We need to download all of them and create a ZIP
+      if ((outputFormat === 'png' || outputFormat === 'jpg') && files.length > 1) {
+        console.log(`Converting multi-page PDF to images: ${files.length} files`)
 
-        protocol.get(fileUrl, (response) => {
-          if (response.statusCode !== 200) {
-            reject(new Error(`Download failed with status ${response.statusCode}`))
-            return
+        // Create temporary directory for individual images
+        const tempDir = path.join(path.dirname(outputFilePath), 'temp')
+        if (!fs.existsSync(tempDir)) {
+          fs.mkdirSync(tempDir, { recursive: true })
+        }
+
+        // Download all image files
+        const downloadedFiles: string[] = []
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          const fileUrl = file.url
+
+          if (!fileUrl) {
+            throw new Error(`File URL not found for image ${i + 1}`)
           }
 
-          response.pipe(writeStream)
+          const tempFilePath = path.join(tempDir, `page-${i + 1}.${outputFormat}`)
 
-          writeStream.on('finish', () => {
-            writeStream.close()
-            resolve()
+          await new Promise<void>((resolve, reject) => {
+            const protocol = fileUrl.startsWith('https:') ? https : http
+            const writeStream = fs.createWriteStream(tempFilePath)
+
+            protocol.get(fileUrl, (response) => {
+              if (response.statusCode !== 200) {
+                reject(new Error(`Download failed with status ${response.statusCode}`))
+                return
+              }
+
+              response.pipe(writeStream)
+
+              writeStream.on('finish', () => {
+                writeStream.close()
+                resolve()
+              })
+
+              writeStream.on('error', (err) => {
+                fs.unlink(tempFilePath, () => {})
+                reject(err)
+              })
+            }).on('error', reject)
           })
 
-          writeStream.on('error', (err) => {
-            fs.unlink(outputFilePath, () => {}) // Delete incomplete file
-            reject(err)
-          })
-        }).on('error', reject)
-      })
+          downloadedFiles.push(tempFilePath)
+          console.log(`Downloaded image ${i + 1}/${files.length}: ${tempFilePath}`)
+        }
 
-      console.log(`Converted file downloaded: ${outputFilePath}`)
+        // Create ZIP archive with all images
+        const zip = new AdmZip()
+        for (const filePath of downloadedFiles) {
+          const fileName = path.basename(filePath)
+          zip.addLocalFile(filePath, '', fileName)
+        }
+
+        // Write ZIP file (outputFilePath should end with .zip)
+        const zipPath = outputFilePath.replace(/\.(png|jpg)$/, '.zip')
+        zip.writeZip(zipPath)
+        console.log(`Created ZIP archive: ${zipPath}`)
+
+        // Clean up temporary files
+        for (const filePath of downloadedFiles) {
+          fs.unlinkSync(filePath)
+        }
+        fs.rmdirSync(tempDir)
+
+        console.log(`Converted files archived: ${zipPath}`)
+
+        return {
+          success: true,
+          outputPath: zipPath,
+          jobId: job.id
+        }
+      } else {
+        // Single file download (PPTX, DOCX, XLSX, or single-page image)
+        const file = files[0]
+        const fileUrl = file.url
+
+        if (!fileUrl) {
+          throw new Error('File URL not found in export result')
+        }
+
+        // Download file from URL
+        await new Promise<void>((resolve, reject) => {
+          const protocol = fileUrl.startsWith('https:') ? https : http
+          const writeStream = fs.createWriteStream(outputFilePath)
+
+          protocol.get(fileUrl, (response) => {
+            if (response.statusCode !== 200) {
+              reject(new Error(`Download failed with status ${response.statusCode}`))
+              return
+            }
+
+            response.pipe(writeStream)
+
+            writeStream.on('finish', () => {
+              writeStream.close()
+              resolve()
+            })
+
+            writeStream.on('error', (err) => {
+              fs.unlink(outputFilePath, () => {}) // Delete incomplete file
+              reject(err)
+            })
+          }).on('error', reject)
+        })
+
+        console.log(`Converted file downloaded: ${outputFilePath}`)
+      }
 
       return {
         success: true,
@@ -244,6 +330,10 @@ export class CloudConvertService {
       const file = exportTask.result.files[0]
       const fileUrl = file.url
 
+      if (!fileUrl) {
+        throw new Error('File URL not found in export result')
+      }
+
       // Download file from URL
       await new Promise<void>((resolve, reject) => {
         const protocol = fileUrl.startsWith('https:') ? https : http
@@ -311,14 +401,19 @@ export class CloudConvertService {
 
   /**
    * Cancel a CloudConvert job
+   * Note: CloudConvert SDK may not support job cancellation directly
    */
   async cancelJob(jobId: string): Promise<{
     success: boolean
     error?: string
   }> {
     try {
-      await cloudConvertClient.jobs.cancel(jobId)
-      return { success: true }
+      // CloudConvert SDK doesn't have a direct cancel method
+      // You would need to use the REST API directly or delete the job
+      return {
+        success: false,
+        error: 'Job cancellation not implemented - CloudConvert SDK limitation'
+      }
     } catch (error: any) {
       return {
         success: false,

@@ -115,10 +115,11 @@ export const initializeConversionWorker = () => {
     job.progress(90)
 
     // 4. Update job as completed
+    // Use result.outputPath instead of outputFile to handle ZIP creation for multi-page images
     await ConversionJob.update(
       {
         status: JobStatus.COMPLETED,
-        output_file: outputFile,
+        output_file: result.outputPath || outputFile,
         progress: 100,
         processing_completed_at: new Date(),
         cloudconvert_job_id: result.jobId
@@ -155,7 +156,7 @@ export const initializeConversionWorker = () => {
 
     return {
       success: true,
-      output_file: outputFile,
+      output_file: result.outputPath || outputFile,
       processing_time: processingTime
     }
   } catch (error: any) {

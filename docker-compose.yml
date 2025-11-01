@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: pdflab-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword123}
+      MYSQL_DATABASE: ${DB_NAME:-pdflab}
+      MYSQL_USER: ${DB_USER:-pdflab}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-***REMOVED***}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/backups:/backups
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - pdflab-network
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: pdflab-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    networks:
+      - pdflab-network
+
+  # Backend API Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pdflab-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=3006
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/logs:/app/logs
+    ports:
+      - "3006:3006"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pdflab-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3006/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # Background Job Worker (Bull Queue)
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pdflab-worker
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WORKER_MODE=true
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/logs:/app/logs
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pdflab-network
+    # Worker runs the same server but processes queue jobs
+    command: ["npm", "start"]
+
+  # Frontend (Next.js) - Will be added in Phase 2
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: pdflab-frontend
+  #   restart: unless-stopped
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://backend:3006
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - pdflab-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  pdflab-network:
+    driver: bridge
