@@ -1,6 +1,14 @@
 import { DataTypes, Model, Optional } from 'sequelize'
 import { sequelize } from '../config/database'
 
+export enum UserRole {
+  USER = 'user',
+  SUPPORT = 'support',
+  FINANCE = 'finance',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin'
+}
+
 export enum UserPlan {
   FREE = 'free',
   STARTER = 'starter',
@@ -20,6 +28,7 @@ interface UserAttributes {
   email: string
   password_hash: string
   name?: string
+  role: UserRole
   plan: UserPlan
   conversions_used: number
   conversions_limit: number
@@ -27,18 +36,21 @@ interface UserAttributes {
   subscription_id?: string
   subscription_status?: SubscriptionStatus
   subscription_end_date?: Date
+  failed_reset_attempts: number
+  reset_locked_until?: Date
   created_at: Date
   updated_at: Date
   last_login?: Date
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'created_at' | 'updated_at'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'created_at' | 'updated_at'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string
   public email!: string
   public password_hash!: string
   public name?: string
+  public role!: UserRole
   public plan!: UserPlan
   public conversions_used!: number
   public conversions_limit!: number
@@ -46,6 +58,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public subscription_id?: string
   public subscription_status?: SubscriptionStatus
   public subscription_end_date?: Date
+  public failed_reset_attempts!: number
+  public reset_locked_until?: Date
   public readonly created_at!: Date
   public readonly updated_at!: Date
   public last_login?: Date
@@ -101,6 +115,11 @@ User.init(
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    role: {
+      type: DataTypes.ENUM(...Object.values(UserRole)),
+      defaultValue: UserRole.USER,
+      allowNull: false
+    },
     plan: {
       type: DataTypes.ENUM(...Object.values(UserPlan)),
       defaultValue: UserPlan.FREE,
@@ -129,6 +148,15 @@ User.init(
       allowNull: true
     },
     subscription_end_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    failed_reset_attempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
+    },
+    reset_locked_until: {
       type: DataTypes.DATE,
       allowNull: true
     },

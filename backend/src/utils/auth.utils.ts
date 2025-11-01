@@ -35,9 +35,9 @@ export const verifyPassword = async (
 /**
  * Generate JWT access token
  */
-export const generateAccessToken = (payload: JWTPayload): string => {
+export const generateAccessToken = (payload: JWTPayload | any, expiresIn?: string): string => {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRATION
+    expiresIn: expiresIn || JWT_EXPIRATION
   })
 }
 
@@ -48,6 +48,17 @@ export const generateRefreshToken = (payload: JWTPayload): string => {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRATION
   })
+}
+
+/**
+ * Generate password reset token (expires in 1 hour)
+ */
+export const generatePasswordResetToken = (payload: JWTPayload): string => {
+  return jwt.sign(
+    { ...payload, type: 'password_reset' },
+    JWT_SECRET,
+    { expiresIn: '1h' }
+  )
 }
 
 /**

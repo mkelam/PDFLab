@@ -5,9 +5,11 @@ import {
   verifyPassword,
   generateAccessToken,
   generateRefreshToken,
+  generatePasswordResetToken,
   isValidEmail,
   isValidPassword
 } from '../utils/auth.utils'
+import emailService from '../services/email.service'
 
 /**
  * Register a new user
@@ -85,6 +87,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
         plan: user.plan,
         conversions_used: user.conversions_used,
         conversions_limit: user.conversions_limit
@@ -160,6 +163,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
         plan: user.plan,
         conversions_used: user.conversions_used,
         conversions_limit: user.conversions_limit,
@@ -189,18 +193,17 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     }
 
     res.status(200).json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        plan: user.plan,
-        conversions_used: user.conversions_used,
-        conversions_limit: user.conversions_limit,
-        subscription_status: user.subscription_status,
-        subscription_end_date: user.subscription_end_date,
-        created_at: user.created_at,
-        last_login: user.last_login
-      }
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      plan: user.plan,
+      conversions_used: user.conversions_used,
+      conversions_limit: user.conversions_limit,
+      subscription_status: user.subscription_status,
+      subscription_end_date: user.subscription_end_date,
+      created_at: user.created_at,
+      last_login: user.last_login
     })
   } catch (error) {
     console.error('Get profile error:', error)
@@ -270,6 +273,221 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({
       error: 'Token refresh failed',
       message: 'An error occurred while refreshing your token'
+    })
+  }
+}
+
+/**
+ * Request password reset
+ */
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body
+
+    // Validation
+    if (!email) {
+      res.status(400).json({
+        error: 'Missing email',
+        message: 'Email is required'
+      })
+      return
+    }
+
+    if (!isValidEmail(email)) {
+      res.status(422).json({
+        error: 'Invalid email',
+        message: 'Please provide a valid email address'
+      })
+      return
+    }
+
+    // Find user
+    const user = await User.findOne({ where: { email } })
+
+    // Always return success (security best practice - don't reveal if email exists)
+    // But only send email if user actually exists
+    if (user) {
+      // Generate password reset token (valid for 1 hour)
+      const resetToken = generatePasswordResetToken({
+        userId: user.id,
+        email: user.email,
+        plan: user.plan
+      })
+
+      // Send password reset email
+      await emailService.sendPasswordResetEmail(user.email, resetToken)
+    }
+
+    // Always return success to prevent email enumeration
+    res.status(200).json({
+      success: true,
+      message: 'If an account exists with this email, a password reset link has been sent'
+    })
+  } catch (error) {
+    console.error('Forgot password error:', error)
+    res.status(500).json({
+      error: 'Request failed',
+      message: 'An error occurred while processing your request'
+    })
+  }
+}
+
+/**
+ * Reset password with token
+ */
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token, new_password } = req.body
+
+    // Validation
+    if (!token || !new_password) {
+      res.status(400).json({
+        error: 'Missing required fields',
+        message: 'Token and new password are required'
+      })
+      return
+    }
+
+    if (!isValidPassword(new_password)) {
+      res.status(422).json({
+        error: 'Weak password',
+        message: 'Password must be at least 8 characters long and contain letters and numbers'
+      })
+      return
+    }
+
+    // Verify token
+    const { verifyToken } = await import('../utils/auth.utils')
+    const decoded = verifyToken(token)
+
+    if (!decoded || !decoded.userId) {
+      res.status(401).json({
+        error: 'Invalid token',
+        message: 'Password reset token is invalid or has expired'
+      })
+      return
+    }
+
+    // Verify token type (must be password_reset token)
+    if ((decoded as any).type !== 'password_reset') {
+      res.status(401).json({
+        error: 'Invalid token type',
+        message: 'This token is not valid for password reset'
+      })
+      return
+    }
+
+    // Find user
+    const user = await User.findByPk(decoded.userId)
+    if (!user) {
+      res.status(404).json({
+        error: 'User not found',
+        message: 'User associated with this token does not exist'
+      })
+      return
+    }
+
+    // Check if account is locked due to failed reset attempts
+    if (user.reset_locked_until && user.reset_locked_until > new Date()) {
+      const minutesRemaining = Math.ceil((user.reset_locked_until.getTime() - Date.now()) / 60000)
+      res.status(429).json({
+        error: 'Account locked',
+        message: `Too many failed password reset attempts. Please try again in ${minutesRemaining} minutes.`
+      })
+      return
+    }
+
+    // Check if new password matches current password
+    const isSameAsCurrentPassword = await verifyPassword(new_password, user.password_hash)
+    if (isSameAsCurrentPassword) {
+      // Increment failed reset attempts
+      user.failed_reset_attempts = (user.failed_reset_attempts || 0) + 1
+
+      // Lock account after 5 failed attempts (30 minutes)
+      if (user.failed_reset_attempts >= 5) {
+        user.reset_locked_until = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
+        await user.save()
+
+        res.status(400).json({
+          error: 'Too many attempts',
+          message: 'Account has been locked due to too many failed password reset attempts. Please try again in 30 minutes.'
+        })
+        return
+      }
+
+      await user.save()
+
+      res.status(400).json({
+        error: 'Password reuse not allowed',
+        message: 'New password cannot be the same as your current password'
+      })
+      return
+    }
+
+    // Check password history (last 5 passwords)
+    const { PasswordHistory } = await import('../models')
+    const passwordHistory = await PasswordHistory.findAll({
+      where: { user_id: user.id },
+      order: [['created_at', 'DESC']],
+      limit: 5
+    })
+
+    for (const historyEntry of passwordHistory) {
+      const isPasswordReused = await verifyPassword(new_password, historyEntry.password_hash)
+      if (isPasswordReused) {
+        // Increment failed reset attempts
+        user.failed_reset_attempts = (user.failed_reset_attempts || 0) + 1
+
+        // Lock account after 5 failed attempts (30 minutes)
+        if (user.failed_reset_attempts >= 5) {
+          user.reset_locked_until = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
+          await user.save()
+
+          res.status(400).json({
+            error: 'Too many attempts',
+            message: 'Account has been locked due to too many failed password reset attempts. Please try again in 30 minutes.'
+          })
+          return
+        }
+
+        await user.save()
+
+        res.status(400).json({
+          error: 'Password reuse not allowed',
+          message: 'New password cannot be one of your last 5 passwords. Please choose a different password.'
+        })
+        return
+      }
+    }
+
+    // Save current password to history before changing it
+    await PasswordHistory.create({
+      user_id: user.id,
+      password_hash: user.password_hash,
+      created_at: new Date()
+    })
+
+    // Hash new password
+    const password_hash = await hashPassword(new_password)
+
+    // Update password and reset lockout counters
+    user.password_hash = password_hash
+    user.failed_reset_attempts = 0
+    user.reset_locked_until = undefined
+    user.updated_at = new Date()
+    await user.save()
+
+    console.log(`Password reset successful for user: ${user.email}`)
+
+    res.status(200).json({
+      success: true,
+      message: 'Password has been reset successfully'
+    })
+  } catch (error) {
+    console.error('Reset password error:', error)
+    res.status(500).json({
+      error: 'Reset failed',
+      message: 'An error occurred while resetting your password'
     })
   }
 }
