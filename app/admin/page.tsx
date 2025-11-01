@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { QueueHealthWidget } from '@/components/admin/QueueHealthWidget'
-import { Users, FileText, DollarSign, TrendingUp, AlertTriangle, Activity, Shield } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Users, FileText, DollarSign, TrendingUp, AlertTriangle, Activity, Shield, BarChart3, CreditCard, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
@@ -48,24 +51,30 @@ function StatCard({ icon, label, value, change, loading }: {
   loading?: boolean
 }) {
   return (
-    <div className="glass p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-3 bg-primary/20 rounded-lg text-primary">
-          {icon}
+    <Card className="glass-strong border-border/50">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="p-2 bg-primary/10 rounded-lg text-primary">
+            {icon}
+          </div>
+          {change && (
+            <Badge variant={change.startsWith('+') ? 'default' : 'destructive'} className="text-xs">
+              {change}
+            </Badge>
+          )}
         </div>
-        {change && (
-          <span className={`text-sm ${change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>{change}</span>
-        )}
-      </div>
-      <h3 className="text-muted-foreground text-sm font-medium mb-1">{label}</h3>
-      <p className="text-2xl font-bold text-foreground">
-        {loading ? (
-          <span className="animate-pulse">Loading...</span>
-        ) : (
-          value
-        )}
-      </p>
-    </div>
+      </CardHeader>
+      <CardContent>
+        <CardTitle className="text-sm font-medium text-muted-foreground mb-1">{label}</CardTitle>
+        <p className="text-2xl font-bold text-foreground">
+          {loading ? (
+            <span className="animate-pulse">Loading...</span>
+          ) : (
+            value
+          )}
+        </p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -152,23 +161,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'text-green-400'
-      case 'warning': return 'text-yellow-400'
-      case 'critical': return 'text-red-400'
-      default: return 'text-gray-400'
-    }
-  }
-
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'bg-red-500/20 text-red-400 border-red-500/30'
-      case 'warning': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-      default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-    }
-  }
-
   return (
     <AdminLayout>
       <div>
@@ -216,70 +208,74 @@ export default function AdminDashboard() {
         {/* Revenue & System Health Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Revenue Overview */}
-          <div className="glass p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <DollarSign size={20} />
+          <Card className="glass-strong border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
                 Revenue Overview
-              </h2>
+              </CardTitle>
               <Link href="/admin/payments" className="text-sm text-primary hover:text-primary/80">
                 View All →
               </Link>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                <span className="text-muted-foreground">MRR</span>
-                <span className="text-xl font-bold text-green-400">
-                  ${dashboardData?.revenue.mrr.toFixed(2) || '0.00'}
-                </span>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 rounded-lg border border-border/50">
+                  <span className="text-sm text-muted-foreground">MRR</span>
+                  <span className="text-xl font-bold text-green-500">
+                    ${dashboardData?.revenue.mrr.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-lg border border-border/50">
+                  <span className="text-sm text-muted-foreground">ARR</span>
+                  <span className="text-lg font-semibold text-foreground">
+                    ${dashboardData?.revenue.arr.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-lg border border-border/50">
+                  <span className="text-sm text-muted-foreground">Active Subscriptions</span>
+                  <span className="text-lg font-semibold text-foreground">
+                    {dashboardData?.revenue.active_subscriptions || 0}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                <span className="text-muted-foreground">ARR</span>
-                <span className="text-lg font-semibold text-foreground">
-                  ${dashboardData?.revenue.arr.toFixed(2) || '0.00'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                <span className="text-muted-foreground">Active Subscriptions</span>
-                <span className="text-lg font-semibold text-foreground">
-                  {dashboardData?.revenue.active_subscriptions || 0}
-                </span>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* System Health */}
-          <div className="glass p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <Activity size={20} />
+          <Card className="glass-strong border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="w-5 h-5 text-primary" />
                 System Health
-              </h2>
+              </CardTitle>
               <Link href="/admin/system" className="text-sm text-primary hover:text-primary/80">
                 View Details →
               </Link>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
-                <span className="text-muted-foreground">Overall Status</span>
-                <span className={`font-semibold capitalize ${getStatusColor(dashboardData?.system.overall_status || 'healthy')}`}>
-                  {dashboardData?.system.overall_status || 'Unknown'}
-                </span>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border/50">
+                  <span className="text-sm text-muted-foreground">Overall Status</span>
+                  <Badge variant={dashboardData?.system.overall_status === 'healthy' ? 'default' : 'destructive'} className="capitalize">
+                    {dashboardData?.system.overall_status || 'Unknown'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border/50">
+                  <span className="text-sm text-muted-foreground">CloudConvert</span>
+                  <Badge variant="outline" className="capitalize">
+                    {dashboardData?.system.cloudconvert?.status || 'Unknown'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border/50">
+                  <span className="text-sm text-muted-foreground">Database</span>
+                  <Badge variant="outline" className="capitalize">
+                    {dashboardData?.system.database?.status || 'Unknown'}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
-                <span className="text-muted-foreground">CloudConvert</span>
-                <span className={`font-semibold capitalize ${getStatusColor(dashboardData?.system.cloudconvert?.status || 'unknown')}`}>
-                  {dashboardData?.system.cloudconvert?.status || 'Unknown'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
-                <span className="text-muted-foreground">Database</span>
-                <span className={`font-semibold capitalize ${getStatusColor(dashboardData?.system.database?.status || 'unknown')}`}>
-                  {dashboardData?.system.database?.status || 'Unknown'}
-                </span>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Queue Health Widget */}
@@ -290,130 +286,146 @@ export default function AdminDashboard() {
         {/* Security & Recent Activity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Security Events */}
-          <div className="glass p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <Shield size={20} />
+          <Card className="glass-strong border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shield className="w-5 h-5 text-primary" />
                 Security Events
-              </h2>
+              </CardTitle>
               <Link href="/admin/audit-logs" className="text-sm text-primary hover:text-primary/80">
                 View All →
               </Link>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-4 bg-black/30 rounded-lg">
-                <div>
-                  <p className="text-muted-foreground text-sm">Security Events (24h)</p>
-                  <p className="text-2xl font-bold text-orange-400 mt-1">
-                    {dashboardData?.audit.security_events || 0}
-                  </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-4 rounded-lg border border-border/50">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Security Events (24h)</p>
+                    <p className="text-2xl font-bold text-orange-500 mt-1">
+                      {dashboardData?.audit.security_events || 0}
+                    </p>
+                  </div>
+                  <AlertTriangle size={28} className="text-orange-500" />
                 </div>
-                <AlertTriangle size={32} className="text-orange-400" />
-              </div>
-              <div className="flex justify-between items-center p-4 bg-black/30 rounded-lg">
-                <div>
-                  <p className="text-muted-foreground text-sm">Total Audit Logs</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">
-                    {dashboardData?.audit.total_logs || 0}
-                  </p>
+                <div className="flex justify-between items-center p-4 rounded-lg border border-border/50">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Audit Logs</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
+                      {dashboardData?.audit.total_logs || 0}
+                    </p>
+                  </div>
+                  <FileText size={28} className="text-primary" />
                 </div>
-                <FileText size={32} className="text-blue-400" />
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Recent Admin Activity */}
-          <div className="glass p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-foreground">Recent Admin Activity</h2>
+          <Card className="glass-strong border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg">Recent Admin Activity</CardTitle>
               <Link href="/admin/audit-logs" className="text-sm text-primary hover:text-primary/80">
                 View All →
               </Link>
-            </div>
-            <div className="space-y-2">
-              {dashboardData?.audit.recent_actions && dashboardData.audit.recent_actions.length > 0 ? (
-                dashboardData.audit.recent_actions.map((action) => (
-                  <div key={action.id} className="flex items-start justify-between p-3 bg-black/30 rounded-lg">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{action.action}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{action.admin_email}</p>
-                    </div>
-                    <div className="ml-3">
-                      <span className={`px-2 py-1 rounded text-xs font-medium border ${getSeverityBadge(action.severity)}`}>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {dashboardData?.audit.recent_actions && dashboardData.audit.recent_actions.length > 0 ? (
+                  dashboardData.audit.recent_actions.map((action) => (
+                    <div key={action.id} className="flex items-start justify-between p-3 rounded-lg border border-border/50 hover:border-border transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{action.action}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{action.admin_email}</p>
+                      </div>
+                      <Badge variant={action.severity === 'critical' ? 'destructive' : action.severity === 'warning' ? 'secondary' : 'default'} className="ml-3 capitalize text-xs">
                         {action.severity}
-                      </span>
+                      </Badge>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No recent activity</p>
                   </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">No recent activity</p>
-              )}
-            </div>
-          </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="glass p-6">
-          <h2 className="text-xl font-bold text-foreground mb-4">Admin Tools (All Epics)</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link
-              href="/admin/users"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Epic 2: User Management</h3>
-              <p className="text-sm text-muted-foreground">Manage users & roles</p>
-            </Link>
-            <Link
-              href="/admin/jobs"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Epic 3: Conversion Jobs</h3>
-              <p className="text-sm text-muted-foreground">Monitor jobs & queue</p>
-            </Link>
-            <Link
-              href="/admin/payments"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Epic 4: Payments</h3>
-              <p className="text-sm text-muted-foreground">Subscriptions & revenue</p>
-            </Link>
-            <Link
-              href="/admin/system"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Epic 5: System Health</h3>
-              <p className="text-sm text-muted-foreground">Monitor infrastructure</p>
-            </Link>
-            <Link
-              href="/admin/analytics"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Epic 6: Analytics</h3>
-              <p className="text-sm text-muted-foreground">Business insights</p>
-            </Link>
-            <Link
-              href="/admin/audit-logs"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Epic 7: Audit Logs</h3>
-              <p className="text-sm text-muted-foreground">Compliance & security</p>
-            </Link>
-            <Link
-              href="/admin/payments/transactions"
-              className="p-4 bg-black/30 rounded-lg hover:bg-black/40 transition border border-white/10"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Transactions</h3>
-              <p className="text-sm text-muted-foreground">Payment history</p>
-            </Link>
-            <button
-              onClick={fetchDashboardData}
-              className="p-4 bg-primary/20 hover:bg-primary/30 rounded-lg transition text-left border border-primary/30"
-            >
-              <h3 className="font-semibold text-foreground mb-1">Refresh Data</h3>
-              <p className="text-sm text-muted-foreground">Update all metrics</p>
-            </button>
-          </div>
-        </div>
+        <Card className="glass-strong border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Admin Tools
+            </CardTitle>
+            <Button variant="outline" size="sm" onClick={fetchDashboardData} className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link href="/admin/users">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">User Management</CardTitle>
+                    <CardDescription className="text-xs">Manage users & roles</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <Link href="/admin/conversions">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Conversion Jobs</CardTitle>
+                    <CardDescription className="text-xs">Monitor jobs & queue</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <Link href="/admin/payments">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Payments</CardTitle>
+                    <CardDescription className="text-xs">Subscriptions & revenue</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <Link href="/admin/system">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">System Health</CardTitle>
+                    <CardDescription className="text-xs">Monitor infrastructure</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <Link href="/admin/analytics">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Analytics</CardTitle>
+                    <CardDescription className="text-xs">Business insights</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <Link href="/admin/audit-logs">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Audit Logs</CardTitle>
+                    <CardDescription className="text-xs">Compliance & security</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <Link href="/admin/payments/transactions">
+                <Card className="glass-subtle border-border/40 hover:border-border transition-all hover:scale-105 cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Transactions</CardTitle>
+                    <CardDescription className="text-xs">Payment history</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   )
