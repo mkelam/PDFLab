@@ -56,7 +56,7 @@ export default function DashboardPage() {
 
         if (response.ok) {
           const data = await response.json()
-          setRecentActivity(data.data.history || [])
+          setRecentActivity(data.jobs || [])
         }
       } catch (error) {
         console.error('Failed to fetch recent activity:', error)
@@ -187,10 +187,10 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Link href="/convert" className="block">
-                    <Button variant="outline" className="w-full justify-start">
+                  <Link href="/" className="block">
+                    <Button className="w-full justify-start">
                       <FileText className="w-4 h-4 mr-2" />
-                      Convert PDF
+                      Start Converting
                     </Button>
                   </Link>
                   <Link href="/pricing" className="block">
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                   <p className="text-muted-foreground mb-4">
                     Start converting PDFs to see your activity here
                   </p>
-                  <Link href="/convert">
+                  <Link href="/">
                     <Button>Convert Your First PDF</Button>
                   </Link>
                 </div>
