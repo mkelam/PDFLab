@@ -18,6 +18,9 @@ RUN npm ci
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Accept build argument for API URL
+ARG NEXT_PUBLIC_API_URL=http://localhost:3006
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
@@ -25,8 +28,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Build Next.js app
 RUN npm run build

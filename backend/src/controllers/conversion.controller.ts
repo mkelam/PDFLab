@@ -200,7 +200,7 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
           ],
           tip: '💡 Try compressing your PDF or converting just a few pages'
         })
-      } else {
+      } else if (user) {
         // Authenticated user - show current plan and upgrade path
         res.status(413).json({
           error: 'File too large',
@@ -231,7 +231,7 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
               url: '/pricing'
             }
           ].filter(option => {
-            const limits = { starter: 25, pro: 100, enterprise: 500 }
+            const limits: Record<string, number> = { starter: 25, pro: 100, enterprise: 500 }
             return limits[option.plan] > maxSizeMB
           }),
           cta: {
