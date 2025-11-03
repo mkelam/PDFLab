@@ -1,6 +1,27 @@
 // Real API client connecting to PDFLab backend
 // Backend running on http://localhost:3006
 
+import { handleAPIError } from './api-error-handler'
+import {
+  fetchWithEnhancedErrorHandling,
+  parseEnhancedAPIError,
+  trackErrorEvent,
+  type APIErrorResponse
+} from './enhanced-error-handler'
+
+/**
+ * Enhanced API Error that carries rich error data
+ */
+export class EnhancedAPIError extends Error {
+  constructor(
+    message: string,
+    public errorResponse: APIErrorResponse
+  ) {
+    super(message)
+    this.name = 'EnhancedAPIError'
+  }
+}
+
 export interface ConversionJob {
   jobId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -17,6 +38,7 @@ export interface ConversionResponse {
   processingTime: string
   fileCount?: number
   jobId?: string
+  isGuest?: boolean
 }
 
 export interface ValidationResult {
@@ -90,38 +112,52 @@ async function pollJobStatus(jobId: string, onProgress?: (progress: number) => v
 
   while (attempts < maxAttempts) {
     const token = getAuthToken()
-    const response = await fetch(`${API_URL}/api/status/${jobId}`, {
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
+
+    try {
+      const response = await fetch(`${API_URL}/api/status/${jobId}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      })
+
+      if (!response.ok) {
+        const errorMessage = handleAPIError(new Error('Status check failed'), response, 'Job Status')
+        throw new Error(errorMessage)
       }
-    })
 
-    if (!response.ok) {
-      throw new Error('Failed to check job status')
+      const data = await response.json()
+
+      // Update progress callback
+      if (onProgress && data.progress) {
+        onProgress(data.progress)
+      }
+
+      // Check if job is complete
+      if (data.status === 'completed') {
+        return data
+      }
+
+      if (data.status === 'failed') {
+        throw new Error(data.error || 'Conversion failed - check the file format and try again')
+      }
+
+      // Wait 1 second before next poll
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      attempts++
+    } catch (error) {
+      // If it's a network error, throw immediately
+      if (error instanceof Error && error.message.includes('Cannot reach')) {
+        throw error
+      }
+      // Otherwise, retry
+      attempts++
+      if (attempts >= maxAttempts) {
+        throw error
+      }
     }
-
-    const data = await response.json()
-
-    // Update progress callback
-    if (onProgress && data.progress) {
-      onProgress(data.progress)
-    }
-
-    // Check if job is complete
-    if (data.status === 'completed') {
-      return data
-    }
-
-    if (data.status === 'failed') {
-      throw new Error(data.error || 'Conversion failed')
-    }
-
-    // Wait 1 second before next poll
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    attempts++
   }
 
-  throw new Error('Job timed out')
+  throw new Error('Conversion timed out after 60 seconds. The file may be too large or complex.')
 }
 
 // Modern API interface matching component expectations
@@ -148,21 +184,35 @@ export const pdflabAPI = {
     formData.append('file', file)
     formData.append('conversion_type', conversionTypeMap[format])
 
-    const uploadResponse = await fetch(`${API_URL}/api/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: formData
-    })
+    let uploadResponse
+    try {
+      uploadResponse = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: formData
+      })
 
-    if (!uploadResponse.ok) {
-      const error = await uploadResponse.json()
-      throw new Error(error.error || error.message || 'Upload failed')
+      if (!uploadResponse.ok) {
+        const errorResponse = await parseEnhancedAPIError(uploadResponse)
+        trackErrorEvent(errorResponse, 'PDF to Office Upload')
+        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+      }
+    } catch (error) {
+      if (error instanceof EnhancedAPIError) {
+        throw error
+      }
+      if (!uploadResponse) {
+        const errorMessage = handleAPIError(error, undefined, 'PDF to Office Upload')
+        throw new Error(errorMessage)
+      }
+      throw error
     }
 
     const uploadData = await uploadResponse.json()
     const jobId = uploadData.job_id
+    const isGuest = uploadData.is_guest === true
 
     // Poll for completion
     const result = await pollJobStatus(jobId)
@@ -175,7 +225,8 @@ export const pdflabAPI = {
       outputFile: result.output_file,
       originalFile: file.name,
       processingTime: `${processingTime} seconds`,
-      jobId
+      jobId,
+      isGuest
     }
   },
 
@@ -191,21 +242,35 @@ export const pdflabAPI = {
     formData.append('file', file)
     formData.append('conversion_type', 'pdf_to_images')
 
-    const uploadResponse = await fetch(`${API_URL}/api/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: formData
-    })
+    let uploadResponse
+    try {
+      uploadResponse = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: formData
+      })
 
-    if (!uploadResponse.ok) {
-      const error = await uploadResponse.json()
-      throw new Error(error.error || error.message || 'Upload failed')
+      if (!uploadResponse.ok) {
+        const errorResponse = await parseEnhancedAPIError(uploadResponse)
+        trackErrorEvent(errorResponse, 'PDF to Images Upload')
+        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+      }
+    } catch (error) {
+      if (error instanceof EnhancedAPIError) {
+        throw error
+      }
+      if (!uploadResponse) {
+        const errorMessage = handleAPIError(error, undefined, 'PDF to Images Upload')
+        throw new Error(errorMessage)
+      }
+      throw error
     }
 
     const uploadData = await uploadResponse.json()
     const jobId = uploadData.job_id
+    const isGuest = uploadData.is_guest === true
 
     // Poll for completion
     const result = await pollJobStatus(jobId)
@@ -218,7 +283,8 @@ export const pdflabAPI = {
       outputFile: result.output_file,
       originalFile: file.name,
       processingTime: `${processingTime} seconds`,
-      jobId
+      jobId,
+      isGuest
     }
   },
 
@@ -239,21 +305,35 @@ export const pdflabAPI = {
       formData.append('files', file)
     })
 
-    const uploadResponse = await fetch(`${API_URL}/api/merge`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: formData
-    })
+    let uploadResponse
+    try {
+      uploadResponse = await fetch(`${API_URL}/api/merge`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: formData
+      })
 
-    if (!uploadResponse.ok) {
-      const error = await uploadResponse.json()
-      throw new Error(error.error || error.message || 'Merge failed')
+      if (!uploadResponse.ok) {
+        const errorResponse = await parseEnhancedAPIError(uploadResponse)
+        trackErrorEvent(errorResponse, 'PDF Merge')
+        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+      }
+    } catch (error) {
+      if (error instanceof EnhancedAPIError) {
+        throw error
+      }
+      if (!uploadResponse) {
+        const errorMessage = handleAPIError(error, undefined, 'PDF Merge')
+        throw new Error(errorMessage)
+      }
+      throw error
     }
 
     const uploadData = await uploadResponse.json()
     const jobId = uploadData.job_id
+    const isGuest = uploadData.is_guest === true
 
     // Poll for completion
     const result = await pollJobStatus(jobId)
@@ -266,7 +346,8 @@ export const pdflabAPI = {
       outputFile: result.output_file,
       processingTime: `${processingTime} seconds`,
       fileCount: files.length,
-      jobId
+      jobId,
+      isGuest
     }
   },
 

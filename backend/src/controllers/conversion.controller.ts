@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { ConversionJob, ConversionType, JobStatus, UsageLog } from '../models'
-import { conversionQueue, cleanupQueue } from '../config/redis'
+import { ConversionJob, ConversionType, JobStatus } from '../models'
+import { conversionQueue } from '../config/redis'
 
 /**
  * Merge multiple PDF files
@@ -90,24 +90,26 @@ export const mergePDFs = async (req: Request, res: Response): Promise<void> => {
       created_at: job.created_at
     })
   } catch (error) {
-    console.error('Merge PDFs error:', error)
-    res.status(500).json({
-      error: 'Merge failed',
-      message: 'An error occurred during PDF merge'
-    })
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Merge PDFs error', error, { user_id: req.user?.id, file_count: req.files?.length })
+
+    sendInternalServerError(res, 'An error occurred during PDF merge. Please try again, or contact support if the issue persists.')
   }
 }
 
 /**
  * Upload file and create conversion job
+ * Supports both authenticated users and guest users
  */
 export const uploadFile = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user
-    if (!user) {
-      res.status(401).json({ error: 'User not authenticated' })
-      return
-    }
+    const guestSession = req.guestSession
+    const isGuest = !user && !!guestSession
+
+    console.log('[Upload] user:', user ? 'authenticated' : 'none')
+    console.log('[Upload] guestSession:', guestSession ? 'exists' : 'none')
+    console.log('[Upload] isGuest:', isGuest)
 
     // Check if file was uploaded
     if (!req.file) {
@@ -129,19 +131,115 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
       return
     }
 
+    // Guest restrictions: Only allow PDF to PPTX and DOCX
+    if (isGuest) {
+      const allowedGuestFormats = [ConversionType.PDF_TO_PPTX, ConversionType.PDF_TO_DOCX]
+      if (!allowedGuestFormats.includes(conversion_type as ConversionType)) {
+        fs.unlinkSync(req.file.path)
+
+        // Get human-readable format name
+        const formatName = (conversion_type as string)
+          .replace('pdf_to_', '')
+          .toUpperCase()
+          .replace('IMAGES', 'PNG')
+
+        res.status(403).json({
+          error: 'Premium format',
+          message: `${formatName} conversions require a free account. Sign up in seconds - no credit card needed!`,
+          requested_format: conversion_type,
+          available_guest_formats: ['pptx', 'docx'],
+          unlock_benefits: [
+            'All formats (PPTX, DOCX, XLSX, PNG)',
+            '3 conversions per month',
+            'Larger file sizes (10MB)'
+          ],
+          cta: {
+            text: 'Sign Up Free - Unlock All Formats',
+            url: '/signup'
+          },
+          alternative: 'Or convert to PPTX or DOCX (no signup required)'
+        })
+        return
+      }
+    }
+
     // Validate file size
-    const maxFileSize = user.getMaxFileSize()
+    const maxFileSize = user ? user.getMaxFileSize() : 5 * 1024 * 1024 // 5MB for guests
     if (req.file.size > maxFileSize) {
       // Delete uploaded file
       fs.unlinkSync(req.file.path)
 
-      res.status(413).json({
-        error: 'File too large',
-        message: `File size exceeds your plan limit (${Math.round(maxFileSize / 1024 / 1024)}MB)`,
-        file_size: req.file.size,
-        max_file_size: maxFileSize,
-        upgrade_required: true
-      })
+      const fileSizeMB = Math.round((req.file.size / 1024 / 1024) * 10) / 10
+      const maxSizeMB = Math.round(maxFileSize / 1024 / 1024)
+
+      if (isGuest) {
+        // Guest user - offer upgrade options
+        res.status(413).json({
+          error: 'File too large',
+          message: `This file is ${fileSizeMB}MB, but guests can upload up to 5MB`,
+          file_size: req.file.size,
+          file_size_mb: fileSizeMB,
+          max_file_size: maxFileSize,
+          max_file_size_mb: 5,
+          upgrade_options: [
+            {
+              plan: 'free',
+              limit: '10MB',
+              cta: 'Sign up free for 10MB uploads',
+              url: '/signup',
+              highlight: true
+            },
+            {
+              plan: 'starter',
+              limit: '25MB',
+              price: '$9.99/month',
+              cta: 'View Plans',
+              url: '/pricing',
+              highlight: false
+            }
+          ],
+          tip: '💡 Try compressing your PDF or converting just a few pages'
+        })
+      } else {
+        // Authenticated user - show current plan and upgrade path
+        res.status(413).json({
+          error: 'File too large',
+          message: `Your ${user.plan} plan supports files up to ${maxSizeMB}MB`,
+          file_size: req.file.size,
+          file_size_mb: fileSizeMB,
+          max_file_size: maxFileSize,
+          max_file_size_mb: maxSizeMB,
+          current_plan: user.plan,
+          upgrade_required: true,
+          upgrade_options: [
+            {
+              plan: 'starter',
+              limit: '25MB',
+              price: '$9.99/month',
+              url: '/pricing'
+            },
+            {
+              plan: 'pro',
+              limit: '100MB',
+              price: '$29.99/month',
+              url: '/pricing'
+            },
+            {
+              plan: 'enterprise',
+              limit: '500MB',
+              price: '$99.99/month',
+              url: '/pricing'
+            }
+          ].filter(option => {
+            const limits = { starter: 25, pro: 100, enterprise: 500 }
+            return limits[option.plan] > maxSizeMB
+          }),
+          cta: {
+            text: 'Upgrade Plan',
+            url: '/pricing'
+          }
+        })
+      }
       return
     }
 
@@ -149,7 +247,7 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
     const jobId = uuidv4()
     const job = await ConversionJob.create({
       id: jobId,
-      user_id: user.id,
+      user_id: user ? user.id : null, // Null for guest users
       type: conversion_type as ConversionType,
       status: JobStatus.PENDING,
       progress: 0,
@@ -159,13 +257,16 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
       estimated_time: estimateProcessingTime(conversion_type, req.file.size),
       created_at: new Date(),
       updated_at: new Date(),
-      expires_at: new Date(Date.now() + 3600000) // 1 hour
+      expires_at: isGuest
+        ? new Date(Date.now() + 3600000) // 1 hour for guests
+        : new Date(Date.now() + 7 * 24 * 3600000) // 7 days for registered users
     })
 
     // Add job to queue
     await conversionQueue.add({
       job_id: jobId,
-      user_id: user.id,
+      user_id: user ? user.id : null,
+      guest_session_id: isGuest ? guestSession?.sessionId : null,
       input_file: req.file.path,
       output_format: getOutputFormat(conversion_type as ConversionType),
       conversion_type: conversion_type,
@@ -179,35 +280,43 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
     job.status = JobStatus.QUEUED
     await job.save()
 
+    // Record guest conversion (increments quota)
+    if (isGuest && guestSession) {
+      const GuestSessionService = require('../services/guest-session.service').default
+      const { getClientIp } = require('../middleware/guest.middleware')
+      await GuestSessionService.recordConversion(guestSession.sessionId, getClientIp(req))
+    }
+
     res.status(201).json({
       message: 'File uploaded successfully, conversion queued',
       job_id: jobId,
       status: job.status,
       progress: job.progress,
       estimated_time: job.estimated_time,
-      created_at: job.created_at
+      created_at: job.created_at,
+      is_guest: isGuest,
+      ...(isGuest && {
+        guest_message: '⚠️ Download link expires in 1 hour. Sign up free for 3 conversions/month + more features!',
+        expires_in_hours: 1,
+        signup_cta: 'Create Free Account',
+        signup_url: '/signup'
+      })
     })
   } catch (error) {
-    console.error('Upload file error:', error)
-    res.status(500).json({
-      error: 'Upload failed',
-      message: 'An error occurred during file upload'
-    })
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Upload file error', error, { body: req.body })
+
+    sendInternalServerError(res, 'An error occurred during file upload. Please try again, or contact support if the issue persists.')
   }
 }
 
 /**
  * Get conversion job status
+ * Public endpoint - accessible by both authenticated and guest users
  */
 export const getJobStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = req.user
     const { job_id } = req.params
-
-    if (!user) {
-      res.status(401).json({ error: 'User not authenticated' })
-      return
-    }
 
     const job = await ConversionJob.findByPk(job_id)
 
@@ -215,15 +324,6 @@ export const getJobStatus = async (req: Request, res: Response): Promise<void> =
       res.status(404).json({
         error: 'Job not found',
         message: 'Conversion job does not exist'
-      })
-      return
-    }
-
-    // Check ownership
-    if (job.user_id !== user.id) {
-      res.status(403).json({
-        error: 'Forbidden',
-        message: 'You do not have access to this job'
       })
       return
     }
@@ -249,26 +349,21 @@ export const getJobStatus = async (req: Request, res: Response): Promise<void> =
       processing_time: job.getProcessingTime()
     })
   } catch (error) {
-    console.error('Get job status error:', error)
-    res.status(500).json({
-      error: 'Failed to fetch status',
-      message: 'An error occurred while fetching job status'
-    })
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Get job status error', error, { job_id: req.params.job_id })
+
+    sendInternalServerError(res, 'Unable to check conversion status. Please refresh the page or try again in a moment.')
   }
 }
 
 /**
  * Download converted file
+ * Supports both authenticated and guest users
  */
 export const downloadFile = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user
     const { job_id } = req.params
-
-    if (!user) {
-      res.status(401).json({ error: 'User not authenticated' })
-      return
-    }
 
     const job = await ConversionJob.findByPk(job_id)
 
@@ -280,8 +375,8 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    // Check ownership
-    if (job.user_id !== user.id) {
+    // Check ownership for authenticated users
+    if (user && job.user_id && job.user_id !== user.id) {
       res.status(403).json({
         error: 'Forbidden',
         message: 'You do not have access to this file'
@@ -301,16 +396,48 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
 
     // Check if file exists
     if (!job.output_file || !fs.existsSync(job.output_file)) {
+      const isGuest = !job.user_id
+
       res.status(410).json({
         error: 'File expired',
-        message: 'The converted file has been deleted (files are deleted after 1 hour)'
+        message: isGuest
+          ? 'Guest files are automatically deleted after 1 hour to protect your privacy'
+          : 'Files are automatically deleted after 7 days',
+        expired_at: job.expires_at,
+        retention_period: isGuest ? '1 hour' : '7 days',
+        file_type: job.type,
+        file_name: job.file_name,
+        options: [
+          {
+            id: 'convert_again',
+            title: 'Convert again',
+            description: 'Upload your PDF and convert it again',
+            cta: 'Convert Now',
+            url: '/',
+            primary: !isGuest
+          },
+          ...(isGuest
+            ? [
+                {
+                  id: 'signup',
+                  title: 'Sign up for longer storage',
+                  description: 'Keep files for 7 days with a free account',
+                  cta: 'Create Free Account',
+                  url: '/signup',
+                  primary: true
+                }
+              ]
+            : [])
+        ]
       })
       return
     }
 
     // Set headers for download
-    const fileName = `converted-${Date.now()}.${job.getOutputFormat()}`
-    res.setHeader('Content-Type', getContentType(job.getOutputFormat()))
+    // Use the actual filename from output_file path (e.g., presentation.pptx, presentation-images.zip)
+    const fileName = path.basename(job.output_file)
+    const fileExtension = path.extname(fileName).substring(1) || job.getOutputFormat()
+    res.setHeader('Content-Type', getContentType(fileExtension))
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
 
     // Stream file to response
@@ -318,21 +445,19 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     fileStream.pipe(res)
 
     fileStream.on('error', (error) => {
-      console.error('File stream error:', error)
+      const { sendInternalServerError, logError } = require('../utils/error.utils')
+      logError('File stream error', error, { job_id: req.params.job_id, file: job.output_file })
+
       if (!res.headersSent) {
-        res.status(500).json({
-          error: 'Download failed',
-          message: 'An error occurred while downloading the file'
-        })
+        sendInternalServerError(res, 'An error occurred while downloading the file. Please try again, or contact support if the issue persists.')
       }
     })
   } catch (error) {
-    console.error('Download file error:', error)
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Download file error', error, { job_id: req.params.job_id })
+
     if (!res.headersSent) {
-      res.status(500).json({
-        error: 'Download failed',
-        message: 'An error occurred while downloading the file'
-      })
+      sendInternalServerError(res, 'An error occurred while downloading the file. Please try again, or contact support if the issue persists.')
     }
   }
 }
@@ -389,11 +514,10 @@ export const getConversionHistory = async (req: Request, res: Response): Promise
       }
     })
   } catch (error) {
-    console.error('Get conversion history error:', error)
-    res.status(500).json({
-      error: 'Failed to fetch history',
-      message: 'An error occurred while fetching conversion history'
-    })
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Get conversion history error', error, { user_id: req.user?.id })
+
+    sendInternalServerError(res, 'An error occurred while fetching conversion history. Please refresh the page or try again later.')
   }
 }
 
@@ -423,7 +547,7 @@ function getOutputFormat(conversionType: ConversionType): string {
     case ConversionType.PDF_TO_XLSX:
       return 'xlsx'
     case ConversionType.PDF_TO_IMAGES:
-      return 'png'
+      return 'jpg'
     case ConversionType.PDF_MERGE:
       return 'pdf'
     default:

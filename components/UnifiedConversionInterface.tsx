@@ -7,9 +7,23 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/components/ui/use-toast"
 import { AlertCircle, ChevronDown, Upload, FileText, Download, CheckCircle, X } from "lucide-react"
 import { PDFUpload } from "@/components/PDFUpload"
-import { ConversionResponse, pdflabAPI, formatFileSize, validatePDFFile } from "@/lib/api"
+import { ConversionResponse, pdflabAPI, formatFileSize, validatePDFFile, EnhancedAPIError } from "@/lib/api"
+import { GuestConversionPrompt } from "@/components/GuestConversionPrompt"
+import { ErrorDisplay, type EnhancedError } from "@/components/ErrorDisplay"
+import { trackErrorResolution } from "@/lib/enhanced-error-handler"
 
 interface UnifiedConversionInterfaceProps {
   onSuccess?: (result: ConversionResponse) => void
@@ -33,6 +47,7 @@ interface ProcessingState {
   timeRemaining?: string
   result?: ConversionResponse
   error?: string
+  isGuest?: boolean
 }
 
 export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConversionInterfaceProps) {
@@ -46,7 +61,11 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
     progress: 0,
     stage: "",
   })
+  const [showResetDialog, setShowResetDialog] = useState(false)
+  const [showGuestPrompt, setShowGuestPrompt] = useState(false)
+  const [enhancedError, setEnhancedError] = useState<EnhancedError | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -197,10 +216,27 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
         progress: 100,
         stage: "Complete!",
         result,
+        isGuest: result.isGuest,
       })
+
+      // Show guest prompt for guest users
+      if (result.isGuest) {
+        setShowGuestPrompt(true)
+      }
 
       onSuccess?.(result)
     } catch (error) {
+      // Check if it's an enhanced error with rich data
+      if (error instanceof EnhancedAPIError && error.errorResponse.shouldShowModal) {
+        setEnhancedError(error.errorResponse.details)
+        setProcessing({
+          isProcessing: false,
+          progress: 0,
+          stage: "",
+        })
+        return
+      }
+
       let errorMessage = error instanceof Error ? error.message : "Processing failed"
 
       // Enhanced error messages with actionable suggestions
@@ -235,9 +271,45 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
     }
   }
 
-  const reset = () => {
+  const handleGuestSignup = () => {
+    // Close the prompt and allow navigation to signup page
+    setShowGuestPrompt(false)
+  }
+
+  const handleGuestContinue = () => {
+    // Close the prompt and allow download
+    setShowGuestPrompt(false)
+    downloadFile()
+  }
+
+  const handleResetClick = () => {
+    // Show confirmation dialog if files are uploaded and not yet processed
+    if (uploadedFiles.length > 0 && !processing.result && !processing.error) {
+      setShowResetDialog(true)
+    } else {
+      confirmReset()
+    }
+  }
+
+  const confirmReset = () => {
     setUploadedFiles([])
-    setProcessing({ isProcessing: false, progress: 0, stage: "" })
+    setProcessing({
+      isProcessing: false,
+      progress: 0,
+      stage: "",
+      error: undefined,
+      result: undefined,
+      timeRemaining: undefined
+    })
+    setShowResetDialog(false)
+
+    // Show success toast
+    toast({
+      title: "Ready for next file",
+      description: "Interface reset. You can upload a new PDF now.",
+      variant: "success",
+      duration: 3000,
+    })
   }
 
   const retryConversion = () => {
@@ -407,6 +479,9 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                         {format === "word" && (
                           <span className="text-[10px] text-primary/70">Text-heavy</span>
                         )}
+                        {format === "excel" && (
+                          <span className="text-[10px] text-primary/70">Tables only</span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -549,11 +624,27 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                       <p>Output: {processing.result.outputFile}</p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button onClick={downloadFile} data-testid="download-button" className="bg-green-600 hover:bg-green-700 text-xs px-3 py-2">
+                      <Button
+                        onClick={() => {
+                          if (processing.isGuest) {
+                            setShowGuestPrompt(true)
+                          } else {
+                            downloadFile()
+                          }
+                        }}
+                        data-testid="download-button"
+                        className="bg-green-600 hover:bg-green-700 text-xs px-3 py-2"
+                      >
                         <Download className="w-3 h-3 mr-1" />
                         Download
                       </Button>
-                      <Button variant="outline" onClick={reset} data-testid="reset-button" className="text-xs px-3 py-2">
+                      <Button
+                        variant="outline"
+                        onClick={handleResetClick}
+                        disabled={processing.isProcessing}
+                        data-testid="reset-button"
+                        className="text-xs px-3 py-2"
+                      >
                         Process Another
                       </Button>
                     </div>
@@ -568,6 +659,18 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
           </CardContent>
         </Card>
       </div>
+
+      {/* Excel Format Warning */}
+      {activeTab === "convert" && outputFormat === "excel" && !processing.isProcessing && !processing.result && (
+        <div className="max-w-7xl mx-auto">
+          <Alert className="border-blue-200 bg-blue-50/50">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-700">
+              <strong>Excel conversion works best with PDFs containing tables.</strong> If your PDF has mostly text or images, consider using Word or PowerPoint format instead.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Error State */}
       {processing.error && (
@@ -590,7 +693,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                         Upgrade to Pro (100MB)
                       </Button>
                       <Button
-                        onClick={reset}
+                        onClick={handleResetClick}
                         size="sm"
                         variant="ghost"
                         className="text-red-700 hover:bg-red-50"
@@ -604,7 +707,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                   {processing.error.includes("corrupted") && (
                     <>
                       <Button
-                        onClick={reset}
+                        onClick={handleResetClick}
                         size="sm"
                         variant="outline"
                         className="border-red-300 text-red-700 hover:bg-red-50"
@@ -649,11 +752,48 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                     </>
                   )}
 
+                  {/* XLSX conversion error (no table data) */}
+                  {processing.error.includes("XLSX") && processing.error.includes("table data") && (
+                    <>
+                      <Button
+                        onClick={() => {
+                          setOutputFormat("word")
+                          setProcessing({ isProcessing: false, progress: 0, stage: "" })
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary/10"
+                      >
+                        Try Word Instead
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setOutputFormat("powerpoint")
+                          setProcessing({ isProcessing: false, progress: 0, stage: "" })
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary/10"
+                      >
+                        Try PowerPoint Instead
+                      </Button>
+                      <Button
+                        onClick={handleResetClick}
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-700 hover:bg-red-50"
+                      >
+                        Upload Different File
+                      </Button>
+                    </>
+                  )}
+
                   {/* Network error or generic error */}
                   {(processing.error.includes("Network") ||
                     (!processing.error.includes("File too large") &&
                      !processing.error.includes("corrupted") &&
-                     !processing.error.includes("timed out"))) && (
+                     !processing.error.includes("timed out") &&
+                     !processing.error.includes("XLSX"))) && (
                     <>
                       <Button
                         onClick={retryConversion}
@@ -665,7 +805,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                         Try Again
                       </Button>
                       <Button
-                        onClick={reset}
+                        onClick={handleResetClick}
                         size="sm"
                         variant="ghost"
                         className="text-red-700 hover:bg-red-50"
@@ -679,6 +819,45 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
             </AlertDescription>
           </Alert>
         </div>
+      )}
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset conversion interface?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have uploaded files that haven't been processed yet. Are you sure you want to reset? This will clear all uploaded files.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReset}>Reset</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Guest Conversion Prompt */}
+      <GuestConversionPrompt
+        open={showGuestPrompt}
+        onOpenChange={setShowGuestPrompt}
+        onSignup={handleGuestSignup}
+        onContinue={handleGuestContinue}
+      />
+
+      {/* Enhanced Error Display Modal */}
+      {enhancedError && (
+        <ErrorDisplay
+          error={enhancedError}
+          onClose={() => setEnhancedError(null)}
+          onAction={(action, url) => {
+            trackErrorResolution(enhancedError.error, action, url)
+            setEnhancedError(null)
+            if (url) {
+              window.location.href = url
+            }
+          }}
+        />
       )}
     </div>
   )
