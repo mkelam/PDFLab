@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -55,7 +55,7 @@ const PLAN_DETAILS: Record<string, PlanDetails> = {
   }
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
   useRequireAuth() // Redirect to login if not authenticated
 
   const router = useRouter()
@@ -288,5 +288,17 @@ export default function PaymentPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <PaymentContent />
+    </Suspense>
   )
 }
