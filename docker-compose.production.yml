@@ -30,7 +30,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://api.pdflab.com
+      - NEXT_PUBLIC_API_URL=http://141.136.44.168:3006
     networks:
       - pdflab-network
     depends_on:
