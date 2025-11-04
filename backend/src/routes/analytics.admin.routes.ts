@@ -8,17 +8,22 @@ import {
 } from '../controllers/analytics.admin.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { requireAdmin, requirePermission } from '../middleware/admin.middleware'
+import { auditLogMiddleware } from '../middleware/audit.middleware'
 
 const router = Router()
 
 /**
  * Admin routes for analytics dashboard
  * All routes require authentication + admin role
+ * Analytics views are logged for compliance tracking
  */
 
 // Apply authentication to all admin routes
 router.use(authMiddleware)
 router.use(requireAdmin)
+
+// Apply audit logging (analytics access should be logged for compliance)
+router.use(auditLogMiddleware)
 
 // ==================== Analytics Endpoints ====================
 

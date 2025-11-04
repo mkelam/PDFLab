@@ -305,6 +305,186 @@ export function getConfig() {
   }
 }
 
+/**
+ * Cancel a PayFast subscription
+ * Note: PayFast uses token-based subscription cancellation
+ */
+export async function cancelSubscription(token: string): Promise<{ success: boolean; message: string }> {
+  return new Promise((resolve, reject) => {
+    const timestamp = new Date().toISOString()
+
+    // Build cancellation request
+    const data: Record<string, string> = {
+      'merchant-id': PAYFAST_CONFIG.merchantId,
+      'version': 'v1',
+      'timestamp': timestamp
+    }
+
+    // Generate signature for API authentication
+    const signature = generateApiSignature(data)
+
+    const requestData = {
+      ...data,
+      'signature': signature
+    }
+
+    const paramString = new URLSearchParams(requestData).toString()
+    const hostname = PAYFAST_CONFIG.mode === 'production' ? 'api.payfast.co.za' : 'api.payfast.co.za'
+
+    const options = {
+      hostname,
+      port: 443,
+      path: `/subscriptions/${token}/cancel?${paramString}`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'merchant-id': PAYFAST_CONFIG.merchantId,
+        'version': 'v1',
+        'timestamp': timestamp,
+        'signature': signature
+      }
+    }
+
+    const req = https.request(options, (res) => {
+      let body = ''
+
+      res.on('data', (chunk) => {
+        body += chunk
+      })
+
+      res.on('end', () => {
+        try {
+          const response = JSON.parse(body)
+
+          if (res.statusCode === 200 && response.status === 'success') {
+            resolve({
+              success: true,
+              message: 'Subscription cancelled successfully'
+            })
+          } else {
+            resolve({
+              success: false,
+              message: response.message || `Failed to cancel subscription (HTTP ${res.statusCode})`
+            })
+          }
+        } catch (error) {
+          reject(new Error(`Failed to parse PayFast response: ${body}`))
+        }
+      })
+    })
+
+    req.on('error', (error) => {
+      console.error('PayFast subscription cancellation error:', error)
+      reject(error)
+    })
+
+    req.end()
+  })
+}
+
+/**
+ * Generate API signature for PayFast API requests (different from payment signature)
+ */
+function generateApiSignature(data: Record<string, string>): string {
+  const passphrase = PAYFAST_CONFIG.passphrase || ''
+
+  // Sort keys and build parameter string
+  const sortedKeys = Object.keys(data).sort()
+  let paramString = ''
+
+  for (const key of sortedKeys) {
+    if (data[key] !== '' && data[key] !== null && data[key] !== undefined) {
+      paramString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`
+    }
+  }
+
+  // Remove last ampersand
+  paramString = paramString.slice(0, -1)
+
+  // Add passphrase
+  if (passphrase) {
+    paramString += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`
+  }
+
+  // Generate MD5 hash
+  return crypto.createHash('md5').update(paramString).digest('hex')
+}
+
+/**
+ * Pause a PayFast subscription
+ * Note: Pausing sets cycles remaining to 0 temporarily
+ */
+export async function pauseSubscription(token: string, cycles: number = 0): Promise<{ success: boolean; message: string }> {
+  return new Promise((resolve, reject) => {
+    const timestamp = new Date().toISOString()
+
+    const data: Record<string, string> = {
+      'merchant-id': PAYFAST_CONFIG.merchantId,
+      'version': 'v1',
+      'timestamp': timestamp
+    }
+
+    const signature = generateApiSignature(data)
+
+    const requestData = {
+      ...data,
+      'signature': signature,
+      'cycles': cycles.toString()
+    }
+
+    const paramString = new URLSearchParams(requestData).toString()
+    const hostname = PAYFAST_CONFIG.mode === 'production' ? 'api.payfast.co.za' : 'api.payfast.co.za'
+
+    const options = {
+      hostname,
+      port: 443,
+      path: `/subscriptions/${token}/pause`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(paramString)
+      },
+      body: paramString
+    }
+
+    const req = https.request(options, (res) => {
+      let body = ''
+
+      res.on('data', (chunk) => {
+        body += chunk
+      })
+
+      res.on('end', () => {
+        try {
+          const response = JSON.parse(body)
+
+          if (res.statusCode === 200 && response.status === 'success') {
+            resolve({
+              success: true,
+              message: 'Subscription paused successfully'
+            })
+          } else {
+            resolve({
+              success: false,
+              message: response.message || `Failed to pause subscription (HTTP ${res.statusCode})`
+            })
+          }
+        } catch (error) {
+          reject(new Error(`Failed to parse PayFast response: ${body}`))
+        }
+      })
+    })
+
+    req.on('error', (error) => {
+      console.error('PayFast subscription pause error:', error)
+      reject(error)
+    })
+
+    req.write(paramString)
+    req.end()
+  })
+}
+
 export default {
   generateSignature,
   createPaymentData,
@@ -315,5 +495,7 @@ export default {
   validateAmount,
   getPayFastUrl,
   isConfigured,
-  getConfig
+  getConfig,
+  cancelSubscription,
+  pauseSubscription
 }

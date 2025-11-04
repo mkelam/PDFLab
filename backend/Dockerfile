@@ -1,47 +1,41 @@
-# PDFLab Backend - Production Dockerfile
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
-
-# Install dependencies for native modules (bcrypt, etc.)
-RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
+COPY tsconfig.json ./
 
-# Install all dependencies (including dev for build)
-RUN npm ci
+# Install dependencies
+RUN npm ci --only=production --ignore-scripts
 
-# Copy application code
-COPY . .
+# Copy source code
+COPY src ./src
 
 # Build TypeScript
 RUN npm run build
 
-# Copy views folder to dist (TypeScript doesn't copy .ejs files)
-RUN mkdir -p /app/dist/views && cp -r /app/src/views/* /app/dist/views/
+# Production image
+FROM node:20-alpine
 
-# Remove dev dependencies after build to reduce image size
-RUN npm prune --production
+WORKDIR /app
 
-# Create storage directories with proper permissions
-RUN mkdir -p /app/storage/uploads /app/storage/outputs && \
-    chmod -R 755 /app/storage
+# Copy package files and install production dependencies
+COPY package*.json ./
+RUN npm ci --only=production --ignore-scripts && npm cache clean --force
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Create necessary directories
+RUN mkdir -p storage logs
 
 # Expose port
 EXPOSE 3006
 
-# Copy health check script
-COPY healthcheck.js ./
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3006/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Health check configuration
-# interval: Check every 30s
-# timeout: Each check times out after 3s
-# start-period: Wait 40s after container starts before checking
-# retries: Mark unhealthy after 3 consecutive failures
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node healthcheck.js
-
-# Start production server
-CMD ["npm", "start"]
+# Start application
+CMD ["node", "dist/server.js"]

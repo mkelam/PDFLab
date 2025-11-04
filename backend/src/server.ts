@@ -232,9 +232,11 @@ const startServer = async () => {
     }
 
     // Sync database (create tables)
-    if (process.env.NODE_ENV === 'development') {
-      await syncDatabase(false) // Don't force recreate tables
-    }
+    // TEMPORARILY DISABLED - Tables already exist
+    // if (process.env.NODE_ENV === 'development') {
+    //   await syncDatabase(false) // Don't force recreate tables
+    // }
+    console.log('✓ Database sync skipped (tables exist)')
 
     // Connect to Redis (optional for testing)
     const redisConnected = await connectRedis()
