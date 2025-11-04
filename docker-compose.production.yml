@@ -43,8 +43,8 @@ services:
     environment:
       - MYSQL_DATABASE=pdflab_production
       - MYSQL_USER=pdflab
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=***REMOVED***
+      - MYSQL_ROOT_PASSWORD=***REMOVED***
     ports:
       - "3306:3306"
     volumes:
