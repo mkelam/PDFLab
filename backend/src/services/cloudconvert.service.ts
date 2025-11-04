@@ -18,6 +18,7 @@ export interface ConversionOptions {
   outputFormat: 'pptx' | 'docx' | 'xlsx' | 'png' | 'jpg'
   inputFilePath: string
   outputFilePath: string
+  originalFileName?: string // Base filename without extension (e.g., "presentation")
   webhookUrl?: string
   options?: {
     dpi?: number
@@ -41,9 +42,13 @@ export class CloudConvertService {
       outputFormat,
       inputFilePath,
       outputFilePath,
+      originalFileName,
       webhookUrl,
       options: conversionOptions = {}
     } = options
+
+    // Extract base filename from originalFileName or outputFilePath
+    const fileBaseName = originalFileName || path.basename(outputFilePath, path.extname(outputFilePath))
 
     try {
       // Ensure input file exists
@@ -65,16 +70,27 @@ export class CloudConvertService {
         output_format: outputFormat
       }
 
-      // Format-specific options
+      // Format-specific options with enhanced OCR
       if (outputFormat === 'pptx') {
         taskConfig.pages = conversionOptions.pages || 'all'
         taskConfig.layout_preserving = true
-        taskConfig.ocr = conversionOptions.ocr !== false
+        // Enhanced OCR configuration
+        taskConfig.ocr = true  // Always enable OCR
+        taskConfig.ocr_lang = 'eng'  // English language (can be made configurable)
+        taskConfig.ocr_mode = 'auto'  // Auto-detect if OCR is needed
+        // Disable watermark/footer additions
+        taskConfig.watermark = false
+        taskConfig.no_watermark = true
       } else if (outputFormat === 'docx') {
-        taskConfig.ocr = conversionOptions.ocr !== false
+        // Enhanced OCR configuration for DOCX
+        taskConfig.ocr = true
+        taskConfig.ocr_lang = 'eng'
+        taskConfig.ocr_mode = 'auto'
         taskConfig.pages = conversionOptions.pages || 'all'
       } else if (outputFormat === 'xlsx') {
-        taskConfig.ocr = conversionOptions.ocr !== false
+        // Enhanced OCR configuration for XLSX
+        taskConfig.ocr = true
+        taskConfig.ocr_lang = 'eng'
         taskConfig.auto_detect_tables = true
       } else if (outputFormat === 'png' || outputFormat === 'jpg') {
         taskConfig.pages = conversionOptions.pages || 'all'
@@ -145,7 +161,8 @@ export class CloudConvertService {
             throw new Error(`File URL not found for image ${i + 1}`)
           }
 
-          const tempFilePath = path.join(tempDir, `page-${i + 1}.${outputFormat}`)
+          // Use original filename in temp files: presentation-page-1.jpg
+          const tempFilePath = path.join(tempDir, `${fileBaseName}-page-${i + 1}.${outputFormat}`)
 
           await new Promise<void>((resolve, reject) => {
             const protocol = fileUrl.startsWith('https:') ? https : http
@@ -179,11 +196,13 @@ export class CloudConvertService {
         const zip = new AdmZip()
         for (const filePath of downloadedFiles) {
           const fileName = path.basename(filePath)
-          zip.addLocalFile(filePath, '', fileName)
+          const fileContent = fs.readFileSync(filePath)
+          zip.addFile(fileName, fileContent)
         }
 
-        // Write ZIP file (outputFilePath should end with .zip)
-        const zipPath = outputFilePath.replace(/\.(png|jpg)$/, '.zip')
+        // Write ZIP file with naming pattern: presentation-images.zip
+        const outputDir = path.dirname(outputFilePath)
+        const zipPath = path.join(outputDir, `${fileBaseName}-images.zip`)
         zip.writeZip(zipPath)
         console.log(`Created ZIP archive: ${zipPath}`)
 
