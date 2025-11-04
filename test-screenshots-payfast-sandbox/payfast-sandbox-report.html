@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayFast Sandbox Test Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1a202c;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .timestamp {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card.success { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+        .stat-card.error { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); }
+        .stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+        }
+        .test-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .test-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #48bb78;
+            background: #f7fafc;
+        }
+        .test-item.failed {
+            border-left-color: #f56565;
+            background: #fff5f5;
+        }
+        .test-name {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 5px;
+        }
+        .test-details {
+            color: #4a5568;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+        .test-timestamp {
+            color: #a0aec0;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        .user-info {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .user-info h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        .user-info code {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .screenshot-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        .screenshot-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .screenshot-caption {
+            padding: 10px;
+            background: #f7fafc;
+            font-size: 0.85em;
+            color: #4a5568;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PayFast Sandbox Payment Test</h1>
+        <div class="timestamp">Generated: 2025/11/04, 21:04:08</div>
+
+        <div class="summary">
+            <div class="stat-card">
+                <div class="stat-value">7</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-value">6</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat-card error">
+                <div class="stat-value">1</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">85.7%</div>
+                <div class="stat-label">Pass Rate</div>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <h3>Test User Credentials</h3>
+            <p><strong>Email:</strong> <code>payfast-test-1762282902387@pdflab.com</code></p>
+            <p><strong>Name:</strong> <code>PayFast Sandbox</code></p>
+            <p><strong>Plan:</strong> <code>starter</code></p>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Results</h2>
+            
+                <div class="test-item ">
+                    <div class="test-name">✅ Database connection established</div>
+                    <div class="test-details">Connected to pdflab</div>
+                    <div class="test-timestamp">21:01:42</div>
+                </div>
+            
+                <div class="test-item ">
+                    <div class="test-name">✅ Pricing page loaded</div>
+                    <div class="test-details">Title: PDF Lab Pro - Premium Document Processing</div>
+                    <div class="test-timestamp">21:01:46</div>
+                </div>
+            
+                <div class="test-item ">
+                    <div class="test-name">✅ Redirected to signup/login</div>
+                    <div class="test-details">URL: http://localhost:3000/get-started?plan=starter</div>
+                    <div class="test-timestamp">21:01:52</div>
+                </div>
+            
+                <div class="test-item ">
+                    <div class="test-name">✅ Signup successful - redirected to payment</div>
+                    <div class="test-details">URL: http://localhost:3000/payment?plan=starter</div>
+                    <div class="test-timestamp">21:02:02</div>
+                </div>
+            
+                <div class="test-item ">
+                    <div class="test-name">✅ Payment page shows user email</div>
+                    <div class="test-details">Found email: payfast-test-1762282902387@pdflab.com</div>
+                    <div class="test-timestamp">21:02:03</div>
+                </div>
+            
+                <div class="test-item ">
+                    <div class="test-name">✅ Redirected to PayFast sandbox</div>
+                    <div class="test-details">URL: https://sandbox.payfast.co.za/eng/process</div>
+                    <div class="test-timestamp">21:02:08</div>
+                </div>
+            
+                <div class="test-item failed">
+                    <div class="test-name">❌ Payment completed - redirected to success page</div>
+                    <div class="test-details">Timeout waiting for payment completion: page.waitForURL: Timeout 120000ms exceeded.
+=========================== logs ===========================
+waiting for navigation to "**/payment/success**" until "load"
+============================================================</div>
+                    <div class="test-timestamp">21:04:08</div>
+                </div>
+            
+        </div>
+    </div>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticateToken } from '../middleware/auth.middleware'
+import { authMiddleware } from '../middleware/auth.middleware'
 import {
   getPlans,
   initializePayment,
@@ -37,12 +37,12 @@ router.get('/cancel', handleCancel)
  */
 
 // Initialize payment
-router.post('/initialize', authenticateToken, initializePayment)
+router.post('/initialize', authMiddleware, initializePayment)
 
 // Get subscription details
-router.get('/subscription/:id', authenticateToken, getSubscription)
+router.get('/subscription/:id', authMiddleware, getSubscription)
 
 // Cancel subscription
-router.post('/cancel-subscription', authenticateToken, cancelSubscription)
+router.post('/cancel-subscription', authMiddleware, cancelSubscription)
 
 export default router

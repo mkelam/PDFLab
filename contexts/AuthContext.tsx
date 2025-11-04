@@ -148,8 +148,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.detail || data.error || data.message || 'Signup failed');
       }
 
-      // Don't auto-login - let user verify email first
-      // The signup page will show the email verification message
+      // Auto-login after successful signup
+      // Backend returns token and user data
+      const token = data.token || data.access_token;
+      if (token) {
+        localStorage.setItem('authToken', token);
+
+        // Set user data from signup response
+        if (data.user) {
+          setUser(data.user);
+        }
+      }
     } catch (error) {
       console.error('Signup error:', error);
       throw error;

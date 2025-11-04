@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
 import { Op } from 'sequelize'
 import { sequelize } from '../config/database'
-import { Subscription, SubscriptionStatus, PlanType } from '../models/subscription.model'
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
-import { User } from '../models/User'
+import { User, UserPlan } from '../models/User'
+import { Subscription, SubscriptionStatus } from '../models/subscription.model'
 
 /**
  * Get all subscriptions with filters, search, and pagination
@@ -244,7 +244,7 @@ export const cancelSubscription = async (req: Request, res: Response): Promise<v
       // Downgrade user to free plan immediately
       await User.update(
         {
-          plan: 'free',
+          plan: UserPlan.FREE,
           conversions_limit: 3 // Free plan limit
         },
         { where: { id: subscription.user_id } }

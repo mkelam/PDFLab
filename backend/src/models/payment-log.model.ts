@@ -209,7 +209,6 @@ PaymentLog.init(
     indexes: [
       { fields: ['user_id'] },
       { fields: ['subscription_id'] },
-      { fields: ['transaction_id'], unique: true },
       { fields: ['payfast_payment_id'] },
       { fields: ['status'] },
       { fields: ['created_at'] }

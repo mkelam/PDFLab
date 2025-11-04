@@ -1,13 +1,13 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 
 dotenv.config()
 
 const SALT_ROUNDS = 12
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production'
-const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '7d'
-const JWT_REFRESH_EXPIRATION = process.env.JWT_REFRESH_EXPIRATION || '30d'
+const JWT_SECRET = process.env['JWT_SECRET'] || 'your-secret-key-change-this-in-production'
+const JWT_EXPIRATION: string | number = process.env['JWT_EXPIRATION'] || '7d'
+const JWT_REFRESH_EXPIRATION: string | number = process.env['JWT_REFRESH_EXPIRATION'] || '30d'
 
 export interface JWTPayload {
   userId: string
@@ -36,18 +36,20 @@ export const verifyPassword = async (
  * Generate JWT access token
  */
 export const generateAccessToken = (payload: JWTPayload | any, expiresIn?: string): string => {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: expiresIn || JWT_EXPIRATION
-  })
+  const options: SignOptions = {
+    expiresIn: (expiresIn || JWT_EXPIRATION) as any
+  }
+  return jwt.sign(payload, JWT_SECRET, options)
 }
 
 /**
  * Generate JWT refresh token
  */
 export const generateRefreshToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_REFRESH_EXPIRATION
-  })
+  const options: SignOptions = {
+    expiresIn: JWT_REFRESH_EXPIRATION as any
+  }
+  return jwt.sign(payload, JWT_SECRET, options)
 }
 
 /**

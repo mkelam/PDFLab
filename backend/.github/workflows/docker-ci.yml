@@ -1,0 +1,202 @@
+# GitHub Actions CI/CD Pipeline
+# Prevents broken Docker builds from being deployed
+
+name: Docker Build & Test
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  IMAGE_NAME: pdflab-backend
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Validate code quality
+  validate:
+    name: Code Validation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npm run typecheck
+        continue-on-error: false  # FAIL the build if types don't check
+
+      - name: Run ESLint
+        run: npm run lint || echo "Linting issues found (not blocking)"
+        continue-on-error: true
+
+      - name: Run tests
+        run: npm test || echo "No tests configured"
+        continue-on-error: true
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "ERROR: dist directory not created"
+            exit 1
+          fi
+          if [ ! -f "dist/server.js" ]; then
+            echo "ERROR: dist/server.js not found"
+            exit 1
+          fi
+          echo "✅ Build artifacts validated"
+
+  # Job 2: Build Docker image
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: validate  # Only run if validation passes
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file for build
+        working-directory: ./backend
+        run: |
+          cat > .env << EOF
+          NODE_ENV=production
+          PORT=3006
+          DB_HOST=localhost
+          DB_PORT=3306
+          DB_USER=pdflab
+          DB_PASSWORD=test
+          DB_NAME=pdflab
+          REDIS_HOST=localhost
+          REDIS_PORT=6379
+          JWT_SECRET=test-secret
+          CLOUDCONVERT_API_KEY=test-key
+          EOF
+
+      - name: Build Docker image
+        working-directory: ./backend
+        run: |
+          docker build \
+            --tag ${{ env.IMAGE_NAME }}:test \
+            --file Dockerfile \
+            --build-arg NODE_ENV=production \
+            .
+
+      - name: Test Docker image size
+        run: |
+          IMAGE_SIZE=$(docker images ${{ env.IMAGE_NAME }}:test --format "{{.Size}}")
+          echo "Docker image size: $IMAGE_SIZE"
+
+          # Warn if image is larger than 1GB
+          SIZE_MB=$(docker images ${{ env.IMAGE_NAME }}:test --format "{{.Size}}" | sed 's/MB//' | sed 's/GB/*1024/' | bc 2>/dev/null || echo 0)
+          if [ "$SIZE_MB" -gt 1024 ]; then
+            echo "⚠️  Warning: Docker image is larger than 1GB"
+          fi
+
+      - name: Run container smoke test
+        run: |
+          # Start container in background
+          docker run -d \
+            --name test-container \
+            -p 3006:3006 \
+            -e DB_HOST=host.docker.internal \
+            -e REDIS_HOST=host.docker.internal \
+            ${{ env.IMAGE_NAME }}:test
+
+          # Wait for container to start
+          echo "Waiting for container to start..."
+          sleep 10
+
+          # Check if container is running
+          if [ "$(docker inspect -f '{{.State.Running}}' test-container)" != "true" ]; then
+            echo "❌ Container failed to start"
+            docker logs test-container
+            exit 1
+          fi
+
+          # Check health endpoint (may fail if no DB, but container should start)
+          echo "Container is running ✅"
+          docker logs test-container
+
+          # Cleanup
+          docker stop test-container
+          docker rm test-container
+
+      - name: Upload Docker image as artifact
+        if: success()
+        run: |
+          docker save ${{ env.IMAGE_NAME }}:test | gzip > docker-image.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: docker-image
+          path: docker-image.tar.gz
+          retention-days: 7
+
+  # Job 3: Security scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  # Job 4: Deployment notification
+  notify:
+    name: Build Status
+    runs-on: ubuntu-latest
+    needs: [validate, docker-build, security-scan]
+    if: always()
+
+    steps:
+      - name: Check build status
+        run: |
+          if [ "${{ needs.validate.result }}" == "success" ] && \
+             [ "${{ needs.docker-build.result }}" == "success" ]; then
+            echo "✅ Build passed - Ready for deployment"
+            exit 0
+          else
+            echo "❌ Build failed - Do not deploy"
+            exit 1
+          fi

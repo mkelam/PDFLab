@@ -1,0 +1,5 @@
+Your production domain - What domain will you use for the API? (e.g., https://api.pdflab.com)
+CloudConvert API key - Do you have your production API key from https://cloudconvert.com/dashboard?
+PayFast credentials - Do you have your Merchant ID and Merchant Key from PayFast?
+Frontend domain - What domain will your frontend use? (for CORS)
+database password: X1J58Re8CjuZAWRlYj50K9O7gK17ahX3

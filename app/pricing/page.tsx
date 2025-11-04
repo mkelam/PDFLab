@@ -1,9 +1,9 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Zap, Shield, Infinity, Sparkles, Loader2 } from "lucide-react"
+import { Check, Zap, Shield, Infinity, Sparkles } from "lucide-react"
 import { Navigation } from "@/components/Navigation"
 
 interface PlanFeatures {
@@ -19,38 +19,104 @@ interface PricingPlan {
   id: string
   name: string
   price: number
+  originalPrice?: number
+  priceLabel?: string
   currency: string
   interval: string
   features: PlanFeatures
-  description?: string
-  icon?: JSX.Element
-  buttonText?: string
-  buttonVariant?: "default" | "outline"
-  popular?: boolean
+  description: string
+  icon: JSX.Element
+  buttonText: string
+  buttonVariant: "default" | "outline"
+  popular: boolean
 }
 
-const planDescriptions: Record<string, { description: string; icon: JSX.Element; popular: boolean }> = {
-  free: {
+// Static pricing plans - no API call needed!
+const PRICING_PLANS: PricingPlan[] = [
+  {
+    id: "free",
+    name: "Free",
+    price: 0,
+    currency: "USD",
+    interval: "month",
     description: "Perfect for occasional PDF tasks",
     icon: <Zap className="w-6 h-6" />,
+    buttonText: "Get Started",
+    buttonVariant: "outline",
     popular: false,
+    features: {
+      conversionsPerMonth: 3,
+      maxFileSize: 10485760, // 10MB
+      ocrOverlayAccess: false,
+      advancedFeatures: false,
+      priorityProcessing: false,
+      apiAccess: false
+    }
   },
-  starter: {
+  {
+    id: "starter",
+    name: "Starter",
+    price: 4.55,
+    originalPrice: 9.99,
+    currency: "USD",
+    interval: "month",
     description: "Ideal for professionals and small teams",
     icon: <Shield className="w-6 h-6" />,
+    buttonText: "Choose Starter",
+    buttonVariant: "default",
     popular: true,
+    features: {
+      conversionsPerMonth: 100,
+      maxFileSize: 26214400, // 25MB
+      ocrOverlayAccess: true,
+      advancedFeatures: false,
+      priorityProcessing: false,
+      apiAccess: false
+    }
   },
-  pro: {
+  {
+    id: "pro",
+    name: "Pro",
+    price: 13.50,
+    originalPrice: 29.99,
+    currency: "USD",
+    interval: "month",
     description: "Advanced features for power users",
     icon: <Infinity className="w-6 h-6" />,
+    buttonText: "Choose Pro",
+    buttonVariant: "outline",
     popular: false,
+    features: {
+      conversionsPerMonth: -1, // Unlimited
+      maxFileSize: 104857600, // 100MB
+      ocrOverlayAccess: true,
+      advancedFeatures: true,
+      priorityProcessing: true,
+      apiAccess: false
+    }
   },
-  enterprise: {
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 0,
+    priceLabel: "Custom",
+    currency: "USD",
+    interval: "month",
     description: "For large organizations with custom needs",
     icon: <Sparkles className="w-6 h-6" />,
+    buttonText: "Contact Sales",
+    buttonVariant: "outline",
     popular: false,
-  },
-}
+    features: {
+      conversionsPerMonth: -1, // Unlimited
+      maxFileSize: 524288000, // 500MB
+      ocrOverlayAccess: true,
+      advancedFeatures: true,
+      priorityProcessing: true,
+      apiAccess: true
+    }
+  }
+]
 
 const formatFileSize = (bytes: number): string => {
   const mb = bytes / (1024 * 1024)
@@ -99,43 +165,9 @@ const getPlanFeaturesList = (plan: PricingPlan): string[] => {
 
 export default function PricingPage() {
   const [isLoading, setIsLoading] = useState<string | null>(null)
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010'
-        const response = await fetch(`${apiUrl}/api/payfast/plans`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch pricing plans')
-        }
-
-        const result = await response.json()
-
-        if (result.success && result.data) {
-          const enhancedPlans = result.data.map((plan: PricingPlan) => ({
-            ...plan,
-            ...planDescriptions[plan.id],
-            buttonText: plan.id === 'free' ? 'Get Started' : `Choose ${plan.name}`,
-            buttonVariant: plan.id === 'starter' ? 'default' as const : 'outline' as const,
-          }))
-          setPricingPlans(enhancedPlans)
-        }
-      } catch (err) {
-        console.error('Error fetching pricing plans:', err)
-        setError('Failed to load pricing plans. Please refresh the page.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPlans()
-  }, [])
 
   const formatPrice = (plan: PricingPlan): string => {
+    if (plan.priceLabel) return plan.priceLabel
     if (plan.price === 0) return "Free"
     return `$${plan.price}`
   }
@@ -146,87 +178,14 @@ export default function PricingPage() {
       return
     }
 
-    setIsLoading(planId)
-
-    try {
-      const email = prompt("Please enter your email address:")
-      if (!email) {
-        setIsLoading(null)
-        return
-      }
-
-      const firstName = prompt("Please enter your first name:")
-      if (!firstName) {
-        setIsLoading(null)
-        return
-      }
-
-      const lastName = prompt("Please enter your last name:")
-      if (!lastName) {
-        setIsLoading(null)
-        return
-      }
-
-      const response = await fetch('/api/payfast/initialize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          firstName,
-          lastName,
-          plan: planId
-        })
-      })
-
-      const result = await response.json()
-
-      if (result.success && result.paymentUrl) {
-        window.location.href = result.paymentUrl
-      } else {
-        throw new Error(result.message || 'Payment initialization failed')
-      }
-    } catch (error) {
-      console.error('Payment failed:', error)
-      alert('Payment initialization failed. Please try again.')
-      setIsLoading(null)
+    if (planId === "enterprise") {
+      // For Enterprise, open email client with pre-filled subject
+      window.location.href = "mailto:support@pdflab.pro?subject=Enterprise%20Plan%20Inquiry%20-%20Custom%20Pricing&body=Hello,%0D%0A%0D%0AI'm%20interested%20in%20the%20Enterprise%20plan%20and%20would%20like%20to%20discuss%20custom%20pricing%20for%20my%20organization.%0D%0A%0D%0AOrganization%20Name:%20%0D%0ANumber%20of%20Users:%20%0D%0AEstimated%20Monthly%20Conversions:%20%0D%0A%0D%0AThank%20you!"
+      return
     }
-  }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen">
-        <Navigation />
-        <div className="pt-32 pb-12 px-6">
-          <div className="container mx-auto max-w-7xl flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading pricing plans...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen">
-        <Navigation />
-        <div className="pt-32 pb-12 px-6">
-          <div className="container mx-auto max-w-7xl">
-            <div className="text-center">
-              <Card className="glass-strong border-border/50 max-w-md mx-auto p-8">
-                <CardTitle className="text-xl text-foreground mb-4">Error Loading Plans</CardTitle>
-                <CardDescription className="text-muted-foreground mb-6">{error}</CardDescription>
-                <Button onClick={() => window.location.reload()}>Refresh Page</Button>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    // For paid plans, redirect to get-started page
+    window.location.href = `/get-started?plan=${planId}`
   }
 
   return (
@@ -243,7 +202,7 @@ export default function PricingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {pricingPlans.map((plan) => (
+            {PRICING_PLANS.map((plan) => (
               <Card
                 key={plan.id}
                 className={`glass-strong border-border/50 relative transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/10 ${
@@ -263,8 +222,16 @@ export default function PricingPage() {
                   <CardTitle className="text-2xl font-bold text-foreground">{plan.name}</CardTitle>
                   <CardDescription className="text-muted-foreground">{plan.description}</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold text-foreground">{formatPrice(plan)}</span>
-                    {plan.price > 0 && <span className="text-muted-foreground">/{plan.interval}</span>}
+                    {plan.originalPrice && (
+                      <div className="mb-2">
+                        <span className="text-lg text-muted-foreground line-through">${plan.originalPrice}</span>
+                        <Badge className="ml-2 bg-green-500 text-white">Save {Math.round((1 - plan.price / plan.originalPrice) * 100)}%</Badge>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-4xl font-bold text-foreground">{formatPrice(plan)}</span>
+                      {plan.price > 0 && !plan.priceLabel && <span className="text-muted-foreground">/{plan.interval}</span>}
+                    </div>
                   </div>
                 </CardHeader>
 

@@ -20,7 +20,7 @@ export enum JobStatus {
 
 interface ConversionJobAttributes {
   id: string
-  user_id: string
+  user_id: string | null  // Nullable for guest conversions
   type: ConversionType
   status: JobStatus
   progress: number
@@ -45,7 +45,7 @@ export class ConversionJob extends Model<ConversionJobAttributes, ConversionJobC
   implements ConversionJobAttributes {
 
   public id!: string
-  public user_id!: string
+  public user_id!: string | null  // Nullable for guest conversions
   public type!: ConversionType
   public status!: JobStatus
   public progress!: number
@@ -101,12 +101,9 @@ ConversionJob.init(
     },
     user_id: {
       type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      },
-      onDelete: 'CASCADE'
+      allowNull: true  // Allow NULL for guest conversions
+      // Note: Foreign key constraint removed to allow guest conversions
+      // Guest conversions have user_id = NULL
     },
     type: {
       type: DataTypes.ENUM(...Object.values(ConversionType)),
@@ -207,10 +204,15 @@ ConversionJob.init(
 // Define associations
 User.hasMany(ConversionJob, {
   foreignKey: 'user_id',
-  as: 'conversion_jobs'
+  as: 'conversion_jobs',
+  constraints: false  // Don't enforce foreign key constraint
 })
 
 ConversionJob.belongsTo(User, {
-  foreignKey: 'user_id',
-  as: 'user'
+  foreignKey: {
+    name: 'user_id',
+    allowNull: true  // Allow guest conversions without user
+  },
+  as: 'user',
+  constraints: false  // Don't enforce foreign key constraint in DB
 })

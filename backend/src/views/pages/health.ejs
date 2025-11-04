@@ -1,0 +1,76 @@
+<div class="container">
+    <header>
+        <h1>System Health Check <span class="badge <%= health.status === 'OK' ? 'success' : (health.status === 'DEGRADED' ? 'warning' : 'error') %>"><%= health.status %></span></h1>
+        <p>Real-time system monitoring and diagnostics</p>
+    </header>
+
+    <div class="content">
+        <div class="card">
+            <h2>📊 System Status</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">Overall Status</div>
+                    <div class="value" style="color: <%= health.status === 'OK' ? '#10b981' : (health.status === 'DEGRADED' ? '#f59e0b' : '#ef4444') %>"><%= health.status %></div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Uptime</div>
+                    <div class="value"><%= Math.floor(health.uptime / 60) %>m <%= Math.floor(health.uptime % 60) %>s</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Timestamp</div>
+                    <div class="value" style="font-size: 1em;"><%= new Date(health.timestamp).toLocaleTimeString() %></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔍 Service Health</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>MySQL Database</strong></td>
+                        <td>
+                            <span class="badge <%= health.checks.database === 'OK' ? 'success' : 'error' %>">
+                                <%= health.checks.database %>
+                            </span>
+                        </td>
+                        <td>User data, conversions, subscriptions, payment logs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Redis Cache</strong></td>
+                        <td>
+                            <span class="badge <%= health.checks.redis === 'OK' ? 'success' : 'error' %>">
+                                <%= health.checks.redis %>
+                            </span>
+                        </td>
+                        <td>Job queue management, background processing</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📋 Health Check Details</h2>
+            <pre><code><%= JSON.stringify(health, null, 2) %></code></pre>
+        </div>
+
+        <div class="card">
+            <h2>🔗 Quick Actions</h2>
+            <p>
+                <a href="/">← Back to Home</a><br>
+                <a href="/health" style="color: #10b981;">🔄 Refresh Health Check</a>
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Last updated: <%= new Date().toLocaleString() %></p>
+    </footer>
+</div>

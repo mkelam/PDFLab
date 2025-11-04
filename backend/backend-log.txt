@@ -1,0 +1,1422 @@
+
+> pdflab-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;
+Executing (default): ALTER TABLE `admin_audit_logs` ADD FOREIGN KEY (`admin_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `action` `action` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_type` `entity_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_id` `entity_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `changes` `changes` JSON;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `ip_address` `ip_address` VARCHAR(45);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `user_agent` `user_agent` TEXT;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `severity` `severity` ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info';
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `checksum` `checksum` VARCHAR(64);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `admin_audit_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'system_health_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `system_health_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'system_health_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_name` `metric_name` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_value` `metric_value` DECIMAL(10,2);
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `status` `status` ENUM('healthy', 'warning', 'critical') NOT NULL DEFAULT 'healthy';
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `details` `details` JSON;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `system_health_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'conversion_jobs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `conversion_jobs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'conversion_jobs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `user_id` `user_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `type` `type` ENUM('pdf_to_pptx', 'pdf_to_docx', 'pdf_to_xlsx', 'pdf_to_images', 'pdf_merge') NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `status` `status` ENUM('pending', 'queued', 'processing', 'completed', 'failed') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `progress` `progress` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `input_file` `input_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `output_file` `output_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_name` `file_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `cloudconvert_job_id` `cloudconvert_job_id` VARCHAR(255);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `error_message` `error_message` TEXT;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `estimated_time` `estimated_time` INTEGER COMMENT 'Estimated processing time in seconds';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_started_at` `processing_started_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_completed_at` `processing_completed_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `expires_at` `expires_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `conversion_jobs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'usage_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `usage_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'usage_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_105' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_105`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_106' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_106`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`job_id`) REFERENCES `conversion_jobs` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `operation_type` `operation_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `success` `success` TINYINT(1) NOT NULL DEFAULT false;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `processing_time` `processing_time` INTEGER COMMENT 'Processing time in milliseconds';
+Executing (default): ALTER TABLE `usage_logs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `error_code` `error_code` VARCHAR(50);
+Executing (default): ALTER TABLE `usage_logs` CHANGE `timestamp` `timestamp` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `usage_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'subscriptions' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `subscriptions`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'subscriptions' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='subscriptions' AND constraint_name = 'subscriptions_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `subscriptions` DROP FOREIGN KEY `subscriptions_ibfk_1`;
+Executing (default): ALTER TABLE `subscriptions` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `status` `status` ENUM('active', 'canceled', 'past_due', 'trialing', 'pending') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_token` `payfast_token` VARCHAR(255) COMMENT 'PayFast subscription token for recurring payments';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_subscription_id` `payfast_subscription_id` VARCHAR(255) COMMENT 'PayFast subscription ID';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `amount` `amount` DECIMAL(10,2) NOT NULL COMMENT 'Subscription amount in currency';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `currency` `currency` VARCHAR(3) NOT NULL DEFAULT 'USD' COMMENT 'Currency code (USD for United States Dollar)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `billing_date` `billing_date` DATETIME COMMENT 'First billing date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `next_billing_date` `next_billing_date` DATETIME COMMENT 'Next billing date for recurring subscription';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `cancel_at` `cancel_at` DATETIME COMMENT 'Scheduled cancellation date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `canceled_at` `canceled_at` DATETIME COMMENT 'Actual cancellation timestamp';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `trial_end` `trial_end` DATETIME COMMENT 'Trial period end date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `started_at` `started_at` DATETIME NOT NULL COMMENT 'Subscription start date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `ended_at` `ended_at` DATETIME COMMENT 'Subscription end date (if canceled)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `subscriptions` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'payment_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `payment_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'payment_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_79' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_79`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_80' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_80`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `payfast_payment_id` `payfast_payment_id` VARCHAR(255) COMMENT 'PayFast payment ID (pf_payment_id)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `payment_type` `payment_type` ENUM('subscription', 'subscription_payment', 'one_time', 'refund') NOT NULL DEFAULT 'one_time';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `status` `status` ENUM('complete', 'failed', 'pending', 'cancelled') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `amount_gross` `amount_gross` DECIMAL(10,2) NOT NULL COMMENT 'Gross amount before fees';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `amount_fee` `amount_fee` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'PayFast processing fee';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `amount_net` `amount_net` DECIMAL(10,2) NOT NULL COMMENT 'Net amount after fees';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `currency` `currency` VARCHAR(3) NOT NULL DEFAULT 'USD';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `plan` `plan` VARCHAR(50) NOT NULL COMMENT 'Plan name (free, starter, pro, enterprise)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `payment_method` `payment_method` VARCHAR(50) COMMENT 'Payment method used (eft, credit_card, etc.)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `name_first` `name_first` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `name_last` `name_last` VARCHAR(255);
+Executing (default): ALTER TABLE `payment_logs` CHANGE `email_address` `email_address` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `item_name` `item_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `item_description` `item_description` TEXT;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `custom_data` `custom_data` JSON COMMENT 'Custom data sent to PayFast';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `itn_data` `itn_data` JSON COMMENT 'Full ITN notification data from PayFast';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `error_message` `error_message` TEXT COMMENT 'Error message if payment failed';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `processed_at` `processed_at` DATETIME COMMENT 'When the payment was processed';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `payment_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'password_history' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `password_history`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'password_history' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='password_history' AND constraint_name = 'password_history_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `password_history` DROP FOREIGN KEY `password_history_ibfk_1`;
+Executing (default): ALTER TABLE `password_history` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `password_history` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `password_history` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `password_history` FROM `pdflab`
+✓ Database synchronized successfully
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+✓ PDFLab API Server running
+✓ Environment: development
+✓ Port: 3006
+✓ Health check: http://localhost:3006/health
+✓ API endpoint: http://localhost:3006/api
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+[0mGET /api/auth/profile [32m200[0m 41.427 ms - 301[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+[0mGET /api/auth/profile [36m304[0m 10.517 ms - -[0m
+[0mGET /health [32m200[0m 40.262 ms - -[0m
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+[0mGET /health [32m200[0m 7.393 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+[Guest Quota] Skipping - user is authenticated
+[Upload] user: authenticated
+[Upload] guestSession: exists
+[Upload] isGuest: false
+Executing (default): INSERT INTO `conversion_jobs` (`id`,`user_id`,`type`,`status`,`progress`,`input_file`,`file_name`,`file_size`,`estimated_time`,`created_at`,`updated_at`,`expires_at`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
+Executing (default): UPDATE `conversion_jobs` SET `status`=?,`updated_at`=? WHERE `id` = ?
+[Conversion Worker] Processing job ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 for user fbcd760d-bdf1-43d0-b91c-48e8fe5656cd
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[ANALYTICS] {"timestamp":"2025-11-03T20:02:00.708Z","event":"user_file_upload","userId":"fbcd760d-bdf1-43d0-b91c-48e8fe5656cd","guestSessionId":"guest_fc460b8e-55a1-4ea4-90f9-e42dde4103b1","isGuest":false,"properties":{"job_id":"ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8","conversion_type":"pdf_to_pptx","file_size":48180,"file_name":"Capitec Proof of Account malibongwe mkela.pdf","funnel_step":"user_upload"},"ipAddress":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"}
+[0mPOST /api/upload [32m201[0m 96.444 ms - 214[0m
+Executing (default): UPDATE `conversion_jobs` SET `status`=?,`processing_started_at`=?,`progress`=?,`updated_at`=? WHERE `id` = ?
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[0mGET /api/status/ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 [32m200[0m 4.622 ms - 196[0m
+[Conversion Worker] Starting CloudConvert for job ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8
+CloudConvert job created: b7da8743-4bda-4e84-825b-d690e7ad40d0
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[0mGET /api/status/ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 [32m200[0m 3.583 ms - 230[0m
+File uploaded to CloudConvert: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\d7e69810-499b-43af-8b8b-02d4481e3af0\1762200120639-Capitec-Proof-of-Account-malibongwe-mkela.pdf
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[0mGET /api/status/ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 [32m200[0m 10.014 ms - 230[0m
+CloudConvert job completed: b7da8743-4bda-4e84-825b-d690e7ad40d0
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[0mGET /api/status/ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 [32m200[0m 11.689 ms - 230[0m
+Converted file downloaded: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8\Capitec Proof of Account malibongwe mkela.pptx
+Executing (default): UPDATE `conversion_jobs` SET `status`=?,`output_file`=?,`progress`=?,`processing_completed_at`=?,`cloudconvert_job_id`=?,`updated_at`=? WHERE `id` = ?
+Executing (default): UPDATE `users` SET `conversions_used`=`conversions_used`+ 1,`updated_at`='2025-11-03 20:02:04' WHERE `id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd'
+Executing (default): INSERT INTO `usage_logs` (`id`,`user_id`,`job_id`,`operation_type`,`success`,`processing_time`,`file_size`,`timestamp`) VALUES (DEFAULT,?,?,?,?,?,?,?);
+[Conversion Worker] Job ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 completed successfully in 3795ms
+✓ Conversion job 53 completed: {
+  success: true,
+  output_file: 'C:\\Users\\Mac\\OneDrive\\Desktop\\Projects\\PDFLab\\backend\\storage\\outputs\\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\\ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8\\Capitec Proof of Account malibongwe mkela.pptx',
+  processing_time: 3795
+}
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[0mGET /api/status/ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 [32m200[0m 12.050 ms - 264[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[ANALYTICS] {"timestamp":"2025-11-03T20:02:07.837Z","event":"user_file_download","userId":"fbcd760d-bdf1-43d0-b91c-48e8fe5656cd","isGuest":false,"properties":{"job_id":"ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8","funnel_step":"user_download"},"ipAddress":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"}
+[0mGET /api/download/ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8 [32m200[0m 12.768 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+[Guest Quota] Skipping - user is authenticated
+[Upload] user: authenticated
+[Upload] guestSession: exists
+[Upload] isGuest: false
+Executing (default): INSERT INTO `conversion_jobs` (`id`,`user_id`,`type`,`status`,`progress`,`input_file`,`file_name`,`file_size`,`estimated_time`,`created_at`,`updated_at`,`expires_at`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
+Executing (default): UPDATE `conversion_jobs` SET `status`=?,`updated_at`=? WHERE `id` = ?
+[Conversion Worker] Processing job 91d86109-4f53-4de8-bf1d-346dfbca716f for user fbcd760d-bdf1-43d0-b91c-48e8fe5656cd
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+Executing (default): UPDATE `conversion_jobs` SET `status`=?,`processing_started_at`=?,`progress`=?,`updated_at`=? WHERE `id` = ?
+[ANALYTICS] {"timestamp":"2025-11-03T20:03:35.756Z","event":"user_file_upload","userId":"fbcd760d-bdf1-43d0-b91c-48e8fe5656cd","guestSessionId":"guest_be047731-dbf1-4e59-bd5c-2794e72d3f73","isGuest":false,"properties":{"job_id":"91d86109-4f53-4de8-bf1d-346dfbca716f","conversion_type":"pdf_to_images","file_size":177315,"file_name":"Municipal Statement.pdf","funnel_step":"user_upload"},"ipAddress":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"}
+[0mPOST /api/upload [32m201[0m 95.966 ms - 214[0m
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[Conversion Worker] Starting CloudConvert for job 91d86109-4f53-4de8-bf1d-346dfbca716f
+[0mGET /api/status/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 12.137 ms - 196[0m
+CloudConvert job created: dac0da91-d891-4d4b-8745-88f2ca25a3d7
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[0mGET /api/status/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 9.602 ms - 230[0m
+File uploaded to CloudConvert: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\5bc7c7ba-9dbf-4de9-bd4c-496220748dd2\1762200215698-Municipal-Statement.pdf
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[0mGET /api/status/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 8.957 ms - 230[0m
+CloudConvert job completed: dac0da91-d891-4d4b-8745-88f2ca25a3d7
+Converting multi-page PDF to images: 3 files
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[0mGET /api/status/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 3.355 ms - 230[0m
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[0mGET /api/status/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 8.407 ms - 230[0m
+Downloaded image 1/3: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f\temp\Municipal Statement-page-1.jpg
+Downloaded image 2/3: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f\temp\Municipal Statement-page-2.jpg
+Downloaded image 3/3: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f\temp\Municipal Statement-page-3.jpg
+Created ZIP archive: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f\Municipal Statement-images.zip
+Converted files archived: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f\Municipal Statement-images.zip
+Executing (default): UPDATE `conversion_jobs` SET `status`=?,`output_file`=?,`progress`=?,`processing_completed_at`=?,`cloudconvert_job_id`=?,`updated_at`=? WHERE `id` = ?
+Executing (default): UPDATE `users` SET `conversions_used`=`conversions_used`+ 1,`updated_at`='2025-11-03 20:03:40' WHERE `id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd'
+Executing (default): INSERT INTO `usage_logs` (`id`,`user_id`,`job_id`,`operation_type`,`success`,`processing_time`,`file_size`,`timestamp`) VALUES (DEFAULT,?,?,?,?,?,?,?);
+[Conversion Worker] Job 91d86109-4f53-4de8-bf1d-346dfbca716f completed successfully in 4954ms
+✓ Conversion job 54 completed: {
+  success: true,
+  output_file: 'C:\\Users\\Mac\\OneDrive\\Desktop\\Projects\\PDFLab\\backend\\storage\\outputs\\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\\91d86109-4f53-4de8-bf1d-346dfbca716f\\Municipal Statement-images.zip',
+  processing_time: 4954
+}
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[0mGET /api/status/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 9.119 ms - 264[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[ANALYTICS] {"timestamp":"2025-11-03T20:03:46.163Z","event":"user_file_download","userId":"fbcd760d-bdf1-43d0-b91c-48e8fe5656cd","isGuest":false,"properties":{"job_id":"91d86109-4f53-4de8-bf1d-346dfbca716f","funnel_step":"user_download"},"ipAddress":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"}
+[0mGET /api/download/91d86109-4f53-4de8-bf1d-346dfbca716f [32m200[0m 12.325 ms - -[0m
+22:06:05 [tsx] change in ./src\controllers\conversion.controller.ts Restarting...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` ADD FOREIGN KEY (`admin_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `action` `action` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_type` `entity_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_id` `entity_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `changes` `changes` JSON;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `ip_address` `ip_address` VARCHAR(45);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `user_agent` `user_agent` TEXT;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `severity` `severity` ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info';
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `checksum` `checksum` VARCHAR(64);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `admin_audit_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'system_health_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `system_health_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'system_health_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_name` `metric_name` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_value` `metric_value` DECIMAL(10,2);
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `status` `status` ENUM('healthy', 'warning', 'critical') NOT NULL DEFAULT 'healthy';
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `details` `details` JSON;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `system_health_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'conversion_jobs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `conversion_jobs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'conversion_jobs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `user_id` `user_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `type` `type` ENUM('pdf_to_pptx', 'pdf_to_docx', 'pdf_to_xlsx', 'pdf_to_images', 'pdf_merge') NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `status` `status` ENUM('pending', 'queued', 'processing', 'completed', 'failed') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `progress` `progress` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `input_file` `input_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `output_file` `output_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_name` `file_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `cloudconvert_job_id` `cloudconvert_job_id` VARCHAR(255);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `error_message` `error_message` TEXT;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `estimated_time` `estimated_time` INTEGER COMMENT 'Estimated processing time in seconds';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_started_at` `processing_started_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_completed_at` `processing_completed_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `expires_at` `expires_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `conversion_jobs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'usage_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `usage_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'usage_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_107' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:86:12)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Can't DROP 'usage_logs_ibfk_107'; check that column/key exists
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_CANT_DROP_FIELD_OR_KEY',
+    errno: 1091,
+    sqlState: '42000',
+    sqlMessage: "Can't DROP 'usage_logs_ibfk_107'; check that column/key exists",
+    sql: 'ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;',
+    parameters: undefined
+  },
+  original: Error: Can't DROP 'usage_logs_ibfk_107'; check that column/key exists
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_CANT_DROP_FIELD_OR_KEY',
+    errno: 1091,
+    sqlState: '42000',
+    sqlMessage: "Can't DROP 'usage_logs_ibfk_107'; check that column/key exists",
+    sql: 'ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:86:12)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Can't DROP 'usage_logs_ibfk_107'; check that column/key exists
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_CANT_DROP_FIELD_OR_KEY',
+    errno: 1091,
+    sqlState: '42000',
+    sqlMessage: "Can't DROP 'usage_logs_ibfk_107'; check that column/key exists",
+    sql: 'ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;',
+    parameters: undefined
+  },
+  original: Error: Can't DROP 'usage_logs_ibfk_107'; check that column/key exists
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_CANT_DROP_FIELD_OR_KEY',
+    errno: 1091,
+    sqlState: '42000',
+    sqlMessage: "Can't DROP 'usage_logs_ibfk_107'; check that column/key exists",
+    sql: 'ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_107`;',
+  parameters: {}
+}
+22:10:25 [tsx] change in ./src\controllers\conversion.controller.ts Rerunning...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+22:10:34 [tsx] change in ./src\controllers\conversion.controller.ts Rerunning...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+22:11:23 [tsx] change in ./src\controllers\conversion.controller.ts Rerunning...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+22:11:32 [tsx] change in ./src\controllers\conversion.controller.ts Rerunning...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+22:31:16 [tsx] change in ./src\controllers\conversion.controller.ts Rerunning...
+c22:31:19 [tsx] change in ./src\middleware\auth.middleware.ts Restarting...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;
+Executing (default): ALTER TABLE `admin_audit_logs` ADD FOREIGN KEY (`admin_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `action` `action` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_type` `entity_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_id` `entity_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `changes` `changes` JSON;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `ip_address` `ip_address` VARCHAR(45);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `user_agent` `user_agent` TEXT;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `severity` `severity` ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info';
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `checksum` `checksum` VARCHAR(64);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `admin_audit_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'system_health_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `system_health_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'system_health_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_name` `metric_name` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_value` `metric_value` DECIMAL(10,2);
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `status` `status` ENUM('healthy', 'warning', 'critical') NOT NULL DEFAULT 'healthy';
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `details` `details` JSON;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `system_health_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'conversion_jobs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `conversion_jobs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'conversion_jobs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `user_id` `user_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `type` `type` ENUM('pdf_to_pptx', 'pdf_to_docx', 'pdf_to_xlsx', 'pdf_to_images', 'pdf_merge') NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `status` `status` ENUM('pending', 'queued', 'processing', 'completed', 'failed') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `progress` `progress` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `input_file` `input_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `output_file` `output_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_name` `file_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `cloudconvert_job_id` `cloudconvert_job_id` VARCHAR(255);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `error_message` `error_message` TEXT;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `estimated_time` `estimated_time` INTEGER COMMENT 'Estimated processing time in seconds';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_started_at` `processing_started_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_completed_at` `processing_completed_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `expires_at` `expires_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `conversion_jobs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'usage_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `usage_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'usage_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_111' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_111`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_112' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_112`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`job_id`) REFERENCES `conversion_jobs` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `operation_type` `operation_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `success` `success` TINYINT(1) NOT NULL DEFAULT false;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `processing_time` `processing_time` INTEGER COMMENT 'Processing time in milliseconds';
+Executing (default): ALTER TABLE `usage_logs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `error_code` `error_code` VARCHAR(50);
+Executing (default): ALTER TABLE `usage_logs` CHANGE `timestamp` `timestamp` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `usage_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'subscriptions' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `subscriptions`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'subscriptions' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='subscriptions' AND constraint_name = 'subscriptions_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `subscriptions` DROP FOREIGN KEY `subscriptions_ibfk_1`;
+Executing (default): ALTER TABLE `subscriptions` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `status` `status` ENUM('active', 'canceled', 'past_due', 'trialing', 'pending') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_token` `payfast_token` VARCHAR(255) COMMENT 'PayFast subscription token for recurring payments';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_subscription_id` `payfast_subscription_id` VARCHAR(255) COMMENT 'PayFast subscription ID';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `amount` `amount` DECIMAL(10,2) NOT NULL COMMENT 'Subscription amount in currency';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `currency` `currency` VARCHAR(3) NOT NULL DEFAULT 'USD' COMMENT 'Currency code (USD for United States Dollar)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `billing_date` `billing_date` DATETIME COMMENT 'First billing date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `next_billing_date` `next_billing_date` DATETIME COMMENT 'Next billing date for recurring subscription';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `cancel_at` `cancel_at` DATETIME COMMENT 'Scheduled cancellation date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `canceled_at` `canceled_at` DATETIME COMMENT 'Actual cancellation timestamp';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `trial_end` `trial_end` DATETIME COMMENT 'Trial period end date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `started_at` `started_at` DATETIME NOT NULL COMMENT 'Subscription start date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `ended_at` `ended_at` DATETIME COMMENT 'Subscription end date (if canceled)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `subscriptions` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'payment_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `payment_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'payment_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_85' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_85`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_86' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_86`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `payfast_payment_id` `payfast_payment_id` VARCHAR(255) COMMENT 'PayFast payment ID (pf_payment_id)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `payment_type` `payment_type` ENUM('subscription', 'subscription_payment', 'one_time', 'refund') NOT NULL DEFAULT 'one_time';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `status` `status` ENUM('complete', 'failed', 'pending', 'cancelled') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `amount_gross` `amount_gross` DECIMAL(10,2) NOT NULL COMMENT 'Gross amount before fees';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `amount_fee` `amount_fee` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'PayFast processing fee';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `amount_net` `amount_net` DECIMAL(10,2) NOT NULL COMMENT 'Net amount after fees';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `currency` `currency` VARCHAR(3) NOT NULL DEFAULT 'USD';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `plan` `plan` VARCHAR(50) NOT NULL COMMENT 'Plan name (free, starter, pro, enterprise)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `payment_method` `payment_method` VARCHAR(50) COMMENT 'Payment method used (eft, credit_card, etc.)';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `name_first` `name_first` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `name_last` `name_last` VARCHAR(255);
+Executing (default): ALTER TABLE `payment_logs` CHANGE `email_address` `email_address` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `item_name` `item_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `item_description` `item_description` TEXT;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `custom_data` `custom_data` JSON COMMENT 'Custom data sent to PayFast';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `itn_data` `itn_data` JSON COMMENT 'Full ITN notification data from PayFast';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `error_message` `error_message` TEXT COMMENT 'Error message if payment failed';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `processed_at` `processed_at` DATETIME COMMENT 'When the payment was processed';
+Executing (default): ALTER TABLE `payment_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `payment_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'password_history' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `password_history`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'password_history' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='password_history' AND constraint_name = 'password_history_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `password_history` DROP FOREIGN KEY `password_history_ibfk_1`;
+Executing (default): ALTER TABLE `password_history` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `password_history` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `password_history` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `password_history` FROM `pdflab`
+✓ Database synchronized successfully
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+✓ PDFLab API Server running
+✓ Environment: development
+✓ Port: 3006
+✓ Health check: http://localhost:3006/health
+✓ API endpoint: http://localhost:3006/api
+[Cleanup Worker] Processing cleanup for job 6b1ab8d6-fa54-494d-a1fb-b28b151ca665
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '6b1ab8d6-fa54-494d-a1fb-b28b151ca665';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\6b1ab8d6-fa54-494d-a1fb-b28b151ca665
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\6b1ab8d6-fa54-494d-a1fb-b28b151ca665
+[Cleanup Worker] Cleanup completed for job 6b1ab8d6-fa54-494d-a1fb-b28b151ca665, deleted 2 directories
+✓ Cleanup job 42 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '6b1ab8d6-fa54-494d-a1fb-b28b151ca665'
+}
+[Cleanup Worker] Processing cleanup for job 9f8e0a59-b029-4ffc-b73f-ea964562148f
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '9f8e0a59-b029-4ffc-b73f-ea964562148f';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\9f8e0a59-b029-4ffc-b73f-ea964562148f
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\9f8e0a59-b029-4ffc-b73f-ea964562148f
+[Cleanup Worker] Cleanup completed for job 9f8e0a59-b029-4ffc-b73f-ea964562148f, deleted 2 directories
+✓ Cleanup job 43 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '9f8e0a59-b029-4ffc-b73f-ea964562148f'
+}
+[Cleanup Worker] Processing cleanup for job f1f2175c-4413-4c9d-80f6-32a50fb8750d
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'f1f2175c-4413-4c9d-80f6-32a50fb8750d';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\f1f2175c-4413-4c9d-80f6-32a50fb8750d
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\f1f2175c-4413-4c9d-80f6-32a50fb8750d
+[Cleanup Worker] Cleanup completed for job f1f2175c-4413-4c9d-80f6-32a50fb8750d, deleted 2 directories
+✓ Cleanup job 44 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: 'f1f2175c-4413-4c9d-80f6-32a50fb8750d'
+}
+[Cleanup Worker] Processing cleanup for job 2c11550e-ec21-4aed-80f5-ddbf91d53bf6
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '2c11550e-ec21-4aed-80f5-ddbf91d53bf6';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\2c11550e-ec21-4aed-80f5-ddbf91d53bf6
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\2c11550e-ec21-4aed-80f5-ddbf91d53bf6
+[Cleanup Worker] Cleanup completed for job 2c11550e-ec21-4aed-80f5-ddbf91d53bf6, deleted 2 directories
+✓ Cleanup job 45 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '2c11550e-ec21-4aed-80f5-ddbf91d53bf6'
+}
+[Cleanup Worker] Processing cleanup for job 6358e6d1-a0fc-41d1-9231-e6d13230570d
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '6358e6d1-a0fc-41d1-9231-e6d13230570d';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\6358e6d1-a0fc-41d1-9231-e6d13230570d
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\6358e6d1-a0fc-41d1-9231-e6d13230570d
+[Cleanup Worker] Cleanup completed for job 6358e6d1-a0fc-41d1-9231-e6d13230570d, deleted 2 directories
+✓ Cleanup job 46 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '6358e6d1-a0fc-41d1-9231-e6d13230570d'
+}
+[Cleanup Worker] Processing cleanup for job 3e0d757e-e463-4223-ae29-cad75f340a7c
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '3e0d757e-e463-4223-ae29-cad75f340a7c';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\3e0d757e-e463-4223-ae29-cad75f340a7c
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\3e0d757e-e463-4223-ae29-cad75f340a7c
+[Cleanup Worker] Cleanup completed for job 3e0d757e-e463-4223-ae29-cad75f340a7c, deleted 2 directories
+✓ Cleanup job 47 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '3e0d757e-e463-4223-ae29-cad75f340a7c'
+}
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT `id`, `type`, `status`, `file_name`, `file_size`, `created_at`, `processing_completed_at`, `error_message` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd' ORDER BY `ConversionJob`.`created_at` DESC LIMIT 0, 5;
+[0mGET /api/history?limit=5 [32m200[0m 54.497 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT `id`, `type`, `status`, `file_name`, `file_size`, `created_at`, `processing_completed_at`, `error_message` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd' ORDER BY `ConversionJob`.`created_at` DESC LIMIT 0, 5;
+[0mGET /api/history?limit=5 [36m304[0m 11.035 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT `id`, `type`, `status`, `file_name`, `file_size`, `created_at`, `processing_completed_at`, `error_message` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd' ORDER BY `ConversionJob`.`created_at` DESC LIMIT 0, 5;
+[0mGET /api/history?limit=5 [36m304[0m 30.107 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd';
+Executing (default): SELECT `id`, `type`, `status`, `file_name`, `file_size`, `created_at`, `processing_completed_at`, `error_message` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`user_id` = 'fbcd760d-bdf1-43d0-b91c-48e8fe5656cd' ORDER BY `ConversionJob`.`created_at` DESC LIMIT 0, 5;
+[0mGET /api/history?limit=5 [36m304[0m 13.577 ms - -[0m
+[Cleanup Worker] Processing cleanup for job 0cbd586e-6d87-4b2f-8e64-29446176839e
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '0cbd586e-6d87-4b2f-8e64-29446176839e';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\0cbd586e-6d87-4b2f-8e64-29446176839e
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\0cbd586e-6d87-4b2f-8e64-29446176839e
+[Cleanup Worker] Cleanup completed for job 0cbd586e-6d87-4b2f-8e64-29446176839e, deleted 2 directories
+✓ Cleanup job 48 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '0cbd586e-6d87-4b2f-8e64-29446176839e'
+}
+[Cleanup Worker] Processing cleanup for job 7e29067c-5177-4df6-8ead-af19d931d7a7
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '7e29067c-5177-4df6-8ead-af19d931d7a7';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\guest\7e29067c-5177-4df6-8ead-af19d931d7a7
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\guest\7e29067c-5177-4df6-8ead-af19d931d7a7
+[Cleanup Worker] Cleanup completed for job 7e29067c-5177-4df6-8ead-af19d931d7a7, deleted 2 directories
+✓ Cleanup job 49 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '7e29067c-5177-4df6-8ead-af19d931d7a7'
+}
+[Cleanup Worker] Processing cleanup for job ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8
+[Cleanup Worker] Cleanup completed for job ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8, deleted 2 directories
+✓ Cleanup job 50 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: 'ea3dcbb4-4e22-47b6-bb5f-9c64646b5bf8'
+}
+[Cleanup Worker] Processing cleanup for job 91d86109-4f53-4de8-bf1d-346dfbca716f
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '91d86109-4f53-4de8-bf1d-346dfbca716f';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\91d86109-4f53-4de8-bf1d-346dfbca716f
+[Cleanup Worker] Cleanup completed for job 91d86109-4f53-4de8-bf1d-346dfbca716f, deleted 2 directories
+✓ Cleanup job 51 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '91d86109-4f53-4de8-bf1d-346dfbca716f'
+}
+[Cleanup Worker] Processing cleanup for job 668d91dc-d490-4c10-b5c7-cab4f2010b1e
+Executing (default): SELECT `id`, `user_id`, `type`, `status`, `progress`, `input_file`, `output_file`, `file_name`, `file_size`, `cloudconvert_job_id`, `error_message`, `estimated_time`, `processing_started_at`, `processing_completed_at`, `created_at`, `updated_at`, `expires_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`id` = '668d91dc-d490-4c10-b5c7-cab4f2010b1e';
+[Cleanup Worker] Deleted upload directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\uploads\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\668d91dc-d490-4c10-b5c7-cab4f2010b1e
+[Cleanup Worker] Deleted output directory: C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\storage\outputs\fbcd760d-bdf1-43d0-b91c-48e8fe5656cd\668d91dc-d490-4c10-b5c7-cab4f2010b1e
+[Cleanup Worker] Cleanup completed for job 668d91dc-d490-4c10-b5c7-cab4f2010b1e, deleted 2 directories
+✓ Cleanup job 52 completed: {
+  deleted: true,
+  files_deleted: 2,
+  job_id: '668d91dc-d490-4c10-b5c7-cab4f2010b1e'
+}
+13:38:57 [tsx] change in ./src\services\cloudconvert.service.ts Restarting...
+c⚠ Email service not configured - missing SMTP credentials
+  Emails will be logged to console only (development mode)
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:86:12)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Deadlock found when trying to get lock; try restarting transaction
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_LOCK_DEADLOCK',
+    errno: 1213,
+    sqlState: '40001',
+    sqlMessage: 'Deadlock found when trying to get lock; try restarting transaction',
+    sql: 'ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;',
+    parameters: undefined
+  },
+  original: Error: Deadlock found when trying to get lock; try restarting transaction
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_LOCK_DEADLOCK',
+    errno: 1213,
+    sqlState: '40001',
+    sqlMessage: 'Deadlock found when trying to get lock; try restarting transaction',
+    sql: 'ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:86:12)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Deadlock found when trying to get lock; try restarting transaction
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_LOCK_DEADLOCK',
+    errno: 1213,
+    sqlState: '40001',
+    sqlMessage: 'Deadlock found when trying to get lock; try restarting transaction',
+    sql: 'ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;',
+    parameters: undefined
+  },
+  original: Error: Deadlock found when trying to get lock; try restarting transaction
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_LOCK_DEADLOCK',
+    errno: 1213,
+    sqlState: '40001',
+    sqlMessage: 'Deadlock found when trying to get lock; try restarting transaction',
+    sql: 'ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;',
+  parameters: {}
+}
+14:33:40 [tsx] change in ./src\controllers\admin.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+✗ Database sync failed: UnknownConstraintError [SequelizeUnknownConstraintError]: Constraint admin_audit_logs_ibfk_1 on table admin_audit_logs does not exist
+    at MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:72:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  parent: { sql: '', name: '', message: '' },
+  original: { sql: '', name: '', message: '' },
+  sql: '',
+  parameters: {},
+  constraint: 'admin_audit_logs_ibfk_1',
+  fields: undefined,
+  table: 'admin_audit_logs'
+}
+✗ Failed to start server: UnknownConstraintError [SequelizeUnknownConstraintError]: Constraint admin_audit_logs_ibfk_1 on table admin_audit_logs does not exist
+    at MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:72:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  parent: { sql: '', name: '', message: '' },
+  original: { sql: '', name: '', message: '' },
+  sql: '',
+  parameters: {},
+  constraint: 'admin_audit_logs_ibfk_1',
+  fields: undefined,
+  table: 'admin_audit_logs'
+}
+14:35:57 [tsx] change in ./src\routes\admin.routes.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+14:36:06 [tsx] change in ./src\routes\admin.routes.ts Restarting...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+✗ Database sync failed: UnknownConstraintError [SequelizeUnknownConstraintError]: Constraint admin_audit_logs_ibfk_1 on table admin_audit_logs does not exist
+    at MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:72:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  parent: { sql: '', name: '', message: '' },
+  original: { sql: '', name: '', message: '' },
+  sql: '',
+  parameters: {},
+  constraint: 'admin_audit_logs_ibfk_1',
+  fields: undefined,
+  table: 'admin_audit_logs'
+}
+✗ Failed to start server: UnknownConstraintError [SequelizeUnknownConstraintError]: Constraint admin_audit_logs_ibfk_1 on table admin_audit_logs does not exist
+    at MySQLQueryInterface.removeConstraint (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query-interface.js:72:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1402:17)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  parent: { sql: '', name: '', message: '' },
+  original: { sql: '', name: '', message: '' },
+  sql: '',
+  parameters: {},
+  constraint: 'admin_audit_logs_ibfk_1',
+  fields: undefined,
+  table: 'admin_audit_logs'
+}

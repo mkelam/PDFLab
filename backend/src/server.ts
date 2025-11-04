@@ -3,12 +3,14 @@ import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
+import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import path from 'path'
 import ejs from 'ejs'
 import { testConnection, syncDatabase } from './config/database'
 import { connectRedis, closeQueues } from './config/redis'
 import { apiLimiter } from './middleware/ratelimit.middleware'
+import { initializeGuestSession } from './middleware/guest.middleware'
 
 // Import models to ensure they're registered with Sequelize
 import './models/AdminAuditLog'
@@ -89,6 +91,12 @@ app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images')
 // Body parsing
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// Cookie parsing
+app.use(cookieParser())
+
+// Guest session initialization (runs for all requests)
+app.use(initializeGuestSession)
 
 // Logging
 if (process.env.NODE_ENV === 'development') {

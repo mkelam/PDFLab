@@ -36,6 +36,8 @@ interface UserAttributes {
   subscription_id?: string
   subscription_status?: SubscriptionStatus
   subscription_end_date?: Date
+  email_verified: boolean
+  email_verified_at?: Date
   failed_reset_attempts: number
   reset_locked_until?: Date
   created_at: Date
@@ -43,7 +45,7 @@ interface UserAttributes {
   last_login?: Date
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'created_at' | 'updated_at'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string
@@ -58,6 +60,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public subscription_id?: string
   public subscription_status?: SubscriptionStatus
   public subscription_end_date?: Date
+  public email_verified!: boolean
+  public email_verified_at?: Date
   public failed_reset_attempts!: number
   public reset_locked_until?: Date
   public readonly created_at!: Date
@@ -132,7 +136,7 @@ User.init(
     },
     conversions_limit: {
       type: DataTypes.INTEGER,
-      defaultValue: parseInt(process.env.CONVERSIONS_LIMIT_FREE || '3'),
+      defaultValue: parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
       allowNull: false
     },
     stripe_customer_id: {
@@ -148,6 +152,15 @@ User.init(
       allowNull: true
     },
     subscription_end_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    email_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
+    email_verified_at: {
       type: DataTypes.DATE,
       allowNull: true
     },

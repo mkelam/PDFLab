@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, User, CreditCard, FileText, Activity, Save, RefreshCw, Trash2, Key, UserCog } from 'lucide-react'
+import { X, User, CreditCard, FileText, Activity, Save, RefreshCw, Trash2, Key, UserCog, Mail, CheckCircle, Circle } from 'lucide-react'
 import { AdminButton } from './AdminButton'
 import { AdminBadge } from './AdminBadge'
 import { UserConversionsTab } from './UserConversionsTab'
@@ -19,6 +19,8 @@ interface UserDetail {
   conversions_limit: number
   subscription_status?: string
   subscription_end_date?: string
+  email_verified: boolean
+  email_verified_at?: string
   created_at: string
   last_login?: string
 }
@@ -40,6 +42,8 @@ export function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }: User
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [currentUserRole, setCurrentUserRole] = useState<string>('user')
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [verifying, setVerifying] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -245,6 +249,66 @@ export function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }: User
     }
   }
 
+  const handleSendVerificationEmail = async () => {
+    if (!confirm(`Send verification email to ${user?.email}?`)) return
+
+    try {
+      setSendingEmail(true)
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message || 'Verification email sent successfully!')
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to send verification email')
+      }
+    } catch (err) {
+      console.error('Failed to send verification email:', err)
+      alert('Failed to send verification email')
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
+  const handleVerifyEmail = async () => {
+    if (!confirm(`Manually verify email for ${user?.email}? This will mark their email as verified immediately.`)) return
+
+    try {
+      setVerifying(true)
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/verify-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message || 'Email verified successfully!')
+        await fetchUserDetails()
+        onUserUpdated()
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to verify email')
+      }
+    } catch (err) {
+      console.error('Failed to verify email:', err)
+      alert('Failed to verify email')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   if (!isOpen) return null
 
   const tabs = [
@@ -428,6 +492,34 @@ export function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }: User
                         {new Date(user.created_at).toLocaleDateString()}
                       </p>
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[oklch(0.60_0.01_250)] mb-2">
+                        Email Verification
+                      </label>
+                      <div className="flex items-center gap-2">
+                        {user.email_verified ? (
+                          <>
+                            <CheckCircle size={18} className="text-green-400" />
+                            <span className="text-green-400">
+                              Verified
+                            </span>
+                            {user.email_verified_at && (
+                              <span className="text-[oklch(0.60_0.01_250)] text-sm ml-2">
+                                ({new Date(user.email_verified_at).toLocaleDateString()})
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <Circle size={18} className="text-yellow-400" />
+                            <span className="text-yellow-400">
+                              Not Verified
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
@@ -462,6 +554,26 @@ export function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }: User
                         <AdminButton onClick={() => setIsEditing(true)}>
                           Edit Profile
                         </AdminButton>
+                        {!user.email_verified && (
+                          <>
+                            <AdminButton
+                              variant="secondary"
+                              onClick={handleSendVerificationEmail}
+                              disabled={sendingEmail}
+                            >
+                              <Mail size={16} />
+                              {sendingEmail ? 'Sending...' : 'Send Verification Email'}
+                            </AdminButton>
+                            <AdminButton
+                              variant="success"
+                              onClick={handleVerifyEmail}
+                              disabled={verifying}
+                            >
+                              <CheckCircle size={16} />
+                              {verifying ? 'Verifying...' : 'Verify Email'}
+                            </AdminButton>
+                          </>
+                        )}
                         <AdminButton
                           variant="secondary"
                           onClick={handleResetPassword}

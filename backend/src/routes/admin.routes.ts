@@ -13,7 +13,9 @@ import {
   exportUsersToCSV,
   createUser,
   deleteUser,
-  getStats
+  getStats,
+  resendVerificationEmail,
+  verifyUserEmail
 } from '../controllers/admin.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { requireAdmin, requirePermission, requireRole } from '../middleware/admin.middleware'
@@ -64,6 +66,12 @@ router.put('/users/:id/quota', requirePermission('users.view'), resetUserQuota)
 
 // Generate password reset link (support, admin, super_admin)
 router.post('/users/:id/reset-password', requirePermission('users.view'), resetUserPassword)
+
+// Resend verification email (support, admin, super_admin)
+router.post('/users/:id/resend-verification', requirePermission('users.view'), resendVerificationEmail)
+
+// Manually verify user email (admin and super_admin only)
+router.post('/users/:id/verify-email', requirePermission('users.edit'), verifyUserEmail)
 
 // Impersonate user (super_admin only)
 router.post('/users/:id/impersonate', requireRole(UserRole.SUPER_ADMIN), impersonateUser)

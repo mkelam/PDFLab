@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
-import { ConversionJob } from '../models/ConversionJob'
+import { ConversionJob, JobStatus } from '../models/ConversionJob'
 import { User } from '../models/User'
 import { Op } from 'sequelize'
+import { conversionQueue } from '../jobs/conversion.job'
 
 /**
  * GET /api/admin/conversions
@@ -170,14 +171,16 @@ export const retryConversionJob = async (req: Request, res: Response): Promise<v
 
     // Reset job status and re-queue
     await job.update({
-      status: 'pending',
+      status: JobStatus.PENDING,
       progress: 0,
-      error_message: null,
-      cloudconvert_job_id: null
+      error_message: undefined,
+      cloudconvert_job_id: undefined
     })
 
     // Re-add to Bull queue
-    const { conversionQueue } = await import('../jobs/conversion.job')
+    if (!conversionQueue) {
+      throw new Error('Conversion queue not available')
+    }
     await conversionQueue.add('convert', { jobId: job.id }, {
       attempts: 3,
       backoff: {
@@ -229,7 +232,7 @@ export const cancelConversionJob = async (req: Request, res: Response): Promise<
     // This requires CloudConvert SDK implementation
 
     await job.update({
-      status: 'failed',
+      status: JobStatus.FAILED,
       error_message: 'Cancelled by administrator'
     })
 
@@ -332,14 +335,16 @@ export const bulkRetryJobs = async (req: Request, res: Response): Promise<void> 
     }
 
     // Reset jobs and re-queue
-    const { conversionQueue } = await import('../jobs/conversion.job')
+    if (!conversionQueue) {
+      throw new Error('Conversion queue not available')
+    }
 
     for (const job of jobs) {
       await job.update({
-        status: 'pending',
+        status: JobStatus.PENDING,
         progress: 0,
-        error_message: null,
-        cloudconvert_job_id: null
+        error_message: undefined,
+        cloudconvert_job_id: undefined
       })
 
       await conversionQueue.add('convert', { jobId: job.id }, {
@@ -369,9 +374,11 @@ export const bulkRetryJobs = async (req: Request, res: Response): Promise<void> 
  * GET /api/admin/queue/status
  * Get Bull queue health metrics
  */
-export const getQueueStatus = async (req: Request, res: Response): Promise<void> => {
+export const getQueueStatus = async (_req: Request, res: Response): Promise<void> => {
   try {
-    const { conversionQueue } = await import('../jobs/conversion.job')
+    if (!conversionQueue) {
+      throw new Error('Conversion queue not available')
+    }
 
     const waiting = await conversionQueue.getWaitingCount()
     const active = await conversionQueue.getActiveCount()

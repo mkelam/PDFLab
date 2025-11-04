@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push validation..."
+
+# Change to backend directory
+cd backend
+
+# Full validation before push
+npm run validate
+
+echo "✅ Pre-push validation passed!"

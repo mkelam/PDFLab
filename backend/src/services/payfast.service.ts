@@ -135,14 +135,15 @@ export function createPaymentData(params: {
   planPrice: number
   transactionId: string
 }): PaymentData & { signature: string } {
-  const baseUrl = process.env.API_URL || 'http://localhost:3006'
+  const apiUrl = process.env['API_URL'] || 'http://localhost:3006'
+  const frontendUrl = process.env['FRONTEND_URL'] || 'http://localhost:3000'
 
   const paymentData: PaymentData = {
     merchant_id: PAYFAST_CONFIG.merchantId,
     merchant_key: PAYFAST_CONFIG.merchantKey,
-    return_url: `${baseUrl}/api/payfast/return`,
-    cancel_url: `${baseUrl}/api/payfast/cancel`,
-    notify_url: `${baseUrl}/api/payfast/webhook`,
+    return_url: `${frontendUrl}/payment/success`,
+    cancel_url: `${frontendUrl}/payment/cancel`,
+    notify_url: process.env['PAYFAST_ITN_URL'] || `${apiUrl}/api/payfast/webhook`,
     name_first: params.userName,
     email_address: params.userEmail,
     m_payment_id: params.transactionId,
@@ -175,15 +176,16 @@ export function createSubscriptionPaymentData(params: {
   transactionId: string
   billingDate?: Date
 }): SubscriptionPaymentData & { signature: string } {
-  const baseUrl = process.env.API_URL || 'http://localhost:3006'
+  const apiUrl = process.env['API_URL'] || 'http://localhost:3006'
+  const frontendUrl = process.env['FRONTEND_URL'] || 'http://localhost:3000'
   const billingDate = params.billingDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
 
   const paymentData: SubscriptionPaymentData = {
     merchant_id: PAYFAST_CONFIG.merchantId,
     merchant_key: PAYFAST_CONFIG.merchantKey,
-    return_url: `${baseUrl}/api/payfast/return`,
-    cancel_url: `${baseUrl}/api/payfast/cancel`,
-    notify_url: `${baseUrl}/api/payfast/webhook`,
+    return_url: `${frontendUrl}/payment/success`,
+    cancel_url: `${frontendUrl}/payment/cancel`,
+    notify_url: process.env['PAYFAST_ITN_URL'] || `${apiUrl}/api/payfast/webhook`,
     name_first: params.userName,
     email_address: params.userEmail,
     m_payment_id: params.transactionId,

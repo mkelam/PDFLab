@@ -1,0 +1,328 @@
+<div class="container">
+    <header>
+        <h1>👥 User Management</h1>
+        <p>Manage users, plans, and quotas</p>
+    </header>
+
+    <div class="content">
+        <!-- Statistics Card -->
+        <div class="card">
+            <h2>📊 Platform Statistics</h2>
+            <div class="info-grid" id="statsGrid">
+                <div class="info-item">
+                    <div class="label">Total Users</div>
+                    <div class="value" id="totalUsers">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Free Plan</div>
+                    <div class="value" id="freeUsers">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Starter Plan</div>
+                    <div class="value" id="starterUsers">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Pro Plan</div>
+                    <div class="value" id="proUsers">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New User Card -->
+        <div class="card">
+            <h2>➕ Add New User</h2>
+            <form id="addUserForm" style="margin-top: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; color: oklch(0.75 0 0); margin-bottom: 5px; font-size: 0.9em;">Email</label>
+                        <input type="email" name="email" required style="width: 100%; padding: 10px; background: oklch(0.08 0 0 / 0.8); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 6px; color: oklch(0.95 0 0); font-size: 1em;">
+                    </div>
+                    <div>
+                        <label style="display: block; color: oklch(0.75 0 0); margin-bottom: 5px; font-size: 0.9em;">Password</label>
+                        <input type="password" name="password" required style="width: 100%; padding: 10px; background: oklch(0.08 0 0 / 0.8); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 6px; color: oklch(0.95 0 0); font-size: 1em;">
+                    </div>
+                    <div>
+                        <label style="display: block; color: oklch(0.75 0 0); margin-bottom: 5px; font-size: 0.9em;">Name</label>
+                        <input type="text" name="name" style="width: 100%; padding: 10px; background: oklch(0.08 0 0 / 0.8); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 6px; color: oklch(0.95 0 0); font-size: 1em;">
+                    </div>
+                    <div>
+                        <label style="display: block; color: oklch(0.75 0 0); margin-bottom: 5px; font-size: 0.9em;">Plan</label>
+                        <select name="plan" style="width: 100%; padding: 10px; background: oklch(0.08 0 0 / 0.8); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 6px; color: oklch(0.95 0 0); font-size: 1em;">
+                            <option value="free">Free</option>
+                            <option value="starter">Starter</option>
+                            <option value="pro">Pro</option>
+                            <option value="enterprise">Enterprise</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" style="padding: 12px 24px; background: oklch(0.6 0.1 180); border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; font-size: 1em;">
+                    Create User
+                </button>
+            </form>
+            <div id="addUserMessage" style="margin-top: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
+        </div>
+
+        <!-- Users List -->
+        <div class="card">
+            <h2>👤 All Users</h2>
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="searchUsers" placeholder="Search users by email or name..." style="width: 100%; padding: 10px; background: oklch(0.08 0 0 / 0.8); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 6px; color: oklch(0.95 0 0); font-size: 1em;">
+            </div>
+            <div id="usersTable" style="overflow-x: auto;">
+                <p style="text-align: center; color: oklch(0.65 0 0); padding: 20px;">Loading users...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔗 Quick Links</h2>
+            <p style="line-height: 1.8;">
+                <a href="/">← Back to Home</a><br>
+                <a href="/health">🏥 System Health</a><br>
+                <a href="/api/payfast/plans">💳 Pricing Plans</a>
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>PDFLab API v1.0.0 | Admin Panel</p>
+    </footer>
+</div>
+
+<script>
+// API Base URL
+const API_URL = window.location.origin
+
+// Load stats and users on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadStats()
+    loadUsers()
+})
+
+// Load platform statistics
+async function loadStats() {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/stats`)
+        const data = await response.json()
+
+        if (data.success) {
+            document.getElementById('totalUsers').textContent = data.stats.totalUsers
+            document.getElementById('freeUsers').textContent = data.stats.planDistribution.free
+            document.getElementById('starterUsers').textContent = data.stats.planDistribution.starter
+            document.getElementById('proUsers').textContent = data.stats.planDistribution.pro
+        }
+    } catch (error) {
+        console.error('Failed to load stats:', error)
+    }
+}
+
+// Load all users
+async function loadUsers() {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users`)
+        const data = await response.json()
+
+        if (data.success) {
+            renderUsersTable(data.users)
+        }
+    } catch (error) {
+        console.error('Failed to load users:', error)
+        document.getElementById('usersTable').innerHTML = `
+            <p style="text-align: center; color: oklch(0.7 0.2 25); padding: 20px;">
+                Failed to load users. Please refresh the page.
+            </p>
+        `
+    }
+}
+
+// Render users table
+function renderUsersTable(users) {
+    const searchTerm = document.getElementById('searchUsers').value.toLowerCase()
+    const filteredUsers = users.filter(user =>
+        user.email.toLowerCase().includes(searchTerm) ||
+        (user.name && user.name.toLowerCase().includes(searchTerm))
+    )
+
+    if (filteredUsers.length === 0) {
+        document.getElementById('usersTable').innerHTML = `
+            <p style="text-align: center; color: oklch(0.65 0 0); padding: 20px;">
+                No users found.
+            </p>
+        `
+        return
+    }
+
+    const html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Plan</th>
+                    <th>Conversions</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filteredUsers.map(user => `
+                    <tr>
+                        <td>${user.email}</td>
+                        <td>${user.name || '-'}</td>
+                        <td>
+                            <select onchange="changePlan('${user.id}', this.value)" style="padding: 6px; background: oklch(0.08 0 0 / 0.8); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 4px; color: oklch(0.95 0 0);">
+                                <option value="free" ${user.plan === 'free' ? 'selected' : ''}>Free</option>
+                                <option value="starter" ${user.plan === 'starter' ? 'selected' : ''}>Starter</option>
+                                <option value="pro" ${user.plan === 'pro' ? 'selected' : ''}>Pro</option>
+                                <option value="enterprise" ${user.plan === 'enterprise' ? 'selected' : ''}>Enterprise</option>
+                            </select>
+                        </td>
+                        <td>
+                            ${user.conversions_used} / ${user.conversions_limit === -1 ? '∞' : user.conversions_limit}
+                            <button onclick="resetQuota('${user.id}')" style="margin-left: 8px; padding: 4px 8px; background: oklch(0.6 0.1 180 / 0.3); border: 1px solid oklch(0.6 0.1 180); border-radius: 4px; color: oklch(0.8 0.1 180); cursor: pointer; font-size: 0.85em;">
+                                Reset
+                            </button>
+                        </td>
+                        <td style="font-size: 0.9em;">${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button onclick="deleteUser('${user.id}', '${user.email}')" style="padding: 6px 12px; background: oklch(0.5 0.2 25 / 0.2); border: 1px solid oklch(0.5 0.2 25 / 0.4); border-radius: 4px; color: oklch(0.7 0.2 25); cursor: pointer; font-size: 0.9em;">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `
+
+    document.getElementById('usersTable').innerHTML = html
+}
+
+// Search users
+document.getElementById('searchUsers').addEventListener('input', async () => {
+    const response = await fetch(`${API_URL}/api/admin/users`)
+    const data = await response.json()
+    if (data.success) {
+        renderUsersTable(data.users)
+    }
+})
+
+// Add new user
+document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const formData = new FormData(e.target)
+    const userData = {
+        email: formData.get('email'),
+        password: formData.get('password'),
+        name: formData.get('name'),
+        plan: formData.get('plan')
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        })
+
+        const data = await response.json()
+        const messageEl = document.getElementById('addUserMessage')
+
+        if (data.success) {
+            messageEl.style.display = 'block'
+            messageEl.style.background = 'oklch(0.5 0.15 150 / 0.2)'
+            messageEl.style.border = '1px solid oklch(0.5 0.15 150 / 0.3)'
+            messageEl.style.color = 'oklch(0.7 0.15 150)'
+            messageEl.textContent = 'User created successfully!'
+            e.target.reset()
+            loadStats()
+            loadUsers()
+
+            setTimeout(() => {
+                messageEl.style.display = 'none'
+            }, 3000)
+        } else {
+            messageEl.style.display = 'block'
+            messageEl.style.background = 'oklch(0.5 0.2 25 / 0.2)'
+            messageEl.style.border = '1px solid oklch(0.5 0.2 25 / 0.3)'
+            messageEl.style.color = 'oklch(0.7 0.2 25)'
+            messageEl.textContent = `Error: ${data.message || 'Failed to create user'}`
+        }
+    } catch (error) {
+        console.error('Error creating user:', error)
+    }
+})
+
+// Change user plan
+async function changePlan(userId, newPlan) {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/plan`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: newPlan })
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+            alert(`Plan updated to ${newPlan}`)
+            loadStats()
+            loadUsers()
+        } else {
+            alert(`Failed to update plan: ${data.message}`)
+            loadUsers() // Reload to reset dropdown
+        }
+    } catch (error) {
+        console.error('Error updating plan:', error)
+        alert('Failed to update plan')
+        loadUsers()
+    }
+}
+
+// Reset user quota
+async function resetQuota(userId) {
+    if (!confirm('Reset this user\'s conversion quota to 0?')) return
+
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/quota`, {
+            method: 'PUT'
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+            alert('Quota reset successfully')
+            loadUsers()
+        } else {
+            alert(`Failed to reset quota: ${data.message}`)
+        }
+    } catch (error) {
+        console.error('Error resetting quota:', error)
+        alert('Failed to reset quota')
+    }
+}
+
+// Delete user
+async function deleteUser(userId, userEmail) {
+    if (!confirm(`Are you sure you want to delete user ${userEmail}? This action cannot be undone.`)) return
+
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+            method: 'DELETE'
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+            alert('User deleted successfully')
+            loadStats()
+            loadUsers()
+        } else {
+            alert(`Failed to delete user: ${data.message}`)
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error)
+        alert('Failed to delete user')
+    }
+}
+</script>

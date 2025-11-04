@@ -1,21 +1,55 @@
 {
   "compilerOptions": {
+    // Target and module settings
     "target": "ES2020",
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
+
+    // Module resolution
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+
+    // Emit settings
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node"],
+
+    // Strict type checking (ENHANCED)
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    // Additional type safety checks (CRITICAL - prevents production errors)
+    "noUnusedLocals": false, // Disabled temporarily - can be enabled after cleanup
+    "noUnusedParameters": false, // Disabled temporarily - can be enabled after cleanup
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false, // Disabled temporarily - process.env access patterns
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false, // Disabled temporarily - process.env access
+
+    // Emit validation
+    "noEmitOnError": true,
+    "preserveConstEnums": true,
+    "removeComments": false,
+
+    // Performance
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

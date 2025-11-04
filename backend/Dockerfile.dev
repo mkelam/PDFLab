@@ -1,0 +1,32 @@
+# PDFLab Backend - Development Dockerfile
+# Uses tsx watch for hot reload during development
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies for native modules (bcrypt, etc.)
+RUN apk add --no-cache python3 make g++
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies (including dev)
+RUN npm ci
+
+# Copy application code
+COPY . .
+
+# Create storage directories with proper permissions
+RUN mkdir -p /app/storage/uploads /app/storage/outputs && \
+    chmod -R 755 /app/storage
+
+# Expose port
+EXPOSE 3006
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3006/health', (r) => { if (r.statusCode === 200) process.exit(0); else process.exit(1); })" || exit 1
+
+# Start development server with tsx watch
+CMD ["npm", "run", "dev"]

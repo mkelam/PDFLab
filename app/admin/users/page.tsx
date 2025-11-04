@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserDetailModal } from '@/components/admin/UserDetailModal'
-import { Search, Download, UserPlus, ChevronLeft, ChevronRight, RefreshCw, Users as UsersIcon } from 'lucide-react'
+import { Search, Download, UserPlus, ChevronLeft, ChevronRight, RefreshCw, Users as UsersIcon, CheckCircle, Circle } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
@@ -20,6 +20,7 @@ interface User {
   plan: string
   conversions_used: number
   conversions_limit: number
+  email_verified: boolean
   created_at: string
   last_login?: string
 }
@@ -89,20 +90,20 @@ export default function UsersPage() {
 
   const getPlanBadgeVariant = (plan: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (plan) {
-      case 'enterprise': return 'default' // teal - premium
-      case 'pro': return 'default' // teal
+      case 'enterprise': return 'default'
+      case 'pro': return 'default'
       case 'starter': return 'secondary'
-      default: return 'outline' // free plan
+      default: return 'outline'
     }
   }
 
   const getRoleBadgeVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (role) {
-      case 'super_admin': return 'destructive' // red - important
-      case 'admin': return 'default' // teal
+      case 'super_admin': return 'destructive'
+      case 'admin': return 'default'
       case 'finance': return 'secondary'
       case 'support': return 'secondary'
-      default: return 'outline' // regular user
+      default: return 'outline'
     }
   }
 
@@ -189,7 +190,6 @@ export default function UsersPage() {
 
   return (
     <AdminLayout>
-      {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -220,7 +220,6 @@ export default function UsersPage() {
           <CardDescription>Browse and manage all registered users</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Search and Filters */}
           <div className="mb-6 flex flex-col md:flex-row gap-4">
             <form onSubmit={handleSearch} className="flex-1 flex gap-2">
               <div className="relative flex-1">
@@ -264,7 +263,6 @@ export default function UsersPage() {
             </div>
           </div>
 
-          {/* Users Table */}
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -277,106 +275,121 @@ export default function UsersPage() {
               <p className="text-muted-foreground">Try adjusting your search or filters</p>
             </div>
           ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="pb-3 w-12">
-                      <input
-                        type="checkbox"
-                        checked={selectedUserIds.size === users.length && users.length > 0}
-                        onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-ring"
-                      />
-                    </th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Email</th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Name</th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Role</th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Plan</th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Usage</th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Last Login</th>
-                    <th className="pb-3 text-sm font-medium text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition">
-                      <td className="py-4">
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border text-left">
+                      <th className="pb-3 w-12">
                         <input
                           type="checkbox"
-                          checked={selectedUserIds.has(user.id)}
-                          onChange={() => handleSelectUser(user.id)}
+                          checked={selectedUserIds.size === users.length && users.length > 0}
+                          onChange={handleSelectAll}
                           className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-ring"
                         />
-                      </td>
-                      <td className="py-4 text-foreground">{user.email}</td>
-                      <td className="py-4 text-foreground">{user.name || '-'}</td>
-                      <td className="py-4">
-                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {user.role.replace('_', ' ')}
-                        </Badge>
-                      </td>
-                      <td className="py-4">
-                        <Badge variant={getPlanBadgeVariant(user.plan)}>
-                          {user.plan}
-                        </Badge>
-                      </td>
-                      <td className="py-4 text-foreground">
-                        {user.conversions_used} / {user.conversions_limit === -1 ? '∞' : user.conversions_limit}
-                      </td>
-                      <td className="py-4 text-muted-foreground text-sm">
-                        {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
-                      </td>
-                      <td className="py-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedUserId(user.id)}
-                        >
-                          View
-                        </Button>
-                      </td>
+                      </th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Email</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Name</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Role</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Plan</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Verified</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Usage</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Last Login</th>
+                      <th className="pb-3 text-sm font-medium text-muted-foreground">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition">
+                        <td className="py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedUserIds.has(user.id)}
+                            onChange={() => handleSelectUser(user.id)}
+                            className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-ring"
+                          />
+                        </td>
+                        <td className="py-4 text-foreground">{user.email}</td>
+                        <td className="py-4 text-foreground">{user.name || '-'}</td>
+                        <td className="py-4">
+                          <Badge variant={getRoleBadgeVariant(user.role)}>
+                            {user.role.replace('_', ' ')}
+                          </Badge>
+                        </td>
+                        <td className="py-4">
+                          <Badge variant={getPlanBadgeVariant(user.plan)}>
+                            {user.plan}
+                          </Badge>
+                        </td>
+                        <td className="py-4">
+                          <div className="flex items-center gap-2">
+                            {user.email_verified ? (
+                              <>
+                                <CheckCircle size={16} className="text-green-500" />
+                                <span className="text-sm text-green-500 font-medium">Yes</span>
+                              </>
+                            ) : (
+                              <>
+                                <Circle size={16} className="text-yellow-500" />
+                                <span className="text-sm text-yellow-500 font-medium">No</span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 text-foreground">
+                          {user.conversions_used} / {user.conversions_limit === -1 ? '∞' : user.conversions_limit}
+                        </td>
+                        <td className="py-4 text-muted-foreground text-sm">
+                          {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                        </td>
+                        <td className="py-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedUserId(user.id)}
+                          >
+                            View
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Pagination */}
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={pagination.page === 1}
+                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                  >
+                    <ChevronLeft size={16} />
+                    Previous
+                  </Button>
+                  <span className="text-sm text-foreground px-4">
+                    Page {pagination.page} of {pagination.totalPages}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={pagination.page === pagination.totalPages}
+                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                  >
+                    Next
+                    <ChevronRight size={16} />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={pagination.page === 1}
-                  onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-                >
-                  <ChevronLeft size={16} />
-                  Previous
-                </Button>
-                <span className="text-sm text-foreground px-4">
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={pagination.page === pagination.totalPages}
-                  onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-                >
-                  Next
-                  <ChevronRight size={16} />
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </CardContent>
       </Card>
 
-      {/* User Detail Modal */}
       {selectedUserId && (
         <UserDetailModal
           userId={selectedUserId}

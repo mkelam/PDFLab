@@ -4,14 +4,21 @@ import fs from 'fs'
 import { Request } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 
+// Helper function to get absolute storage path
+const getStoragePath = (): string => {
+  const storagePath = process.env['STORAGE_PATH'] || './storage'
+  return path.resolve(storagePath)
+}
+
 // Storage configuration
 const storage = multer.diskStorage({
   destination: (req: Request, file, cb) => {
-    const userId = req.userId || 'anonymous'
+    // Use userId for authenticated users, 'guest' for guest users
+    const userId = req.userId || 'guest'
     const jobId = uuidv4()
 
     const uploadPath = path.join(
-      process.env.STORAGE_PATH || './storage',
+      getStoragePath(),
       'uploads',
       userId,
       jobId
@@ -43,51 +50,23 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
 }
 
 // Multer configuration for single file upload
+// Note: Using maximum possible size (500MB for enterprise), plan-specific validation done in routes
 export const uploadMiddleware = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: (req: Request) => {
-      // Dynamic file size based on user plan
-      const userPlan = req.userPlan || 'free'
-
-      switch (userPlan) {
-        case 'enterprise':
-          return 524288000 // 500MB
-        case 'pro':
-          return parseInt(process.env.MAX_FILE_SIZE_PRO || '104857600') // 100MB
-        case 'starter':
-          return parseInt(process.env.MAX_FILE_SIZE_STARTER || '26214400') // 25MB
-        case 'free':
-        default:
-          return parseInt(process.env.MAX_FILE_SIZE_FREE || '10485760') // 10MB
-      }
-    },
+    fileSize: 524288000, // 500MB max (enterprise limit)
     files: 1 // Single file upload
   }
 })
 
 // Multer configuration for multiple file uploads (for PDF merge)
+// Note: Using maximum possible size (500MB for enterprise), plan-specific validation done in routes
 export const uploadMultipleMiddleware = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: (req: Request) => {
-      // Dynamic file size based on user plan
-      const userPlan = req.userPlan || 'free'
-
-      switch (userPlan) {
-        case 'enterprise':
-          return 524288000 // 500MB
-        case 'pro':
-          return parseInt(process.env.MAX_FILE_SIZE_PRO || '104857600') // 100MB
-        case 'starter':
-          return parseInt(process.env.MAX_FILE_SIZE_STARTER || '26214400') // 25MB
-        case 'free':
-        default:
-          return parseInt(process.env.MAX_FILE_SIZE_FREE || '10485760') // 10MB
-      }
-    },
+    fileSize: 524288000, // 500MB max (enterprise limit)
     files: 10 // Maximum 10 files for merging
   }
 })

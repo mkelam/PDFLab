@@ -1,0 +1,30 @@
+# PDFLab - Development Docker Compose Override
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+version: '3.8'
+
+services:
+  # Override backend to use development Dockerfile
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./backend/src:/app/src:delegated
+      - ./backend/storage:/app/storage
+      - ./backend/logs:/app/logs
+    command: ["npm", "run", "dev"]
+
+  # Override worker to use development Dockerfile
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./backend/src:/app/src:delegated
+      - ./backend/storage:/app/storage
+      - ./backend/logs:/app/logs
+    command: ["npm", "run", "dev"]

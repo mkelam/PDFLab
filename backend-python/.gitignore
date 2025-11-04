@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+pip-log.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Storage (uploaded files)
+storage/uploads/*
+storage/outputs/*
+storage/temp/*
+!storage/uploads/.gitkeep
+!storage/outputs/.gitkeep
+!storage/temp/.gitkeep
+
+# Logs
+logs/*.log
+*.log
+
+# Alembic
+alembic.ini
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/

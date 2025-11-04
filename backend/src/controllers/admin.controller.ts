@@ -288,7 +288,7 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
 
     // In production, you would send this via email
     // For now, we just return it to the admin
-    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
+    const resetLink = `${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/reset-password?token=${resetToken}`
 
     res.json({
       success: true,
@@ -300,6 +300,109 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
     console.error('Reset password error:', error)
     res.status(500).json({
       error: 'Failed to generate reset link',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+/**
+ * POST /api/admin/users/:id/resend-verification
+ * Resend email verification to user
+ */
+export const resendVerificationEmail = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params
+
+    const user = await User.findByPk(id)
+    if (!user) {
+      res.status(404).json({
+        error: 'User not found'
+      })
+      return
+    }
+
+    // Generate verification token
+    const { generateAccessToken } = await import('../utils/auth.utils')
+    const verificationToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      plan: user.plan
+    }, '24h') // 24-hour expiry for email verification
+
+    // Send verification email
+    const emailService = await import('../services/email.service')
+    const emailSent = await emailService.default.sendVerificationEmail(
+      user.email,
+      verificationToken
+    )
+
+    if (!emailSent) {
+      res.status(500).json({
+        error: 'Failed to send email',
+        message: 'Email service error - please check SMTP configuration'
+      })
+      return
+    }
+
+    res.json({
+      success: true,
+      message: `Verification email sent to ${user.email}`,
+      email: user.email
+    })
+  } catch (error) {
+    console.error('Resend verification email error:', error)
+    res.status(500).json({
+      error: 'Failed to send verification email',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+/**
+ * POST /api/admin/users/:id/verify-email
+ * Manually verify user's email (admin only)
+ */
+export const verifyUserEmail = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params
+
+    const user = await User.findByPk(id)
+    if (!user) {
+      res.status(404).json({
+        error: 'User not found'
+      })
+      return
+    }
+
+    // Check if already verified
+    if (user.email_verified) {
+      res.status(400).json({
+        error: 'Email already verified',
+        message: `Email ${user.email} was already verified on ${user.email_verified_at?.toISOString()}`
+      })
+      return
+    }
+
+    // Update user verification status
+    await user.update({
+      email_verified: true,
+      email_verified_at: new Date()
+    })
+
+    res.json({
+      success: true,
+      message: `Email ${user.email} manually verified by admin`,
+      user: {
+        id: user.id,
+        email: user.email,
+        email_verified: user.email_verified,
+        email_verified_at: user.email_verified_at
+      }
+    })
+  } catch (error) {
+    console.error('Verify user email error:', error)
+    res.status(500).json({
+      error: 'Failed to verify user email',
       message: error instanceof Error ? error.message : 'Unknown error'
     })
   }

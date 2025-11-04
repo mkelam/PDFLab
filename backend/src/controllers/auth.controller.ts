@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { User, UserPlan } from '../models'
+import { User, UserPlan, ConversionJob } from '../models'
 import {
   hashPassword,
   verifyPassword,
@@ -10,6 +10,7 @@ import {
   isValidPassword
 } from '../utils/auth.utils'
 import emailService from '../services/email.service'
+import GuestSessionService from '../services/guest-session.service'
 
 /**
  * Register a new user
@@ -63,10 +64,49 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       name: name || undefined,
       plan: UserPlan.FREE,
       conversions_used: 0,
-      conversions_limit: parseInt(process.env.CONVERSIONS_LIMIT_FREE || '3'),
+      conversions_limit: parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
       created_at: new Date(),
       updated_at: new Date()
     })
+
+    // Migrate guest session if exists
+    const guestSessionId = req.cookies?.guest_session_id
+    let migratedJobs = 0
+
+    if (guestSessionId) {
+      try {
+        // Get guest session to verify it exists
+        const guestSession = await GuestSessionService.getSession(guestSessionId)
+
+        if (guestSession) {
+          // Migrate guest conversion jobs to the new user
+          const updatedCount = await ConversionJob.update(
+            { user_id: user.id },
+            { where: { user_id: null } }
+          )
+
+          migratedJobs = Array.isArray(updatedCount) ? updatedCount[0] : updatedCount
+
+          if (migratedJobs > 0) {
+            console.log(`✅ Migrated ${migratedJobs} guest conversion job(s) to user ${user.email}`)
+
+            // Update user's conversion count
+            user.conversions_used = migratedJobs
+            await user.save()
+          }
+
+          // Delete guest session from Redis
+          await GuestSessionService.deleteSession(guestSessionId)
+          console.log(`✅ Deleted guest session ${guestSessionId}`)
+
+          // Clear guest session cookie
+          res.clearCookie('guest_session_id')
+        }
+      } catch (error) {
+        console.error('Guest session migration error:', error)
+        // Don't fail registration if migration fails
+      }
+    }
 
     // Generate tokens
     const accessToken = generateAccessToken({
@@ -82,7 +122,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     })
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: migratedJobs > 0
+        ? `User registered successfully. ${migratedJobs} conversion${migratedJobs > 1 ? 's' : ''} migrated to your account.`
+        : 'User registered successfully',
       user: {
         id: user.id,
         email: user.email,
@@ -93,7 +135,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         conversions_limit: user.conversions_limit
       },
       token: accessToken,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
+      migrated_jobs: migratedJobs
     })
   } catch (error) {
     console.error('Registration error:', error)
@@ -474,8 +517,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     user.password_hash = password_hash
     user.failed_reset_attempts = 0
     user.reset_locked_until = undefined
-    user.updated_at = new Date()
-    await user.save()
+    await user.save() // Sequelize automatically updates updated_at
 
     console.log(`Password reset successful for user: ${user.email}`)
 

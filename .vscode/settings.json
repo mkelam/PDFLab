@@ -1,0 +1,33 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "eslint.validate": ["typescript"],
+  "eslint.workingDirectories": [
+    "./backend",
+    "./"
+  ],
+  "files.associations": {
+    "*.env.*": "dotenv"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.next": true,
+    "**/coverage": true
+  },
+  "problems.showCurrentInStatus": true,
+  "files.autoSave": "onFocusChange",
+  "javascript.validate.enable": false,
+  "typescript.validate.enable": true,
+  "typescript.tsserver.maxTsServerMemory": 4096
+}

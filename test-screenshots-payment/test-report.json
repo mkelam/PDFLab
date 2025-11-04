@@ -1,0 +1,88 @@
+{
+  "testRun": {
+    "timestamp": "2025-11-04T17:59:09.726Z",
+    "duration": "N/A",
+    "environment": {
+      "frontend": "http://localhost:3000",
+      "backend": "http://localhost:3006"
+    }
+  },
+  "results": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "passRate": "100.0%"
+  },
+  "screenshots": [
+    {
+      "filename": "01-pricing-page-loaded-2025-11-04T17-58-27.png",
+      "description": "Pricing page loaded",
+      "timestamp": "2025-11-04T17-58-27"
+    },
+    {
+      "filename": "02-pricing-with-discounts-2025-11-04T17-58-29.png",
+      "description": "Pricing page showing discount badges",
+      "timestamp": "2025-11-04T17-58-29"
+    },
+    {
+      "filename": "03-before-click-starter-2025-11-04T17-58-33.png",
+      "description": "Before clicking Choose Starter",
+      "timestamp": "2025-11-04T17-58-33"
+    },
+    {
+      "filename": "04-after-click-starter-2025-11-04T17-58-36.png",
+      "description": "After clicking Choose Starter",
+      "timestamp": "2025-11-04T17-58-36"
+    },
+    {
+      "filename": "05-get-started-page-2025-11-04T17-58-40.png",
+      "description": "Get-Started page loaded with plan=starter",
+      "timestamp": "2025-11-04T17-58-40"
+    },
+    {
+      "filename": "06-signup-form-empty-2025-11-04T17-58-44.png",
+      "description": "Signup form empty",
+      "timestamp": "2025-11-04T17-58-44"
+    },
+    {
+      "filename": "07-signup-form-filled-2025-11-04T17-58-48.png",
+      "description": "Signup form filled with test data",
+      "timestamp": "2025-11-04T17-58-48"
+    },
+    {
+      "filename": "08-after-signup-submit-2025-11-04T17-58-52.png",
+      "description": "After signup submission",
+      "timestamp": "2025-11-04T17-58-52"
+    },
+    {
+      "filename": "09-payment-page-2025-11-04T17-58-55.png",
+      "description": "Payment page loaded",
+      "timestamp": "2025-11-04T17-58-55"
+    },
+    {
+      "filename": "10-payment-page-scrolled-2025-11-04T17-58-57.png",
+      "description": "Payment page scrolled view",
+      "timestamp": "2025-11-04T17-58-57"
+    },
+    {
+      "filename": "11-success-verifying-2025-11-04T17-59-01.png",
+      "description": "Success page - verifying state",
+      "timestamp": "2025-11-04T17-59-01"
+    },
+    {
+      "filename": "12-success-complete-2025-11-04T17-59-05.png",
+      "description": "Success page - complete state",
+      "timestamp": "2025-11-04T17-59-05"
+    },
+    {
+      "filename": "13-cancel-page-2025-11-04T17-59-08.png",
+      "description": "Cancel page loaded",
+      "timestamp": "2025-11-04T17-59-08"
+    }
+  ],
+  "errors": [],
+  "testUser": {
+    "email": "payment-test-1762279102274@pdflab.com",
+    "note": "Generated for this test run"
+  }
+}

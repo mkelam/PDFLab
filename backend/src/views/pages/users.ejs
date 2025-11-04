@@ -1,0 +1,183 @@
+<div class="container">
+    <header>
+        <h1>👥 User Management</h1>
+        <p>Authentication and user account endpoints</p>
+    </header>
+
+    <div class="content">
+        <div class="card">
+            <h2>🔐 Authentication Endpoints</h2>
+            <p style="color: oklch(0.65 0 0); margin-bottom: 20px;">
+                These endpoints handle user registration, login, and session management.
+            </p>
+
+            <h3>Public Endpoints</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/auth/register</span>
+                    <span class="description">Create a new user account</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/auth/login</span>
+                    <span class="description">Authenticate user and receive JWT token</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/auth/refresh</span>
+                    <span class="description">Refresh expired JWT token</span>
+                </li>
+            </ul>
+
+            <h3>Protected Endpoints</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/auth/profile</span>
+                    <span class="description">Get current user profile (requires authentication)</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>📋 Registration Request</h2>
+            <p style="color: oklch(0.65 0 0); margin-bottom: 15px;">
+                <strong>Endpoint:</strong> <code>POST /api/auth/register</code>
+            </p>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem; margin-bottom: 20px;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Request Body:</h3>
+                <pre><code>{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "name": "John Doe"
+}</code></pre>
+            </div>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Response (201 Created):</h3>
+                <pre><code>{
+  "success": true,
+  "message": "User registered successfully",
+  "user": {
+    "id": "uuid-here",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "plan": "free"
+  },
+  "token": "jwt-token-here"
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔑 Login Request</h2>
+            <p style="color: oklch(0.65 0 0); margin-bottom: 15px;">
+                <strong>Endpoint:</strong> <code>POST /api/auth/login</code>
+            </p>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem; margin-bottom: 20px;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Request Body:</h3>
+                <pre><code>{
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}</code></pre>
+            </div>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Response (200 OK):</h3>
+                <pre><code>{
+  "success": true,
+  "message": "Login successful",
+  "user": {
+    "id": "uuid-here",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "plan": "free",
+    "conversions_used": 0,
+    "conversions_limit": 3
+  },
+  "token": "jwt-token-here"
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>👤 Get Profile Request</h2>
+            <p style="color: oklch(0.65 0 0); margin-bottom: 15px;">
+                <strong>Endpoint:</strong> <code>GET /api/auth/profile</code><br>
+                <strong>Authentication:</strong> Required (Bearer token)
+            </p>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem; margin-bottom: 20px;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Request Headers:</h3>
+                <pre><code>Authorization: Bearer jwt-token-here</code></pre>
+            </div>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Response (200 OK):</h3>
+                <pre><code>{
+  "success": true,
+  "user": {
+    "id": "uuid-here",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "plan": "free",
+    "conversions_used": 0,
+    "conversions_limit": 3,
+    "subscription_status": null,
+    "created_at": "2025-10-31T12:00:00.000Z"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔄 Refresh Token Request</h2>
+            <p style="color: oklch(0.65 0 0); margin-bottom: 15px;">
+                <strong>Endpoint:</strong> <code>POST /api/auth/refresh</code>
+            </p>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem; margin-bottom: 20px;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Request Body:</h3>
+                <pre><code>{
+  "refreshToken": "refresh-token-here"
+}</code></pre>
+            </div>
+
+            <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem;">
+                <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Response (200 OK):</h3>
+                <pre><code>{
+  "success": true,
+  "token": "new-jwt-token-here"
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>💡 Authentication Notes</h2>
+            <ul style="list-style-position: inside; color: oklch(0.75 0 0); line-height: 1.8;">
+                <li>Passwords are hashed with bcrypt (salt rounds: 10)</li>
+                <li>JWT tokens expire after 7 days by default</li>
+                <li>All authentication endpoints have rate limiting (5 requests per 15 minutes)</li>
+                <li>User emails must be unique</li>
+                <li>Default plan for new users is "free" with 3 conversions per month</li>
+                <li>Session tokens are stored in localStorage on the frontend</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🔗 Quick Links</h2>
+            <p style="line-height: 1.8;">
+                <a href="/">← Back to Home</a><br>
+                <a href="/health">🏥 System Health</a><br>
+                <a href="/api/payfast/plans">💳 Pricing Plans</a>
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>PDFLab API v1.0.0 | Secure Authentication</p>
+    </footer>
+</div>

@@ -1,0 +1,79 @@
+
+> pdflab@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.16
+  - Local:        http://localhost:3000
+  - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 4.4s
+ ○ Compiling / ...
+
+
+Source path: c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\app\globals.css
+Setting up new context...
+Finding changed files: 25.503ms
+Reading changed files: 711.042ms
+Sorting candidates: 5.996ms
+Generate rules: 452.705ms
+Build stylesheet: 7.049ms
+Potential classes:  5373
+Active contexts:  1
+JIT TOTAL: 1.630s
+
+
+ ✓ Compiled / in 10.3s (801 modules)
+ GET / 200 in 10919ms
+
+
+Source path: c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\app\globals.css
+Finding changed files: 11.899ms
+Reading changed files: 0.208ms
+Sorting candidates: 0.018ms
+Generate rules: 0.386ms
+Build stylesheet: 0.014ms
+Potential classes:  1
+Active contexts:  1
+JIT TOTAL: 116.925ms
+
+
+ ✓ Compiled in 1079ms (401 modules)
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\typescript\lib\typescript.js', but to 'c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack-config.js
+<w>  at file c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\typescript\lib\typescript.js', but to 'c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack-config.js
+<w>  at file c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+ GET / 200 in 94ms
+ GET / 200 in 53ms
+ ○ Compiling /login ...
+
+
+Source path: c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\app\globals.css
+Finding changed files: 20.875ms
+Reading changed files: 0.016ms
+Sorting candidates: 0.011ms
+Generate rules: 0.283ms
+Build stylesheet: 0.011ms
+Potential classes:  1
+Active contexts:  1
+JIT TOTAL: 144.11ms
+
+
+ ✓ Compiled /login in 1634ms (800 modules)
+ ✓ Compiled /_not-found in 427ms (789 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 652ms
+[?25h

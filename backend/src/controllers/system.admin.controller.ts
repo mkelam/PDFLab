@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import { Op } from 'sequelize'
+import { Op, QueryTypes } from 'sequelize'
 import { sequelize } from '../config/database'
-import { redisClient, conversionQueue, cleanupQueue } from '../config/redis'
-import { ConversionJob } from '../models/ConversionJob'
+import { redisClient, conversionQueue } from '../config/redis'
+import { ConversionJob, JobStatus } from '../models/ConversionJob'
 import { User } from '../models/User'
 import { SystemHealthLog, HealthStatus } from '../models/SystemHealthLog'
 import fs from 'fs'
@@ -17,7 +17,7 @@ const unlink = promisify(fs.unlink)
  * Get overall system health summary
  * GET /api/admin/system/health
  */
-export const getSystemHealth = async (req: Request, res: Response): Promise<void> => {
+export const getSystemHealth = async (_req: Request, res: Response): Promise<void> => {
   try {
     // CloudConvert health
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000)
@@ -180,7 +180,7 @@ export const getSystemHealth = async (req: Request, res: Response): Promise<void
 export const getCloudConvertHealth = async (req: Request, res: Response): Promise<void> => {
   try {
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    const _last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
     // Get error logs for last 24 hours
     const recentErrors = await ConversionJob.findAll({
@@ -258,7 +258,7 @@ export const getStorageHealth = async (req: Request, res: Response): Promise<voi
       GROUP BY u.id, u.email, u.name
       ORDER BY total_size DESC
       LIMIT 10
-    `, { type: sequelize.QueryTypes.SELECT })
+    `, { type: QueryTypes.SELECT })
 
     res.json({
       success: true,
@@ -287,9 +287,9 @@ export const getErrorLogs = async (req: Request, res: Response): Promise<void> =
 
     const errors = await ConversionJob.findAll({
       where: {
-        status: 'failed',
-        error_message: { [Op.ne]: null }
-      },
+        status: JobStatus.FAILED,
+        error_message: { [Op.not]: null }
+      } as any,
       order: [['created_at', 'DESC']],
       limit: limitNum,
       include: [{
@@ -356,10 +356,10 @@ export const testConversion = async (req: Request, res: Response): Promise<void>
  * Clear Redis cache
  * POST /api/admin/system/clear-cache
  */
-export const clearCache = async (req: Request, res: Response): Promise<void> => {
+export const clearCache = async (_req: Request, res: Response): Promise<void> => {
   try {
     // Clear all Redis keys (be careful with this in production!)
-    await redisClient.flushdb()
+    await redisClient.flushDb()
 
     res.json({
       success: true,

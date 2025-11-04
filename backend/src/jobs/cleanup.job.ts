@@ -4,9 +4,15 @@ import fs from 'fs/promises'
 import { getCleanupQueue } from '../config/redis'
 import { ConversionJob } from '../models'
 
+// Helper function to get absolute storage path
+const getStoragePath = (): string => {
+  const storagePath = process.env['STORAGE_PATH'] || './storage'
+  return path.resolve(storagePath)
+}
+
 interface CleanupJobData {
   job_id: string
-  user_id: string
+  user_id: string | null // Null for guest conversions
 }
 
 /**
@@ -41,17 +47,20 @@ export const initializeCleanupWorker = () => {
     }
 
     // 2. Define paths to delete
+    // For guest conversions (user_id is null), use 'guest' as directory name
+    const userFolder = user_id || 'guest'
+
     const userUploadDir = path.join(
-      process.env['STORAGE_PATH'] || './storage',
+      getStoragePath(),
       'uploads',
-      user_id,
+      userFolder,
       job_id
     )
 
     const userOutputDir = path.join(
-      process.env['STORAGE_PATH'] || './storage',
+      getStoragePath(),
       'outputs',
-      user_id,
+      userFolder,
       job_id
     )
 

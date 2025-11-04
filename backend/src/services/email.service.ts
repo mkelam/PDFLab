@@ -77,7 +77,7 @@ class EmailService {
    * Send password reset email
    */
   async sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
+    const resetUrl = `${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/reset-password?token=${resetToken}`
     const expirationTime = '1 hour'
 
     const html = this.getPasswordResetEmailTemplate(resetUrl, expirationTime)
@@ -109,7 +109,7 @@ The PDFLab Team
    * Send verification email
    */
   async sendVerificationEmail(email: string, verificationToken: string): Promise<boolean> {
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
+    const verificationUrl = `${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
 
     const html = this.getVerificationEmailTemplate(verificationUrl)
     const text = `
@@ -269,8 +269,8 @@ The PDFLab Team
     <div class="footer">
       <p><strong>PDFLab</strong> - Professional PDF Conversion Platform</p>
       <p>
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}">Visit Website</a> •
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/support">Support</a>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}">Visit Website</a> •
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support">Support</a>
       </p>
       <p>© ${new Date().getFullYear()} PDFLab. All rights reserved.</p>
     </div>
@@ -425,8 +425,8 @@ The PDFLab Team
     <div class="footer">
       <p><strong>PDFLab</strong> - Professional PDF Conversion Platform</p>
       <p>
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}">Visit Website</a> •
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/support">Support</a>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}">Visit Website</a> •
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support">Support</a>
       </p>
       <p>© ${new Date().getFullYear()} PDFLab. All rights reserved.</p>
     </div>

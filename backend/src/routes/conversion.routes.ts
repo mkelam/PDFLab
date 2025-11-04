@@ -6,22 +6,25 @@ import {
   downloadFile,
   getConversionHistory
 } from '../controllers/conversion.controller'
-import { authMiddleware, checkConversionQuota } from '../middleware/auth.middleware'
+import { authMiddleware, optionalAuthMiddleware, checkConversionQuota } from '../middleware/auth.middleware'
 import { uploadMiddleware, uploadMultipleMiddleware, handleUploadError } from '../middleware/upload.middleware'
 import { uploadLimiter, downloadLimiter } from '../middleware/ratelimit.middleware'
+import { validateGuestQuota, recordGuestConversion } from '../middleware/guest.middleware'
+import { trackUpload, trackDownload, trackQuotaReached } from '../middleware/analytics.middleware'
 
 const router = Router()
 
-// All routes require authentication
-router.use(authMiddleware)
-
-// Upload and start conversion
+// Upload and start conversion (supports both authenticated and guest users)
 router.post(
   '/upload',
   uploadLimiter,
-  checkConversionQuota,
+  optionalAuthMiddleware, // Auth is optional - allows guests
+  validateGuestQuota, // Check guest quota if not authenticated
+  trackQuotaReached, // Track when guests hit quota limit
+  checkConversionQuota, // Check user quota if authenticated
   uploadMiddleware.single('file'),
   handleUploadError,
+  trackUpload, // Track successful uploads
   uploadFile
 )
 
@@ -35,13 +38,16 @@ router.post(
   mergePDFs
 )
 
-// Get job status
+// Get job status (public - no auth required)
 router.get('/status/:job_id', getJobStatus)
 
-// Download converted file
-router.get('/download/:job_id', downloadLimiter, downloadFile)
+// Download converted file (supports both authenticated and guest users)
+router.get('/download/:job_id', downloadLimiter, optionalAuthMiddleware, trackDownload, downloadFile)
 
-// Get conversion history
-router.get('/history', getConversionHistory)
+// Get conversion history (requires authentication)
+router.get('/history', authMiddleware, getConversionHistory)
+
+// Merge PDFs requires authentication
+router.use('/merge', authMiddleware)
 
 export default router

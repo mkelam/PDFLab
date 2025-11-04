@@ -1,0 +1,157 @@
+<div class="container">
+    <header>
+        <h1>PDFLab API <span class="badge success">RUNNING</span></h1>
+        <p>Professional PDF Conversion and Manipulation Platform</p>
+    </header>
+
+    <div class="content">
+        <div class="card">
+            <h2>📊 Server Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">Version</div>
+                    <div class="value">1.0.0</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Environment</div>
+                    <div class="value"><%= environment %></div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Port</div>
+                    <div class="value"><%= port %></div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Status</div>
+                    <div class="value" style="color: #10b981;">ONLINE</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔌 Available API Endpoints</h2>
+
+            <h3>Authentication & User Management</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/auth/register</span>
+                    <span class="description">Create new user account</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/auth/login</span>
+                    <span class="description">User login</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/auth/profile</span>
+                    <span class="description">Get user profile (requires auth)</span>
+                </li>
+            </ul>
+
+            <h3>PDF Conversion</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/upload</span>
+                    <span class="description">Upload PDF for conversion</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/status/:job_id</span>
+                    <span class="description">Check conversion job status</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/download/:job_id</span>
+                    <span class="description">Download converted file</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/history</span>
+                    <span class="description">Get user's conversion history</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/merge</span>
+                    <span class="description">Merge multiple PDF files</span>
+                </li>
+            </ul>
+
+            <h3>Payment & Subscriptions (PayFast)</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/payfast/plans</span>
+                    <span class="description">Get pricing plans</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/payfast/initialize</span>
+                    <span class="description">Initialize payment (requires auth)</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/payfast/webhook</span>
+                    <span class="description">PayFast ITN webhook handler</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/payfast/return</span>
+                    <span class="description">Payment success redirect</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/payfast/cancel</span>
+                    <span class="description">Payment cancel redirect</span>
+                </li>
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/api/payfast/subscription/:id</span>
+                    <span class="description">Get subscription details</span>
+                </li>
+                <li>
+                    <span class="method post">POST</span>
+                    <span class="path">/api/payfast/cancel-subscription</span>
+                    <span class="description">Cancel subscription</span>
+                </li>
+            </ul>
+
+            <h3>System</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method get">GET</span>
+                    <span class="path">/health</span>
+                    <span class="description">Health check endpoint</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>💡 Quick Links</h2>
+            <p style="margin-bottom: 10px;">
+                <a href="/health">🏥 Health Check</a> - View system health status<br>
+                <a href="/users">👥 User Management</a> - Authentication endpoints documentation<br>
+                <a href="/api/payfast/plans">💳 Pricing Plans</a> - View available subscription plans
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>🚀 Features</h2>
+            <ul style="list-style-position: inside; color: oklch(0.75 0 0); line-height: 1.8;">
+                <li>Convert PDF to PPTX, DOCX, XLSX, PNG</li>
+                <li>Merge multiple PDF files</li>
+                <li>User authentication with JWT</li>
+                <li>Subscription-based pricing (Free, Starter, Pro, Enterprise)</li>
+                <li>Background job processing with Bull & Redis</li>
+                <li>Payment integration with PayFast (USD)</li>
+                <li>CloudConvert API integration for conversions</li>
+                <li>Monthly quota system</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>PDFLab API v1.0.0 &copy; 2025 | Built with Express.js + TypeScript</p>
+    </footer>
+</div>

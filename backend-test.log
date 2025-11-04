@@ -1,0 +1,435 @@
+
+> pdflab-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `email_verified` `email_verified` TINYINT(1) NOT NULL DEFAULT false;
+Executing (default): ALTER TABLE `users` CHANGE `email_verified_at` `email_verified_at` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;
+Executing (default): ALTER TABLE `admin_audit_logs` ADD FOREIGN KEY (`admin_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `action` `action` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_type` `entity_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_id` `entity_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `changes` `changes` JSON;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `ip_address` `ip_address` VARCHAR(45);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `user_agent` `user_agent` TEXT;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `severity` `severity` ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info';
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `checksum` `checksum` VARCHAR(64);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `admin_audit_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'system_health_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `system_health_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'system_health_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_name` `metric_name` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_value` `metric_value` DECIMAL(10,2);
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `status` `status` ENUM('healthy', 'warning', 'critical') NOT NULL DEFAULT 'healthy';
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `details` `details` JSON;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `system_health_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'conversion_jobs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `conversion_jobs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'conversion_jobs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `user_id` `user_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `type` `type` ENUM('pdf_to_pptx', 'pdf_to_docx', 'pdf_to_xlsx', 'pdf_to_images', 'pdf_merge') NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `status` `status` ENUM('pending', 'queued', 'processing', 'completed', 'failed') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `progress` `progress` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `input_file` `input_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `output_file` `output_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_name` `file_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `cloudconvert_job_id` `cloudconvert_job_id` VARCHAR(255);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `error_message` `error_message` TEXT;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `estimated_time` `estimated_time` INTEGER COMMENT 'Estimated processing time in seconds';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_started_at` `processing_started_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_completed_at` `processing_completed_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `expires_at` `expires_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `conversion_jobs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'usage_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `usage_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'usage_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_151' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_151`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_152' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_152`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`job_id`) REFERENCES `conversion_jobs` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `operation_type` `operation_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `success` `success` TINYINT(1) NOT NULL DEFAULT false;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `processing_time` `processing_time` INTEGER COMMENT 'Processing time in milliseconds';
+Executing (default): ALTER TABLE `usage_logs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `error_code` `error_code` VARCHAR(50);
+Executing (default): ALTER TABLE `usage_logs` CHANGE `timestamp` `timestamp` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `usage_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'subscriptions' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `subscriptions`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'subscriptions' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='subscriptions' AND constraint_name = 'subscriptions_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `subscriptions` DROP FOREIGN KEY `subscriptions_ibfk_1`;
+Executing (default): ALTER TABLE `subscriptions` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `status` `status` ENUM('active', 'canceled', 'past_due', 'trialing', 'pending') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_token` `payfast_token` VARCHAR(255) COMMENT 'PayFast subscription token for recurring payments';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_subscription_id` `payfast_subscription_id` VARCHAR(255) COMMENT 'PayFast subscription ID';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `amount` `amount` DECIMAL(10,2) NOT NULL COMMENT 'Subscription amount in currency';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `currency` `currency` VARCHAR(3) NOT NULL DEFAULT 'USD' COMMENT 'Currency code (USD for United States Dollar)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `billing_date` `billing_date` DATETIME COMMENT 'First billing date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `next_billing_date` `next_billing_date` DATETIME COMMENT 'Next billing date for recurring subscription';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `cancel_at` `cancel_at` DATETIME COMMENT 'Scheduled cancellation date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `canceled_at` `canceled_at` DATETIME COMMENT 'Actual cancellation timestamp';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `trial_end` `trial_end` DATETIME COMMENT 'Trial period end date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `started_at` `started_at` DATETIME NOT NULL COMMENT 'Subscription start date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `ended_at` `ended_at` DATETIME COMMENT 'Subscription end date (if canceled)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `subscriptions` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'payment_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `payment_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'payment_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_117' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_117`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_118' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_118`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+  parameters: {}
+}
+19:39:36 [tsx] change in ./src\models\payment-log.model.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+Executing (default): ALTER TABLE `users` CHANGE `password_hash` `password_hash` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `name` `name` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `role` `role` ENUM('user', 'support', 'finance', 'admin', 'super_admin') NOT NULL DEFAULT 'user';
+Executing (default): ALTER TABLE `users` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `users` CHANGE `conversions_used` `conversions_used` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `conversions_limit` `conversions_limit` INTEGER NOT NULL DEFAULT 3;
+Executing (default): ALTER TABLE `users` CHANGE `stripe_customer_id` `stripe_customer_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_id` `subscription_id` VARCHAR(255);
+Executing (default): ALTER TABLE `users` CHANGE `subscription_status` `subscription_status` ENUM('active', 'canceled', 'past_due', 'trialing');
+Executing (default): ALTER TABLE `users` CHANGE `subscription_end_date` `subscription_end_date` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `failed_reset_attempts` `failed_reset_attempts` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `users` CHANGE `reset_locked_until` `reset_locked_until` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `last_login` `last_login` DATETIME;
+Executing (default): ALTER TABLE `users` CHANGE `email_verified` `email_verified` TINYINT(1) NOT NULL DEFAULT false;
+Executing (default): ALTER TABLE `users` CHANGE `email_verified_at` `email_verified_at` DATETIME;
+Executing (default): SHOW INDEX FROM `users` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'admin_audit_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `admin_audit_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'admin_audit_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='admin_audit_logs' AND constraint_name = 'admin_audit_logs_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `admin_audit_logs` DROP FOREIGN KEY `admin_audit_logs_ibfk_1`;
+Executing (default): ALTER TABLE `admin_audit_logs` ADD FOREIGN KEY (`admin_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `action` `action` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_type` `entity_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `entity_id` `entity_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `changes` `changes` JSON;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `ip_address` `ip_address` VARCHAR(45);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `user_agent` `user_agent` TEXT;
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `severity` `severity` ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info';
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `checksum` `checksum` VARCHAR(64);
+Executing (default): ALTER TABLE `admin_audit_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `admin_audit_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'system_health_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `system_health_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'system_health_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_name` `metric_name` VARCHAR(100) NOT NULL;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `metric_value` `metric_value` DECIMAL(10,2);
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `status` `status` ENUM('healthy', 'warning', 'critical') NOT NULL DEFAULT 'healthy';
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `details` `details` JSON;
+Executing (default): ALTER TABLE `system_health_logs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `system_health_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'conversion_jobs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `conversion_jobs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'conversion_jobs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `user_id` `user_id` CHAR(36) BINARY;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `type` `type` ENUM('pdf_to_pptx', 'pdf_to_docx', 'pdf_to_xlsx', 'pdf_to_images', 'pdf_merge') NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `status` `status` ENUM('pending', 'queued', 'processing', 'completed', 'failed') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `progress` `progress` INTEGER NOT NULL DEFAULT 0;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `input_file` `input_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `output_file` `output_file` VARCHAR(500);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_name` `file_name` VARCHAR(255) NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `cloudconvert_job_id` `cloudconvert_job_id` VARCHAR(255);
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `error_message` `error_message` TEXT;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `estimated_time` `estimated_time` INTEGER COMMENT 'Estimated processing time in seconds';
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_started_at` `processing_started_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `processing_completed_at` `processing_completed_at` DATETIME;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `conversion_jobs` CHANGE `expires_at` `expires_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `conversion_jobs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'usage_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `usage_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'usage_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_153' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_153`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='usage_logs' AND constraint_name = 'usage_logs_ibfk_154' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `usage_logs` DROP FOREIGN KEY `usage_logs_ibfk_154`;
+Executing (default): ALTER TABLE `usage_logs` ADD FOREIGN KEY (`job_id`) REFERENCES `conversion_jobs` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `operation_type` `operation_type` VARCHAR(50) NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `success` `success` TINYINT(1) NOT NULL DEFAULT false;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `processing_time` `processing_time` INTEGER COMMENT 'Processing time in milliseconds';
+Executing (default): ALTER TABLE `usage_logs` CHANGE `file_size` `file_size` BIGINT NOT NULL;
+Executing (default): ALTER TABLE `usage_logs` CHANGE `error_code` `error_code` VARCHAR(50);
+Executing (default): ALTER TABLE `usage_logs` CHANGE `timestamp` `timestamp` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `usage_logs` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'subscriptions' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `subscriptions`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'subscriptions' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='subscriptions' AND constraint_name = 'subscriptions_ibfk_1' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `subscriptions` DROP FOREIGN KEY `subscriptions_ibfk_1`;
+Executing (default): ALTER TABLE `subscriptions` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `plan` `plan` ENUM('free', 'starter', 'pro', 'enterprise') NOT NULL DEFAULT 'free';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `status` `status` ENUM('active', 'canceled', 'past_due', 'trialing', 'pending') NOT NULL DEFAULT 'pending';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_token` `payfast_token` VARCHAR(255) COMMENT 'PayFast subscription token for recurring payments';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `payfast_subscription_id` `payfast_subscription_id` VARCHAR(255) COMMENT 'PayFast subscription ID';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `amount` `amount` DECIMAL(10,2) NOT NULL COMMENT 'Subscription amount in currency';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `currency` `currency` VARCHAR(3) NOT NULL DEFAULT 'USD' COMMENT 'Currency code (USD for United States Dollar)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `billing_date` `billing_date` DATETIME COMMENT 'First billing date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `next_billing_date` `next_billing_date` DATETIME COMMENT 'Next billing date for recurring subscription';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `cancel_at` `cancel_at` DATETIME COMMENT 'Scheduled cancellation date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `canceled_at` `canceled_at` DATETIME COMMENT 'Actual cancellation timestamp';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `trial_end` `trial_end` DATETIME COMMENT 'Trial period end date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `started_at` `started_at` DATETIME NOT NULL COMMENT 'Subscription start date';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `ended_at` `ended_at` DATETIME COMMENT 'Subscription end date (if canceled)';
+Executing (default): ALTER TABLE `subscriptions` CHANGE `created_at` `created_at` DATETIME NOT NULL;
+Executing (default): ALTER TABLE `subscriptions` CHANGE `updated_at` `updated_at` DATETIME NOT NULL;
+Executing (default): SHOW INDEX FROM `subscriptions` FROM `pdflab`
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'payment_logs' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `payment_logs`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'payment_logs' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_119' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_119`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+Executing (default): SELECT CONSTRAINT_CATALOG AS constraintCatalog, CONSTRAINT_NAME AS constraintName, CONSTRAINT_SCHEMA AS constraintSchema, CONSTRAINT_TYPE AS constraintType, TABLE_NAME AS tableName, TABLE_SCHEMA AS tableSchema from INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE table_name='payment_logs' AND constraint_name = 'payment_logs_ibfk_120' AND TABLE_SCHEMA = 'pdflab';
+Executing (default): ALTER TABLE `payment_logs` DROP FOREIGN KEY `payment_logs_ibfk_120`;
+Executing (default): ALTER TABLE `payment_logs` ADD FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+Executing (default): ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+    parameters: undefined
+  },
+  sql: "ALTER TABLE `payment_logs` CHANGE `transaction_id` `transaction_id` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Our internal transaction ID (m_payment_id)';",
+  parameters: {}
+}

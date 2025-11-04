@@ -1,9 +1,20 @@
 import { Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import path from 'path'
+import ejs from 'ejs'
 import payfastService from '../services/payfast.service'
-import { User } from '../models/User'
+import { User, SubscriptionStatus as UserSubscriptionStatus } from '../models/User'
 import { Subscription, SubscriptionStatus, PlanType } from '../models/subscription.model'
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
+
+// Helper function to render with layout
+const renderWithLayout = async (view: string, data: any = {}): Promise<string> => {
+  const layoutPath = path.join(__dirname, '..', 'views', 'layouts', 'main.ejs')
+  const viewPath = path.join(__dirname, '..', 'views', 'pages', `${view}.ejs`)
+
+  const body = await ejs.renderFile(viewPath, data)
+  return ejs.renderFile(layoutPath, { ...data, body })
+}
 
 // Pricing plans configuration
 const PRICING_PLANS = {
@@ -23,7 +34,7 @@ const PRICING_PLANS = {
   },
   starter: {
     name: 'Starter',
-    price: 9.99, // $9.99/month USD
+    price: 10.00, // $10.00/month USD (sandbox test amount)
     conversions: 100,
     maxFileSize: 26214400, // 25MB
     features: {
@@ -37,7 +48,7 @@ const PRICING_PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 29.99, // $29.99/month USD
+    price: 13.50, // $13.50/month USD (55% off from $29.99)
     conversions: -1, // Unlimited
     maxFileSize: 104857600, // 100MB
     features: {
@@ -69,21 +80,34 @@ const PRICING_PLANS = {
  * GET /api/payfast/plans
  * Get all available pricing plans
  */
-const getPlans = async (req: Request, res: Response): Promise<void> => {
+export const getPlans = async (_req: Request, res: Response): Promise<void> => {
   try {
     const plans = Object.entries(PRICING_PLANS).map(([id, plan]) => ({
       id,
       name: plan.name,
       price: plan.price,
       currency: 'USD',
-      interval: 'month',
-      features: plan.features
+      billing_cycle: 'per month',
+      description: `Perfect for ${id === 'free' ? 'getting started' : id === 'starter' ? 'individuals' : id === 'pro' ? 'professionals' : 'businesses'}`,
+      conversions_limit: plan.conversions === -1 ? 999999 : plan.conversions,
+      max_file_size_mb: Math.floor(plan.maxFileSize / (1024 * 1024)),
+      features: [
+        `${plan.conversions === -1 ? 'Unlimited' : plan.conversions} conversions per month`,
+        `Max file size: ${Math.floor(plan.maxFileSize / (1024 * 1024))}MB`,
+        plan.features.ocrOverlayAccess ? 'OCR overlay access' : 'No OCR overlay',
+        plan.features.advancedFeatures ? 'Advanced features' : 'Basic features',
+        plan.features.priorityProcessing ? 'Priority processing' : 'Standard processing',
+        plan.features.apiAccess ? 'API access' : 'No API access'
+      ],
+      recommended: id === 'pro'
     }))
 
-    res.json({
-      success: true,
+    // Render HTML page
+    const html = await renderWithLayout('plans', {
+      title: 'Pricing Plans - PDFLab API',
       plans
     })
+    res.send(html)
   } catch (error) {
     console.error('Get plans error:', error)
     res.status(500).json({
@@ -97,7 +121,7 @@ const getPlans = async (req: Request, res: Response): Promise<void> => {
  * POST /api/payfast/initialize
  * Initialize a PayFast payment
  */
-const initializePayment = async (req: Request, res: Response): Promise<void> => {
+export const initializePayment = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user
     if (!user) {
@@ -105,7 +129,7 @@ const initializePayment = async (req: Request, res: Response): Promise<void> => 
       return
     }
 
-    const { planId, userEmail, userName } = req.body
+    const { plan: planId, userEmail, userName } = req.body
 
     // Validate plan
     if (!planId || !PRICING_PLANS[planId as keyof typeof PRICING_PLANS]) {
@@ -177,10 +201,10 @@ const initializePayment = async (req: Request, res: Response): Promise<void> => 
     res.json({
       success: true,
       message: 'Payment initialized',
-      payment_url: payfastService.getPayFastUrl(),
-      payment_data: paymentData,
-      transaction_id: transactionId,
-      subscription_id: subscription.id
+      paymentUrl: payfastService.getPayFastUrl(),
+      paymentData: paymentData,
+      transactionId: transactionId,
+      subscriptionId: subscription.id
     })
   } catch (error) {
     console.error('Initialize payment error:', error)
@@ -195,7 +219,7 @@ const initializePayment = async (req: Request, res: Response): Promise<void> => 
  * POST /api/payfast/webhook
  * Handle PayFast ITN (Instant Transaction Notification)
  */
-const handleWebhook = async (req: Request, res: Response): Promise<void> => {
+export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('PayFast ITN received:', req.body)
 
@@ -288,7 +312,7 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
       // Update user plan
       user.plan = planId as any
       user.subscription_id = pf_payment_id
-      user.subscription_status = 'active'
+      user.subscription_status = UserSubscriptionStatus.ACTIVE
 
       // Update conversion limits based on plan
       const plan = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]
@@ -314,9 +338,9 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
  * GET /api/payfast/return
  * Handle successful payment return
  */
-const handleReturn = async (req: Request, res: Response): Promise<void> => {
+export const handleReturn = async (req: Request, res: Response): Promise<void> => {
   try {
-    const frontendUrl = process.env.CORS_ORIGIN?.split(',')[0] || 'http://localhost:3000'
+    const frontendUrl = process.env['CORS_ORIGIN']?.split(',')[0] || 'http://localhost:3000'
 
     // Redirect to success page
     res.redirect(`${frontendUrl}/payment/success?${req.url.split('?')[1] || ''}`)
@@ -330,9 +354,9 @@ const handleReturn = async (req: Request, res: Response): Promise<void> => {
  * GET /api/payfast/cancel
  * Handle cancelled payment
  */
-const handleCancel = async (req: Request, res: Response): Promise<void> => {
+export const handleCancel = async (req: Request, res: Response): Promise<void> => {
   try {
-    const frontendUrl = process.env.CORS_ORIGIN?.split(',')[0] || 'http://localhost:3000'
+    const frontendUrl = process.env['CORS_ORIGIN']?.split(',')[0] || 'http://localhost:3000'
 
     // Redirect to cancel page
     res.redirect(`${frontendUrl}/payment/cancel?${req.url.split('?')[1] || ''}`)
@@ -346,7 +370,7 @@ const handleCancel = async (req: Request, res: Response): Promise<void> => {
  * GET /api/payfast/subscription/:id
  * Get subscription details
  */
-const getSubscription = async (req: Request, res: Response): Promise<void> => {
+export const getSubscription = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user
     if (!user) {
@@ -385,7 +409,7 @@ const getSubscription = async (req: Request, res: Response): Promise<void> => {
  * POST /api/payfast/cancel-subscription
  * Cancel active subscription
  */
-const cancelSubscription = async (req: Request, res: Response): Promise<void> => {
+export const cancelSubscription = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user
     if (!user) {
@@ -413,7 +437,7 @@ const cancelSubscription = async (req: Request, res: Response): Promise<void> =>
     await subscription.save()
 
     // Update user status
-    user.subscription_status = 'canceled'
+    user.subscription_status = UserSubscriptionStatus.CANCELED
     await user.save()
 
     res.json({
@@ -434,7 +458,7 @@ const cancelSubscription = async (req: Request, res: Response): Promise<void> =>
  * GET /api/payfast/config
  * Get PayFast configuration status
  */
-const getConfig = async (req: Request, res: Response): Promise<void> => {
+export const getConfig = async (req: Request, res: Response): Promise<void> => {
   try {
     const config = payfastService.getConfig()
     res.json({
@@ -450,26 +474,4 @@ const getConfig = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
-// Export all functions
-export {
-  getPlans,
-  initializePayment,
-  handleWebhook,
-  handleReturn,
-  handleCancel,
-  getSubscription,
-  cancelSubscription,
-  getConfig
-}
-
-// Also export as default for compatibility
-export default {
-  getPlans,
-  initializePayment,
-  handleWebhook,
-  handleReturn,
-  handleCancel,
-  getSubscription,
-  cancelSubscription,
-  getConfig
-}
+// Functions are exported inline above

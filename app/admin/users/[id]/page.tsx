@@ -1,5 +1,6 @@
 "use client"
 
+// Admin user detail page with email verification button
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
@@ -11,9 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth, useRequireAuth } from "@/contexts/AuthContext"
 import { Navigation } from "@/components/Navigation"
 import {
-  User, Mail, Calendar, ArrowLeft, Save, Shield, Activity, CheckCircle, XCircle
+  User, Mail, Calendar, ArrowLeft, Save, Shield, Activity, CheckCircle, XCircle, Send
 } from "lucide-react"
 import Link from "next/link"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
 interface UserDetail {
   id: number
@@ -37,6 +40,7 @@ export default function EditUserPage() {
   const [user, setUser] = useState<UserDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
 
   // Form fields
   const [fullName, setFullName] = useState('')
@@ -48,7 +52,7 @@ export default function EditUserPage() {
     try {
       setIsLoading(true)
       const token = localStorage.getItem('authToken')
-      const response = await fetch(`http://localhost:3015/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -81,7 +85,7 @@ export default function EditUserPage() {
     try {
       setIsSaving(true)
       const token = localStorage.getItem('authToken')
-      const response = await fetch(`http://localhost:3015/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -106,6 +110,40 @@ export default function EditUserPage() {
       alert('Error updating user')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  // Send verification email
+  const handleSendVerificationEmail = async () => {
+    if (!user) return
+
+    if (!confirm(`Send verification email to ${user.email}?`)) {
+      return
+    }
+
+    try {
+      setIsSendingEmail(true)
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message || 'Verification email sent successfully')
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to send verification email')
+      }
+    } catch (error) {
+      console.error('Error sending verification email:', error)
+      alert('Error sending verification email')
+    } finally {
+      setIsSendingEmail(false)
     }
   }
 
@@ -167,7 +205,7 @@ export default function EditUserPage() {
           <div className="grid md:grid-cols-3 gap-4 mb-6">
             <Card className="glass-strong border-border/50">
               <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <p className="text-sm text-muted-foreground">Status</p>
                     {user.email_verified ? (
@@ -184,6 +222,16 @@ export default function EditUserPage() {
                   </div>
                   <Mail className="w-8 h-8 text-primary opacity-20" />
                 </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSendVerificationEmail}
+                  disabled={isSendingEmail}
+                  className="w-full mt-2"
+                >
+                  <Send className="w-3 h-3 mr-2" />
+                  {isSendingEmail ? 'Sending...' : 'Send Verification Email'}
+                </Button>
               </CardContent>
             </Card>
 

@@ -1,0 +1,72 @@
+<div class="container">
+    <header>
+        <h1>💳 Pricing Plans</h1>
+        <p>Choose the perfect plan for your PDF conversion needs</p>
+    </header>
+
+    <div class="content">
+        <% plans.forEach(plan => { %>
+        <div class="card" style="border-left: 4px solid oklch(0.6 0.1 180);">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <h2><%= plan.name %></h2>
+                    <p style="font-size: 2em; color: oklch(0.7 0.12 180); font-weight: 700; margin: 10px 0;">
+                        $<%= plan.price.toFixed(2) %>
+                        <span style="font-size: 0.5em; color: oklch(0.65 0 0); font-weight: 400;">
+                            <%= plan.billing_cycle %>
+                        </span>
+                    </p>
+                </div>
+                <% if (plan.recommended) { %>
+                <span class="badge info">RECOMMENDED</span>
+                <% } %>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <p style="color: oklch(0.65 0 0); margin-bottom: 15px;"><%= plan.description %></p>
+
+                <div style="background: oklch(0.08 0 0 / 0.5); border: 1px solid oklch(1 0 0 / 0.1); padding: 20px; border-radius: 0.75rem;">
+                    <h3 style="font-size: 1em; margin-bottom: 12px; color: oklch(0.85 0 0); font-weight: 600;">Features:</h3>
+                    <ul style="list-style-position: inside; color: oklch(0.75 0 0); line-height: 1.8;">
+                        <% plan.features.forEach(feature => { %>
+                        <li style="margin-bottom: 6px;"><%= feature %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+
+                <div class="info-grid" style="margin-top: 15px;">
+                    <div class="info-item">
+                        <div class="label">Conversions / Month</div>
+                        <div class="value" style="font-size: 1.2em;"><%= plan.conversions_limit === 999999 ? 'Unlimited' : plan.conversions_limit %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">Max File Size</div>
+                        <div class="value" style="font-size: 1.2em;"><%= plan.max_file_size_mb %> MB</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+
+        <div class="card">
+            <h2>💡 How to Subscribe</h2>
+            <p style="color: oklch(0.75 0 0); line-height: 1.8;">
+                To subscribe to a plan, you can use our API endpoint:<br><br>
+                <code>POST /api/payfast/initialize</code><br><br>
+                Send a request with your desired plan (free, starter, pro, enterprise) along with your authentication token.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>🔗 Quick Links</h2>
+            <p style="line-height: 1.8;">
+                <a href="/">← Back to Home</a><br>
+                <a href="/health">🏥 System Health</a>
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>All prices in USD | Powered by PayFast</p>
+    </footer>
+</div>

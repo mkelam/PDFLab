@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { Op } from 'sequelize'
+import { Op, QueryTypes } from 'sequelize'
 import { sequelize } from '../config/database'
 import { User } from '../models/User'
 import { ConversionJob } from '../models/ConversionJob'
@@ -59,7 +59,7 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
       ORDER BY DATE(created_at)
     `, {
       replacements: { from: fromDate, to: toDate },
-      type: sequelize.QueryTypes.SELECT
+      type: QueryTypes.SELECT
     })
 
     // Conversion volume chart
@@ -71,7 +71,7 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
       ORDER BY DATE(created_at)
     `, {
       replacements: { from: fromDate, to: toDate },
-      type: sequelize.QueryTypes.SELECT
+      type: QueryTypes.SELECT
     })
 
     // Conversion types distribution
@@ -82,7 +82,7 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
       GROUP BY type
     `, {
       replacements: { from: fromDate, to: toDate },
-      type: sequelize.QueryTypes.SELECT
+      type: QueryTypes.SELECT
     })
 
     const totalConversionCount = conversionTypes.reduce((sum: number, item: any) => sum + parseInt(item.count), 0)
@@ -133,7 +133,7 @@ export const getUserAnalytics = async (req: Request, res: Response): Promise<voi
       SELECT plan, COUNT(*) as count
       FROM users
       GROUP BY plan
-    `, { type: sequelize.QueryTypes.SELECT })
+    `, { type: QueryTypes.SELECT })
 
     // Churn rate (last 12 months)
     const churnData = []
@@ -239,7 +239,7 @@ export const getConversionAnalytics = async (req: Request, res: Response): Promi
       GROUP BY size_range
     `, {
       replacements: { from: fromDate, to: toDate },
-      type: sequelize.QueryTypes.SELECT
+      type: QueryTypes.SELECT
     })
 
     // Failed conversion reasons
@@ -256,7 +256,7 @@ export const getConversionAnalytics = async (req: Request, res: Response): Promi
       LIMIT 5
     `, {
       replacements: { from: fromDate, to: toDate },
-      type: sequelize.QueryTypes.SELECT
+      type: QueryTypes.SELECT
     })
 
     res.json({
@@ -315,7 +315,7 @@ export const getRevenueAnalytics = async (req: Request, res: Response): Promise<
       FROM subscriptions
       WHERE status = 'active'
       GROUP BY plan
-    `, { type: sequelize.QueryTypes.SELECT })
+    `, { type: QueryTypes.SELECT })
 
     // New subscriptions vs cancellations (last 12 months)
     const subTrend = []
@@ -378,7 +378,7 @@ export const getFeatureAnalytics = async (req: Request, res: Response): Promise<
       FROM conversion_jobs
       GROUP BY type
       ORDER BY count DESC
-    `, { type: sequelize.QueryTypes.SELECT })
+    `, { type: QueryTypes.SELECT })
 
     // Power users (top 10 by conversion count)
     const powerUsers = await sequelize.query(`
@@ -394,7 +394,7 @@ export const getFeatureAnalytics = async (req: Request, res: Response): Promise<
       GROUP BY u.id, u.email, u.name, u.plan
       ORDER BY conversion_count DESC
       LIMIT 10
-    `, { type: sequelize.QueryTypes.SELECT })
+    `, { type: QueryTypes.SELECT })
 
     res.json({
       success: true,

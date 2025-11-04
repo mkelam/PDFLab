@@ -4,6 +4,12 @@ import { getConversionQueue, getCleanupQueue } from '../config/redis'
 import { cloudConvertService } from '../services/cloudconvert.service'
 import { ConversionJob, JobStatus, User, UsageLog } from '../models'
 
+// Helper function to get absolute storage path
+const getStoragePath = (): string => {
+  const storagePath = process.env['STORAGE_PATH'] || './storage'
+  return path.resolve(storagePath)
+}
+
 interface ConversionJobData {
   job_id: string
   user_id: string
@@ -48,7 +54,16 @@ export const initializeConversionWorker = () => {
   const startTime = Date.now()
 
   try {
-    // 1. Update job status to processing
+    // 1. Get the conversion job record to retrieve original filename
+    const conversionJobRecord = await ConversionJob.findByPk(job_id)
+    if (!conversionJobRecord) {
+      throw new Error(`Conversion job ${job_id} not found`)
+    }
+
+    const originalFileName = conversionJobRecord.file_name
+    const fileBaseName = path.basename(originalFileName, path.extname(originalFileName))
+
+    // 2. Update job status to processing
     await ConversionJob.update(
       {
         status: JobStatus.PROCESSING,
@@ -60,15 +75,29 @@ export const initializeConversionWorker = () => {
 
     job.progress(10)
 
-    // 2. Define output path
+    // 3. Define output path with original filename
+    // For guest users (user_id = null), use 'guest' as folder name
+    const userFolder = user_id || 'guest'
     const outputDir = path.join(
-      process.env['STORAGE_PATH'] || './storage',
+      getStoragePath(),
       'outputs',
-      user_id,
+      userFolder,
       job_id
     )
 
-    const outputFile = path.join(outputDir, `output.${output_format}`)
+    // Use original filename for office formats, special handling for images
+    let outputFileName: string
+    if (output_format === 'jpg' || output_format === 'png') {
+      // For images, we'll handle naming in the CloudConvert service
+      // Single page: presentation.jpg
+      // Multi-page: presentation-images.zip (with presentation-page-1.jpg inside)
+      outputFileName = `${fileBaseName}.${output_format}`
+    } else {
+      // For office formats: presentation.pptx, presentation.docx, etc.
+      outputFileName = `${fileBaseName}.${output_format}`
+    }
+
+    const outputFile = path.join(outputDir, outputFileName)
 
     // 3. Call CloudConvert service
     console.log(`[Conversion Worker] Starting CloudConvert for job ${job_id}`)
@@ -86,6 +115,7 @@ export const initializeConversionWorker = () => {
         outputFormat: output_format as 'pptx' | 'docx' | 'xlsx' | 'png' | 'jpg',
         inputFilePath: input_file,
         outputFilePath: outputFile,
+        originalFileName: fileBaseName, // Pass original filename for proper naming
         webhookUrl: `${process.env['API_URL']}/webhook/cloudconvert`,
         options: options || {}
       })
@@ -127,20 +157,24 @@ export const initializeConversionWorker = () => {
       { where: { id: job_id } }
     )
 
-    // 5. Increment user conversion count
-    await User.increment('conversions_used', { where: { id: user_id } })
+    // 5. Increment user conversion count (skip for guest users)
+    if (user_id) {
+      await User.increment('conversions_used', { where: { id: user_id } })
+    }
 
-    // 6. Log usage
+    // 6. Log usage (skip for guest users - they don't have usage logs)
     const processingTime = Date.now() - startTime
-    await UsageLog.create({
-      user_id,
-      job_id,
-      operation_type: conversion_type,
-      success: true,
-      processing_time: processingTime,
-      file_size: 0, // Will be set from ConversionJob
-      timestamp: new Date()
-    })
+    if (user_id) {
+      await UsageLog.create({
+        user_id,
+        job_id,
+        operation_type: conversion_type,
+        success: true,
+        processing_time: processingTime,
+        file_size: 0, // Will be set from ConversionJob
+        timestamp: new Date()
+      })
+    }
 
     // 7. Schedule cleanup (delete files after 1 hour)
     await cleanupQueue.add(
@@ -172,18 +206,20 @@ export const initializeConversionWorker = () => {
       { where: { id: job_id } }
     )
 
-    // Log failure
+    // Log failure (skip for guest users)
     const processingTime = Date.now() - startTime
-    await UsageLog.create({
-      user_id,
-      job_id,
-      operation_type: conversion_type,
-      success: false,
-      processing_time: processingTime,
-      file_size: 0,
-      error_code: error.code || 'UNKNOWN_ERROR',
-      timestamp: new Date()
-    })
+    if (user_id) {
+      await UsageLog.create({
+        user_id,
+        job_id,
+        operation_type: conversion_type,
+        success: false,
+        processing_time: processingTime,
+        file_size: 0,
+        error_code: error.code || 'UNKNOWN_ERROR',
+        timestamp: new Date()
+      })
+    }
 
     // Re-throw to trigger Bull retry logic
     throw error

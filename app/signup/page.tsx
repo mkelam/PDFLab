@@ -18,7 +18,7 @@ export default function SignupPage() {
   useGuestOnly()
 
   const router = useRouter()
-  const { register } = useAuth()
+  const { signup } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -94,7 +94,7 @@ export default function SignupPage() {
       }
 
       // Attempt registration
-      await register({
+      await signup({
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
@@ -203,10 +203,17 @@ export default function SignupPage() {
                   <p className="text-xs text-muted-foreground">
                     Didn't receive the email?{' '}
                     <button
-                      onClick={() => {
-                        AuthAPI.resendVerification(registeredEmail)
-                          .then(() => alert('Verification email resent!'))
-                          .catch(() => alert('Failed to resend email'))
+                      onClick={async () => {
+                        try {
+                          const result = await AuthAPI.resendVerification(registeredEmail)
+                          if (result.success) {
+                            alert('✓ Verification email resent! Please check your inbox.')
+                          } else {
+                            alert(`✗ ${result.message || 'Failed to resend email'}`)
+                          }
+                        } catch (error) {
+                          alert('✗ Failed to resend email. Please try again.')
+                        }
                       }}
                       className="text-primary hover:text-primary/80 font-medium transition-colors"
                     >
