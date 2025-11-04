@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Install dependencies
-RUN npm ci --only=production --ignore-scripts
+# Install ALL dependencies (including dev deps for build)
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY src ./src
@@ -27,8 +27,8 @@ RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
-# Create necessary directories
-RUN mkdir -p storage logs
+# Create necessary directories for volume mount points
+RUN mkdir -p storage/uploads storage/outputs logs
 
 # Expose port
 EXPOSE 3006

@@ -19,8 +19,8 @@ services:
     networks:
       - pdflab-network
     volumes:
-      - ./backend/storage:/app/storage
-      - ./backend/logs:/app/logs
+      - pdflab-storage:/app/storage
+      - pdflab-logs:/app/logs
 
   frontend:
     image: mkelam/pdflab-frontend:latest
@@ -66,6 +66,18 @@ services:
       - pdflab-network
 
 volumes:
+  pdflab-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/pdflab/storage
+  pdflab-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/pdflab/logs
   mysql-data:
     driver: local
   redis-data:
