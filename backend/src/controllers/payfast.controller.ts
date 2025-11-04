@@ -34,7 +34,7 @@ const PRICING_PLANS = {
   },
   starter: {
     name: 'Starter',
-    price: 10.00, // $10.00/month USD (sandbox test amount)
+    price: 9.99, // $9.99/month USD
     conversions: 100,
     maxFileSize: 26214400, // 25MB
     features: {
@@ -48,7 +48,7 @@ const PRICING_PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 13.50, // $13.50/month USD (55% off from $29.99)
+    price: 29.99, // $29.99/month USD
     conversions: -1, // Unlimited
     maxFileSize: 104857600, // 100MB
     features: {
