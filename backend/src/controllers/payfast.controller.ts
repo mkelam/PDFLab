@@ -17,10 +17,13 @@ const renderWithLayout = async (view: string, data: any = {}): Promise<string> =
 }
 
 // Pricing plans configuration
+// NOTE: PayFast ONLY accepts ZAR currency
+// Display prices are in USD on frontend, but PayFast processes in ZAR
 const PRICING_PLANS = {
   free: {
     name: 'Free',
-    price: 0,
+    displayPrice: 0,      // USD for display
+    payfastPrice: 0,      // ZAR for PayFast processing
     conversions: 3,
     maxFileSize: 10485760, // 10MB
     features: {
@@ -34,7 +37,8 @@ const PRICING_PLANS = {
   },
   starter: {
     name: 'Starter',
-    price: 4.55, // $4.55/month USD (discounted from $9.99, save 54%)
+    displayPrice: 4.55,   // $4.55/month USD (display only)
+    payfastPrice: 85,     // R85/month ZAR (PayFast processing)
     conversions: 100,
     maxFileSize: 26214400, // 25MB
     features: {
@@ -48,7 +52,8 @@ const PRICING_PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 13.50, // $13.50/month USD (discounted from $29.99, save 55%)
+    displayPrice: 13.50,  // $13.50/month USD (display only)
+    payfastPrice: 250,    // R250/month ZAR (PayFast processing)
     conversions: -1, // Unlimited
     maxFileSize: 104857600, // 100MB
     features: {
@@ -62,7 +67,8 @@ const PRICING_PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: 99.99, // $99.99/month USD
+    displayPrice: 99.99,  // $99.99/month USD (display only)
+    payfastPrice: 1850,   // R1850/month ZAR (PayFast processing)
     conversions: -1, // Unlimited
     maxFileSize: 524288000, // 500MB
     features: {
@@ -85,7 +91,7 @@ export const getPlans = async (_req: Request, res: Response): Promise<void> => {
     const plans = Object.entries(PRICING_PLANS).map(([id, plan]) => ({
       id,
       name: plan.name,
-      price: plan.price,
+      price: plan.displayPrice, // Display price in USD
       currency: 'USD',
       billing_cycle: 'per month',
       description: `Perfect for ${id === 'free' ? 'getting started' : id === 'starter' ? 'individuals' : id === 'pro' ? 'professionals' : 'businesses'}`,
@@ -151,26 +157,26 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
       return
     }
 
-    // Create subscription record
+    // Create subscription record (store display price in USD)
     const subscription = await Subscription.create({
       user_id: user.id,
       plan: planId as PlanType,
       status: SubscriptionStatus.PENDING,
-      amount: plan.price,
+      amount: plan.displayPrice, // Store display price for records
       currency: 'USD',
       started_at: new Date()
     })
 
-    // Create payment log
+    // Create payment log (store display price for tracking)
     await PaymentLog.create({
       user_id: user.id,
       subscription_id: subscription.id,
       transaction_id: transactionId,
       payment_type: PaymentType.SUBSCRIPTION,
       status: PaymentStatus.PENDING,
-      amount_gross: plan.price,
+      amount_gross: plan.displayPrice,
       amount_fee: 0,
-      amount_net: plan.price,
+      amount_net: plan.displayPrice,
       currency: 'USD',
       plan: planId,
       name_first: userName || user.name || user.email.split('@')[0],
@@ -180,17 +186,19 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
       custom_data: {
         plan_id: planId,
         user_id: user.id,
-        subscription_id: subscription.id
+        subscription_id: subscription.id,
+        display_price_usd: plan.displayPrice,
+        payfast_price_zar: plan.payfastPrice
       }
     })
 
-    // Generate PayFast payment data with subscription
+    // Generate PayFast payment data with subscription (use ZAR price for PayFast)
     const paymentData = payfastService.createSubscriptionPaymentData({
       userId: user.id,
       userEmail: userEmail || user.email,
       userName: userName || user.name || user.email.split('@')[0],
       planName: plan.name,
-      planPrice: plan.price,
+      planPrice: plan.payfastPrice, // CRITICAL: Use ZAR price for PayFast
       transactionId
     })
 

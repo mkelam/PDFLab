@@ -98,15 +98,53 @@ interface ITNData {
 }
 
 /**
+ * PayFast parameter order - MUST be in this exact order per PayFast API spec
+ * Reference: https://developers.payfast.co.za/docs#signature_generation
+ */
+const PAYFAST_PARAM_ORDER = [
+  'merchant_id',
+  'merchant_key',
+  'return_url',
+  'cancel_url',
+  'notify_url',
+  'name_first',
+  'name_last',
+  'email_address',
+  'cell_number',
+  'm_payment_id',
+  'amount',
+  'item_name',
+  'item_description',
+  'custom_int1',
+  'custom_int2',
+  'custom_int3',
+  'custom_int4',
+  'custom_int5',
+  'custom_str1',
+  'custom_str2',
+  'custom_str3',
+  'custom_str4',
+  'custom_str5',
+  'email_confirmation',
+  'confirmation_address',
+  'payment_method',
+  'subscription_type',
+  'billing_date',
+  'recurring_amount',
+  'frequency',
+  'cycles'
+]
+
+/**
  * Generate MD5 signature for PayFast payment data
+ * CRITICAL: Parameters MUST be in PayFast's exact specified order (not alphabetical)
  */
 export function generateSignature(data: Record<string, any>, passphrase: string = ''): string {
-  // Create parameter string
+  // Create parameter string using PayFast's required parameter order
   let paramString = ''
-  const sortedKeys = Object.keys(data).sort()
 
-  for (const key of sortedKeys) {
-    // Skip signature field and empty values
+  for (const key of PAYFAST_PARAM_ORDER) {
+    // Skip signature field and empty/null/undefined values
     if (key !== 'signature' && data[key] !== '' && data[key] !== null && data[key] !== undefined) {
       paramString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`
     }
@@ -115,13 +153,13 @@ export function generateSignature(data: Record<string, any>, passphrase: string 
   // Remove last ampersand
   paramString = paramString.slice(0, -1)
 
-  // Add passphrase if provided
+  // Add passphrase if provided (only for sandbox mode)
   if (passphrase) {
     paramString += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`
   }
 
-  // Generate MD5 hash
-  return crypto.createHash('md5').update(paramString).digest('hex')
+  // Generate MD5 hash and return lowercase hex
+  return crypto.createHash('md5').update(paramString).digest('hex').toLowerCase()
 }
 
 /**
@@ -180,13 +218,19 @@ export function createSubscriptionPaymentData(params: {
   const frontendUrl = process.env['FRONTEND_URL'] || 'http://localhost:3000'
   const billingDate = params.billingDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
 
+  // Split userName into first and last name (PayFast requires both)
+  const nameParts = params.userName.trim().split(' ')
+  const firstName = nameParts[0] || 'User'
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Account'
+
   const paymentData: SubscriptionPaymentData = {
     merchant_id: PAYFAST_CONFIG.merchantId,
     merchant_key: PAYFAST_CONFIG.merchantKey,
     return_url: `${frontendUrl}/payment/success`,
     cancel_url: `${frontendUrl}/payment/cancel`,
     notify_url: process.env['PAYFAST_ITN_URL'] || `${apiUrl}/api/payfast/webhook`,
-    name_first: params.userName,
+    name_first: firstName,
+    name_last: lastName,
     email_address: params.userEmail,
     m_payment_id: params.transactionId,
     amount: params.planPrice.toFixed(2),
