@@ -102,12 +102,8 @@ export const getPlans = async (_req: Request, res: Response): Promise<void> => {
       recommended: id === 'pro'
     }))
 
-    // Render HTML page
-    const html = await renderWithLayout('plans', {
-      title: 'Pricing Plans - PDFLab API',
-      plans
-    })
-    res.send(html)
+    // Return JSON response
+    res.json({ success: true, plans })
   } catch (error) {
     console.error('Get plans error:', error)
     res.status(500).json({

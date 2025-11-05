@@ -23,9 +23,12 @@ WORKDIR /app
 # Install build dependencies for native modules
 RUN apk add --no-cache python3 make g++
 
-# Copy package files and install production dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production --ignore-scripts && \
+
+# Install production dependencies with native compilation
+# Use --ignore-scripts to skip husky, then rebuild bcrypt
+RUN npm ci --omit=dev --ignore-scripts && \
     npm rebuild bcrypt && \
     npm cache clean --force
 

@@ -143,12 +143,8 @@ app.get('/health', async (req: Request, res: Response) => {
 
   const statusCode = health.status === 'OK' ? 200 : 503
 
-  // Render HTML page
-  const html = await renderWithLayout('health', {
-    title: 'System Health Check - PDFLab API',
-    health
-  })
-  res.status(statusCode).send(html)
+  // Return JSON response
+  res.status(statusCode).json(health)
 })
 
 // API routes
@@ -232,11 +228,8 @@ const startServer = async () => {
     }
 
     // Sync database (create tables)
-    // TEMPORARILY DISABLED - Tables already exist
-    // if (process.env.NODE_ENV === 'development') {
-    //   await syncDatabase(false) // Don't force recreate tables
-    // }
-    console.log('✓ Database sync skipped (tables exist)')
+    await syncDatabase(false) // Don't force recreate tables
+    console.log('✓ Database tables synchronized')
 
     // Connect to Redis (optional for testing)
     const redisConnected = await connectRedis()
