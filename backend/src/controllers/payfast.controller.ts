@@ -225,19 +225,29 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
  */
 export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('PayFast ITN received:', req.body)
+    console.log('🔔 PayFast ITN received:', JSON.stringify(req.body, null, 2))
 
     const itnData = req.body
 
-    // Step 1: Verify the request came from PayFast
-    const host = req.headers['referer'] ? new URL(req.headers['referer'] as string).hostname : ''
-    if (!payfastService.validatePayFastHost(host)) {
-      console.error('Invalid PayFast host:', host)
-      res.status(403).send('Invalid request source')
-      return
+    // Step 1: Verify the request came from PayFast (OPTIONAL - signature validation is more reliable)
+    // Note: PayFast ITN may not always include referer header, so we prioritize signature validation
+    const referer = req.headers['referer'] || req.headers['origin']
+    if (referer) {
+      try {
+        const host = new URL(referer as string).hostname
+        if (payfastService.validatePayFastHost(host)) {
+          console.log('✓ Request from valid PayFast host:', host)
+        } else {
+          console.warn('⚠️  Request from non-PayFast host:', host, '- proceeding with signature validation')
+        }
+      } catch (e) {
+        console.warn('⚠️  Could not parse referer/origin:', referer)
+      }
+    } else {
+      console.log('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation')
     }
 
-    // Step 2: Validate signature
+    // Step 2: Validate signature (PRIMARY security check)
     const receivedSignature = itnData.signature
     delete itnData.signature // Remove signature before validation
 
