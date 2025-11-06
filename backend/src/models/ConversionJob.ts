@@ -7,7 +7,8 @@ export enum ConversionType {
   PDF_TO_DOCX = 'pdf_to_docx',
   PDF_TO_XLSX = 'pdf_to_xlsx',
   PDF_TO_IMAGES = 'pdf_to_images',
-  PDF_MERGE = 'pdf_merge'
+  PDF_MERGE = 'pdf_merge',
+  PDF_COMPRESS = 'pdf_compress'
 }
 
 export enum JobStatus {
@@ -85,6 +86,8 @@ export class ConversionJob extends Model<ConversionJobAttributes, ConversionJobC
       case ConversionType.PDF_TO_IMAGES:
         return 'zip'
       case ConversionType.PDF_MERGE:
+        return 'pdf'
+      case ConversionType.PDF_COMPRESS:
         return 'pdf'
       default:
         return 'bin'

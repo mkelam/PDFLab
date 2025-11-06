@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   uploadFile,
+  compressPDF,
   mergePDFs,
   getJobStatus,
   downloadFile,
@@ -26,6 +27,18 @@ router.post(
   handleUploadError,
   trackUpload, // Track successful uploads
   uploadFile
+)
+
+// Compress PDF (requires authentication)
+router.post(
+  '/compress',
+  uploadLimiter,
+  authMiddleware,
+  checkConversionQuota,
+  uploadMiddleware.single('file'),
+  handleUploadError,
+  trackUpload,
+  compressPDF
 )
 
 // Merge multiple PDFs

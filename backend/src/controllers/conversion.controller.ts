@@ -6,6 +6,105 @@ import { ConversionJob, ConversionType, JobStatus } from '../models'
 import { conversionQueue } from '../config/redis'
 
 /**
+ * Compress PDF file to reduce size
+ */
+export const compressPDF = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' })
+      return
+    }
+
+    // Check if file was uploaded
+    if (!req.file) {
+      res.status(400).json({
+        error: 'No file uploaded',
+        message: 'Please provide a PDF file to compress'
+      })
+      return
+    }
+
+    // Get compression level from request (default to 'recommended')
+    const compressionLevel = (req.body.compression_level as 'good' | 'recommended' | 'extreme') || 'recommended'
+
+    // Validate compression level
+    if (!['good', 'recommended', 'extreme'].includes(compressionLevel)) {
+      fs.unlinkSync(req.file.path)
+      res.status(400).json({
+        error: 'Invalid compression level',
+        message: 'Compression level must be one of: good, recommended, extreme'
+      })
+      return
+    }
+
+    // Validate file size
+    const maxFileSize = user.getMaxFileSize()
+    if (req.file.size > maxFileSize) {
+      // Delete uploaded file
+      fs.unlinkSync(req.file.path)
+
+      res.status(413).json({
+        error: 'File too large',
+        message: `Your ${user.plan} plan supports files up to ${Math.round(maxFileSize / 1024 / 1024)}MB`,
+        file_size: req.file.size,
+        max_file_size: maxFileSize,
+        upgrade_required: true
+      })
+      return
+    }
+
+    // Create conversion job
+    const jobId = uuidv4()
+    const job = await ConversionJob.create({
+      id: jobId,
+      user_id: user.id,
+      type: ConversionType.PDF_COMPRESS,
+      status: JobStatus.PENDING,
+      progress: 0,
+      input_file: req.file.path,
+      file_name: req.file.originalname,
+      file_size: req.file.size,
+      estimated_time: estimateProcessingTime(ConversionType.PDF_COMPRESS, req.file.size),
+      created_at: new Date(),
+      updated_at: new Date(),
+      expires_at: new Date(Date.now() + 7 * 24 * 3600000) // 7 days
+    })
+
+    // Add job to queue
+    await conversionQueue.add({
+      job_id: jobId,
+      user_id: user.id,
+      input_file: req.file.path,
+      output_format: 'pdf',
+      conversion_type: ConversionType.PDF_COMPRESS,
+      options: {
+        compression_level: compressionLevel
+      }
+    })
+
+    // Update job status to queued
+    job.status = JobStatus.QUEUED
+    await job.save()
+
+    res.status(201).json({
+      message: 'File uploaded successfully, compression queued',
+      job_id: jobId,
+      status: job.status,
+      progress: job.progress,
+      estimated_time: job.estimated_time,
+      compression_level: compressionLevel,
+      created_at: job.created_at
+    })
+  } catch (error) {
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Compress PDF error', error, { user_id: req.user?.id })
+
+    sendInternalServerError(res, 'An error occurred during PDF compression. Please try again, or contact support if the issue persists.')
+  }
+}
+
+/**
  * Merge multiple PDF files
  */
 export const mergePDFs = async (req: Request, res: Response): Promise<void> => {
@@ -530,7 +629,8 @@ function estimateProcessingTime(conversionType: string, fileSize: number): numbe
     [ConversionType.PDF_TO_DOCX]: 4,
     [ConversionType.PDF_TO_XLSX]: 4,
     [ConversionType.PDF_TO_IMAGES]: 8,
-    [ConversionType.PDF_MERGE]: 2
+    [ConversionType.PDF_MERGE]: 2,
+    [ConversionType.PDF_COMPRESS]: 3
   }
 
   // Scale based on file size (assume 1MB = 10 pages)
@@ -549,6 +649,8 @@ function getOutputFormat(conversionType: ConversionType): string {
     case ConversionType.PDF_TO_IMAGES:
       return 'jpg'
     case ConversionType.PDF_MERGE:
+      return 'pdf'
+    case ConversionType.PDF_COMPRESS:
       return 'pdf'
     default:
       return 'bin'

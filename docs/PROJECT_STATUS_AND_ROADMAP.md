@@ -279,11 +279,21 @@ Monitor production performance, optimize based on real usage data, and complete 
 
 **Features**:
 - [ ] OCR support for scanned PDFs
-- [ ] PDF compression
+- [x] **PDF compression** ✅ (Backend complete Nov 6, 2025 - Frontend pending)
+  - Three compression levels (good, recommended, extreme)
+  - CloudConvert optimize API integration
+  - Compression stats tracking (original size, compressed size, ratio)
+- [ ] **Batch Processing** (High Priority - Next Feature)
+  - Upload 5-10 PDFs simultaneously
+  - Batch compression, conversion, or merge
+  - Queue management for batch jobs
+  - Bulk download as ZIP
+  - Progress tracking for entire batch
+  - Priority queue for Pro/Enterprise users
 - [ ] PDF encryption/decryption
 - [ ] Watermark addition
 - [ ] Page rotation and reordering
-- [ ] Advanced merge options
+- [ ] Advanced merge options (custom page ordering, bookmarks)
 - [ ] API access for Enterprise users
 - [ ] Webhook support for job notifications
 - [ ] White-label options for Enterprise
@@ -292,7 +302,7 @@ Monitor production performance, optimize based on real usage data, and complete 
 - [ ] Drag-and-drop interface
 - [ ] Real-time progress bars (WebSocket)
 - [ ] Preview before conversion
-- [ ] Conversion presets
+- [ ] Conversion presets (quality, speed, balanced)
 - [ ] Template library
 
 **Success Criteria**:

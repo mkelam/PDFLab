@@ -395,6 +395,132 @@ export class CloudConvertService {
   }
 
   /**
+   * Compress PDF file to reduce file size
+   */
+  async compressPDF(inputFilePath: string, outputFilePath: string, compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'): Promise<{
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    originalSize?: number
+    compressedSize?: number
+    compressionRatio?: number
+    error?: string
+  }> {
+    try {
+      // Validate input file
+      if (!fs.existsSync(inputFilePath)) {
+        throw new Error(`Input file not found: ${inputFilePath}`)
+      }
+
+      // Get original file size
+      const originalSize = fs.statSync(inputFilePath).size
+
+      // Ensure output directory exists
+      const outputDir = path.dirname(outputFilePath)
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true })
+      }
+
+      // Create CloudConvert job with optimize task
+      let job = await cloudConvertClient.jobs.create({
+        tasks: {
+          'upload-file': {
+            operation: 'import/upload'
+          },
+          'optimize-pdf': {
+            operation: 'optimize',
+            input: 'upload-file',
+            input_format: 'pdf',
+            output_format: 'pdf',
+            profile: compressionLevel  // 'good', 'recommended', or 'extreme'
+          },
+          'export-file': {
+            operation: 'export/url',
+            input: 'optimize-pdf'
+          }
+        }
+      })
+
+      console.log(`CloudConvert compression job created: ${job.id}`)
+
+      // Upload the input file
+      const uploadTask = job.tasks.find(task => task.name === 'upload-file')
+      if (!uploadTask) {
+        throw new Error('Upload task not found in job')
+      }
+
+      const inputStream = fs.createReadStream(inputFilePath)
+      await cloudConvertClient.tasks.upload(uploadTask, inputStream)
+
+      console.log(`File uploaded to CloudConvert for compression: ${inputFilePath}`)
+
+      // Wait for job completion
+      job = await cloudConvertClient.jobs.wait(job.id)
+
+      console.log(`CloudConvert compression job completed: ${job.id}`)
+
+      // Download the compressed file
+      const exportTask = job.tasks.find(task => task.name === 'export-file')
+      if (!exportTask || !exportTask.result?.files?.[0]) {
+        throw new Error('Export task or result not found')
+      }
+
+      const file = exportTask.result.files[0]
+      const fileUrl = file.url
+
+      if (!fileUrl) {
+        throw new Error('File URL not found in export result')
+      }
+
+      // Download compressed file
+      await new Promise<void>((resolve, reject) => {
+        const protocol = fileUrl.startsWith('https:') ? https : http
+        const writeStream = fs.createWriteStream(outputFilePath)
+
+        protocol.get(fileUrl, (response) => {
+          if (response.statusCode !== 200) {
+            reject(new Error(`Download failed with status ${response.statusCode}`))
+            return
+          }
+
+          response.pipe(writeStream)
+
+          writeStream.on('finish', () => {
+            writeStream.close()
+            resolve()
+          })
+
+          writeStream.on('error', (err) => {
+            fs.unlink(outputFilePath, () => {})
+            reject(err)
+          })
+        }).on('error', reject)
+      })
+
+      console.log(`Compressed PDF downloaded: ${outputFilePath}`)
+
+      // Calculate compression stats
+      const compressedSize = fs.statSync(outputFilePath).size
+      const compressionRatio = Math.round((1 - compressedSize / originalSize) * 100)
+
+      return {
+        success: true,
+        outputPath: outputFilePath,
+        jobId: job.id,
+        originalSize,
+        compressedSize,
+        compressionRatio
+      }
+    } catch (error: any) {
+      console.error('CloudConvert compression error:', error)
+      return {
+        success: false,
+        error: error.message || 'Unknown error during PDF compression'
+      }
+    }
+  }
+
+  /**
    * Get CloudConvert account information
    */
   async getAccountInfo(): Promise<{

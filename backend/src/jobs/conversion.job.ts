@@ -21,6 +21,7 @@ interface ConversionJobData {
     dpi?: number
     pages?: string
     ocr?: boolean
+    compression_level?: 'good' | 'recommended' | 'extreme'
   }
 }
 
@@ -104,8 +105,17 @@ export const initializeConversionWorker = () => {
 
     let result
 
+    // Check if this is a compression job
+    if (conversion_type === 'pdf_compress' && input_file) {
+      console.log(`[Conversion Worker] Compressing PDF file with level: ${options?.compression_level || 'recommended'}`)
+      result = await cloudConvertService.compressPDF(
+        input_file,
+        outputFile,
+        options?.compression_level || 'recommended'
+      )
+    }
     // Check if this is a merge job (multiple input files)
-    if (job.data.input_files && job.data.input_files.length > 0) {
+    else if (job.data.input_files && job.data.input_files.length > 0) {
       console.log(`[Conversion Worker] Merging ${job.data.input_files.length} PDF files`)
       result = await cloudConvertService.mergePDFs(job.data.input_files, outputFile)
     } else if (input_file) {
