@@ -6,6 +6,20 @@ This file provides guidance to Claude Code when working with the PDFLab codebase
 
 **PDFLab** is a professional PDF conversion and manipulation platform that enables users to convert PDFs to various formats (PPTX, DOCX, XLSX, PNG) and merge multiple PDFs. The platform features a modern Next.js frontend with a robust Express.js backend, integrated with CloudConvert for file processing and PayFast for payment processing.
 
+## Claude Code Skills
+
+**IMPORTANT**: Before starting any task, always check the `.claude/skills/` directory for relevant skills that can help with the task. Available skills include:
+
+- **typescript-build-guardian.skill** - Monitors TypeScript builds and fixes errors proactively
+- Check `.claude/skills/` folder for additional skills specific to this project
+
+When working on tasks, search for applicable skills using:
+```bash
+dir .claude\skills\*.skill
+```
+
+Skills provide specialized workflows and best practices for common development tasks in this project.
+
 ## Architecture
 
 ### Tech Stack
@@ -38,7 +52,8 @@ PDFLab/
 │   ├── dashboard/                # User dashboard
 │   ├── login/                    # Authentication pages
 │   ├── signup/
-│   └── pricing/                  # Pricing and plans
+│   ├── pricing/                  # Pricing and plans
+│   └── admin/                    # Admin panel
 ├── backend/                      # Express.js API
 │   ├── src/
 │   │   ├── config/              # Database, Redis config
@@ -60,6 +75,17 @@ PDFLab/
 ├── lib/                         # Utilities
 │   ├── api.ts                   # API client
 │   └── auth-api.ts              # Auth helpers
+├── docs/                        # **ALL PROJECT DOCUMENTATION**
+│   ├── README.md                # Documentation index
+│   ├── architecture/            # Architecture documents
+│   ├── api/                     # API documentation
+│   ├── deployment/              # Deployment guides
+│   ├── testing/                 # Testing documentation
+│   ├── payment/                 # PayFast integration docs
+│   ├── admin/                   # Admin panel docs
+│   ├── guides/                  # General guides
+│   ├── prd/                     # Product requirements (sharded)
+│   └── archives/                # Historical reports
 └── public/                      # Static assets
 
 ```
@@ -111,15 +137,18 @@ docker start pdflab-mysql pdflab-redis
 - **Guest Routes**: `useGuestOnly()` hook redirects authenticated users
 
 ### 4. Payment Integration (PayFast)
-- **Currency**: USD (dollars)
+- **Currency**: Dual-currency system (CRITICAL - PayFast only accepts ZAR)
+  - **Display**: USD shown to customers on frontend
+  - **Processing**: ZAR sent to PayFast gateway
 - **Plans**:
-  - Free: $0 (3 conversions/month, 10MB)
-  - Starter: $9.99/month (100 conversions, 25MB)
-  - Pro: $29.99/month (unlimited, 100MB)
-  - Enterprise: $99.99/month (unlimited, 500MB, API access)
+  - Free: $0 / R0 (3 conversions/month, 10MB)
+  - Starter: $9.99 / R185/month (100 conversions, 25MB)
+  - Pro: $29.99 / R555/month (unlimited, 100MB)
+  - Enterprise: $99.99 / R1850/month (unlimited, 500MB, API access)
 - **Subscriptions**: Recurring monthly billing
 - **ITN Webhooks**: Instant transaction notifications
 - **Payment Logs**: Full audit trail in database
+- **Important Note**: PayFast ONLY processes ZAR. Customers see USD prices, but PayFast receives ZAR amounts. This dual-currency system is required for PayFast compliance.
 
 ## Database Schema
 
@@ -324,12 +353,27 @@ node -e "const {Sequelize} = require('sequelize'); const db = new Sequelize('pdf
 - **Rate Limiting**: 100 requests per 15 minutes per IP
 - **PayFast**: 3-step ITN validation (host + signature + server)
 
+## Documentation Organization
+
+**IMPORTANT**: All project documentation has been organized into the `docs/` folder. See [docs/README.md](docs/README.md) for complete documentation index.
+
+**Quick Links**:
+- Architecture: [docs/architecture/](docs/architecture/)
+- API Reference: [docs/api/API_DOCUMENTATION.md](docs/api/API_DOCUMENTATION.md)
+- Deployment: [docs/deployment/](docs/deployment/)
+- Payment Integration: [docs/payment/](docs/payment/)
+- Admin Panel: [docs/admin/](docs/admin/)
+
 ## Recent Updates
 
+- ✅ **2025-11-06**: Documentation organized into docs/ folder structure
+- ✅ **2025-11-06**: Dual-currency system clarified and documented
+- ✅ **2025-11-05**: VPS deployment completed and verified
+- ✅ **2025-11-04**: Admin panel integration successful
+- ✅ **2025-11-03**: Error messaging improvements implemented
+- ✅ **2025-10-30**: CloudConvert integration stabilized
+- ✅ **2025-10-29**: PayFast payment gateway integrated (dual-currency: USD display, ZAR processing)
 - ✅ Authentication integration complete (login/signup)
-- ✅ PayFast payment gateway integrated
-- ✅ Currency changed from ZAR (Rands) to USD (Dollars)
-- ✅ Subscription and payment logging models added
 - ✅ PDF merge functionality implemented
 - ✅ Frontend-backend API integration complete
 
@@ -350,6 +394,7 @@ node -e "const {Sequelize} = require('sequelize'); const db = new Sequelize('pdf
 
 ---
 
-**Last Updated**: 2025-10-29
+**Last Updated**: 2025-11-06
 **Project Status**: Active Development
 **Current Version**: 1.0.0
+**Documentation**: See [docs/README.md](docs/README.md) for complete index
