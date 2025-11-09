@@ -1,0 +1,796 @@
+# Sentry Monitoring Specialist Skill
+
+**Skill Name**: sentry-monitoring-specialist
+**Version**: 1.0.0
+**Last Updated**: 2025-11-09
+**Sentry Project**: https://pdf-lab-pro.sentry.io
+
+---
+
+## Purpose
+
+This skill provides expert-level guidance for configuring, optimizing, and managing Sentry error tracking and performance monitoring for PDFLab production environment. Use this skill when setting up alerts, investigating errors, optimizing performance, or enhancing production monitoring.
+
+---
+
+## When to Use This Skill
+
+Invoke this skill when:
+- 🚨 Setting up or modifying Sentry alerts
+- 🔍 Investigating production errors in Sentry dashboard
+- 📊 Analyzing performance metrics and traces
+- ⚙️ Configuring Sentry integrations (Slack, email, etc.)
+- 🛠️ Optimizing Sentry SDK configuration
+- 📈 Setting up custom metrics and tags
+- 🔧 Troubleshooting Sentry integration issues
+- 📝 Implementing error handling best practices
+- 🎯 Creating custom error contexts
+- 🔒 Reviewing security and PII handling
+
+---
+
+## PDFLab Sentry Configuration
+
+### Current Setup (v1.1.0)
+
+**Sentry Project**: https://pdf-lab-pro.sentry.io
+**DSN**: (stored in `.env` as `SENTRY_DSN`)
+**Organization**: pdf-lab-pro
+**Projects**:
+- Backend (Node.js Express)
+- Frontend (Next.js) [if configured]
+
+### Backend Integration
+
+**Location**: `backend/src/server.ts`
+
+**Current Configuration**:
+```typescript
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || 'development',
+
+  // Performance Monitoring
+  tracesSampleRate: 1.0, // 100% in production (adjust based on volume)
+
+  // Profiling
+  profilesSampleRate: 1.0, // 100% profiling (adjust based on volume)
+
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+
+  // Send PII (Personal Identifiable Information) - false by default
+  sendDefaultPii: false,
+});
+```
+
+---
+
+## Alert Configuration Checklist
+
+### Priority 1: Critical Alerts 🔴
+
+**1. Error Rate Spike**
+- **Trigger**: Error rate exceeds 10 errors/minute
+- **Condition**: `count()` > 10 in 1 minute
+- **Action**: Immediate notification (Slack + Email)
+- **Severity**: Critical
+```
+Alert Rule:
+WHEN count() of errors
+IS ABOVE 10
+IN 1 minute
+THEN send notification to #alerts-critical
+```
+
+**2. New Production Errors**
+- **Trigger**: New error type appears in production
+- **Condition**: Issue is first seen
+- **Action**: Immediate notification
+- **Severity**: High
+```
+Alert Rule:
+WHEN a new issue is created
+AND environment is production
+THEN send notification to #alerts-new-errors
+```
+
+**3. High-Impact Errors**
+- **Trigger**: Error affects multiple users
+- **Condition**: >50 users affected in 5 minutes
+- **Action**: Page on-call engineer
+- **Severity**: Critical
+```
+Alert Rule:
+WHEN count(unique(user))
+IS ABOVE 50
+IN 5 minutes
+THEN page on-call
+```
+
+**4. Database Connection Failures**
+- **Trigger**: MySQL connection errors
+- **Condition**: Error message contains "ECONNREFUSED" or "SequelizeConnectionError"
+- **Action**: Immediate notification + auto-remediation trigger
+- **Severity**: Critical
+```
+Alert Rule:
+WHEN error.type equals SequelizeConnectionError
+OR error.message contains ECONNREFUSED
+THEN send critical alert
+```
+
+**5. Redis Queue Failures**
+- **Trigger**: Bull queue errors
+- **Condition**: Job failures exceed 5 in 1 minute
+- **Action**: Immediate notification
+- **Severity**: High
+```
+Alert Rule:
+WHEN error.type equals BullQueueError
+AND count() > 5 IN 1 minute
+THEN send alert
+```
+
+### Priority 2: Performance Alerts 🟡
+
+**6. Response Time Degradation**
+- **Trigger**: P95 response time exceeds 2 seconds
+- **Condition**: `percentile(transaction.duration, 0.95)` > 2000ms
+- **Action**: Warning notification
+- **Severity**: Medium
+```
+Metric Alert:
+WHEN percentile(transaction.duration, 0.95)
+IS ABOVE 2000ms
+FOR 5 minutes
+THEN send warning
+```
+
+**7. CloudConvert API Failures**
+- **Trigger**: CloudConvert API errors
+- **Condition**: 401/403/429 errors from CloudConvert
+- **Action**: Notification + check quota
+- **Severity**: High
+```
+Alert Rule:
+WHEN error.message contains "CloudConvert"
+AND http.status_code in [401, 403, 429, 500]
+THEN send alert
+```
+
+**8. PayFast Webhook Failures**
+- **Trigger**: ITN webhook processing errors
+- **Condition**: Error in `/api/payfast/webhook`
+- **Action**: Immediate notification (payment-critical)
+- **Severity**: Critical
+```
+Alert Rule:
+WHEN transaction equals /api/payfast/webhook
+AND event.type equals error
+THEN send critical alert to #payment-alerts
+```
+
+**9. Batch Processing Slow Performance**
+- **Trigger**: Batch job takes >5 minutes
+- **Condition**: Batch processing duration exceeds threshold
+- **Action**: Warning notification
+- **Severity**: Medium
+```
+Performance Alert:
+WHEN transaction.duration for batch processing
+IS ABOVE 300000ms (5 minutes)
+THEN send performance warning
+```
+
+**10. Memory Usage High**
+- **Trigger**: Node.js heap usage exceeds 80%
+- **Condition**: Memory metric crosses threshold
+- **Action**: Warning notification
+- **Severity**: Medium
+```
+Metric Alert:
+WHEN memory.heap.used / memory.heap.total
+IS ABOVE 0.8
+FOR 10 minutes
+THEN send warning
+```
+
+### Priority 3: Business Alerts 📊
+
+**11. Conversion Failure Rate**
+- **Trigger**: Conversion success rate drops below 95%
+- **Condition**: Failed jobs / total jobs > 5%
+- **Action**: Investigation trigger
+- **Severity**: Medium
+```
+Custom Metric:
+WHEN (failed_conversions / total_conversions) > 0.05
+IN 1 hour
+THEN send business alert
+```
+
+**12. Subscription Activation Failures**
+- **Trigger**: PayFast subscription not activating
+- **Condition**: User plan not upgrading after payment
+- **Action**: Immediate notification (revenue-critical)
+- **Severity**: High
+```
+Alert Rule:
+WHEN error.message contains "subscription activation failed"
+OR error.type equals SubscriptionActivationError
+THEN send critical alert to #revenue-alerts
+```
+
+---
+
+## Custom Tags & Context
+
+### Standard Tags
+
+Always include these tags for better error grouping:
+
+```typescript
+Sentry.setTag('environment', process.env.NODE_ENV);
+Sentry.setTag('service', 'pdflab-backend');
+Sentry.setTag('version', '1.1.0');
+```
+
+### User Context
+
+For authenticated requests:
+
+```typescript
+Sentry.setUser({
+  id: user.id,
+  email: user.email, // Only if sendDefaultPii is true
+  plan: user.plan,
+  ip_address: '{{auto}}', // Auto-detect IP
+});
+```
+
+### Transaction Context
+
+For conversion jobs:
+
+```typescript
+Sentry.setContext('conversion', {
+  job_id: jobId,
+  conversion_type: conversionType,
+  file_size: fileSize,
+  output_format: outputFormat,
+  user_plan: user.plan,
+});
+```
+
+### Batch Processing Context
+
+```typescript
+Sentry.setContext('batch', {
+  batch_id: batchId,
+  total_files: totalFiles,
+  operation_type: operationType,
+  batch_size_mb: totalSizeMB,
+});
+```
+
+---
+
+## Error Handling Best Practices
+
+### 1. Critical Path Monitoring
+
+**CloudConvert Processing**:
+```typescript
+try {
+  const result = await cloudConvertService.convertPDF(inputFile, outputFile, format);
+} catch (error) {
+  Sentry.captureException(error, {
+    tags: {
+      critical: true,
+      service: 'cloudconvert',
+      operation: 'convert',
+    },
+    contexts: {
+      conversion: {
+        job_id: job.id,
+        format: format,
+        file_size: job.file_size,
+      },
+    },
+    level: 'error',
+  });
+  throw error; // Re-throw after logging
+}
+```
+
+**Payment Processing**:
+```typescript
+try {
+  await payfastService.activateSubscription(userId, planType);
+} catch (error) {
+  Sentry.captureException(error, {
+    tags: {
+      critical: true,
+      service: 'payfast',
+      operation: 'subscription_activation',
+      revenue_impact: 'high',
+    },
+    user: { id: userId },
+    level: 'fatal', // Highest severity
+  });
+  // Alert finance team
+  throw error;
+}
+```
+
+### 2. Performance Monitoring
+
+**Track Long-Running Operations**:
+```typescript
+const transaction = Sentry.startTransaction({
+  op: 'batch.processing',
+  name: 'Process Batch Conversion',
+  tags: {
+    batch_id: batchId,
+    file_count: files.length,
+  },
+});
+
+try {
+  for (const file of files) {
+    const span = transaction.startChild({
+      op: 'conversion',
+      description: `Convert ${file.name}`,
+    });
+
+    await processFile(file);
+
+    span.finish();
+  }
+
+  transaction.setStatus('ok');
+} catch (error) {
+  transaction.setStatus('internal_error');
+  Sentry.captureException(error);
+} finally {
+  transaction.finish();
+}
+```
+
+### 3. Breadcrumbs for Context
+
+**Add breadcrumbs before critical operations**:
+```typescript
+Sentry.addBreadcrumb({
+  category: 'conversion',
+  message: 'Starting PDF compression',
+  level: 'info',
+  data: {
+    compression_level: compressionLevel,
+    file_size: fileSize,
+    job_id: jobId,
+  },
+});
+
+// ... perform compression
+
+Sentry.addBreadcrumb({
+  category: 'conversion',
+  message: 'Compression completed successfully',
+  level: 'info',
+  data: {
+    original_size: originalSize,
+    compressed_size: compressedSize,
+    ratio: compressionRatio,
+  },
+});
+```
+
+---
+
+## Notification Channels Setup
+
+### Slack Integration
+
+**1. Add Sentry Slack App**:
+- Go to https://pdf-lab-pro.sentry.io/settings/integrations/slack/
+- Click "Add to Slack"
+- Authorize for your workspace
+
+**2. Configure Channels**:
+- `#alerts-critical` - Critical errors (P1)
+- `#alerts-performance` - Performance issues (P2)
+- `#alerts-payments` - Payment/revenue errors
+- `#dev-errors` - Development/staging errors
+
+**3. Alert Rules**:
+```
+Critical Errors → #alerts-critical (immediate)
+Performance Degradation → #alerts-performance (5min delay)
+Payment Failures → #alerts-payments (immediate)
+New Errors (dev) → #dev-errors (batched hourly)
+```
+
+### Email Alerts
+
+**Configure in**: Settings > Notifications
+
+**Recipients**:
+- Critical alerts → On-call engineer + team lead
+- Performance alerts → Dev team
+- Payment alerts → Finance + dev team
+- Weekly digest → All team members
+
+---
+
+## Source Maps Configuration
+
+### Backend Source Maps
+
+**1. Generate Source Maps**:
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/"
+  }
+}
+```
+
+**2. Upload to Sentry**:
+```bash
+# Install Sentry CLI
+npm install --save-dev @sentry/cli
+
+# Add to package.json
+"scripts": {
+  "build": "tsc && sentry-cli sourcemaps upload --org pdf-lab-pro --project pdflab-backend ./dist"
+}
+```
+
+**3. Configure Release Tracking**:
+```typescript
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  release: 'pdflab-backend@1.1.0', // Use semantic versioning
+  environment: process.env.NODE_ENV,
+});
+```
+
+---
+
+## Performance Optimization
+
+### Sample Rate Tuning
+
+**Development**:
+```typescript
+Sentry.init({
+  tracesSampleRate: 1.0, // 100% - capture everything
+  profilesSampleRate: 1.0,
+});
+```
+
+**Production (Low Traffic)**:
+```typescript
+Sentry.init({
+  tracesSampleRate: 1.0, // 100% - good for <1000 transactions/day
+  profilesSampleRate: 0.5, // 50% - profiling is resource-intensive
+});
+```
+
+**Production (High Traffic >10k transactions/day)**:
+```typescript
+Sentry.init({
+  tracesSampleRate: 0.1, // 10% - sample to reduce quota usage
+  profilesSampleRate: 0.01, // 1% - minimal profiling
+});
+```
+
+### Filtering Noise
+
+**Ignore common non-critical errors**:
+```typescript
+Sentry.init({
+  beforeSend(event, hint) {
+    // Ignore CORS errors
+    if (event.exception?.values?.[0]?.value?.includes('CORS')) {
+      return null;
+    }
+
+    // Ignore client disconnects
+    if (event.exception?.values?.[0]?.type === 'ECONNRESET') {
+      return null;
+    }
+
+    // Ignore rate limit errors (expected behavior)
+    if (event.tags?.error_type === 'RateLimitError') {
+      return null; // Or set level to 'warning'
+    }
+
+    return event;
+  },
+});
+```
+
+---
+
+## Dashboard & Metrics
+
+### Key Metrics to Monitor
+
+**1. Error Rate**:
+- Target: <0.1% of requests
+- Alert threshold: >1% of requests
+- Dashboard: https://pdf-lab-pro.sentry.io/insights/errors/
+
+**2. Response Time (P95)**:
+- Target: <500ms for API endpoints
+- Alert threshold: >2000ms
+- Dashboard: https://pdf-lab-pro.sentry.io/insights/performance/
+
+**3. Availability**:
+- Target: 99.9% uptime
+- Alert threshold: <99% in 1 hour
+- Monitor: CloudConvert API, PayFast API, Database
+
+**4. User Impact**:
+- Track: Users affected by errors
+- Alert threshold: >50 users in 5 minutes
+- Dashboard: User feedback tab
+
+### Custom Dashboards
+
+**Create dashboards for**:
+1. **Conversion Health**: Track conversion success rates, failures, processing times
+2. **Payment Pipeline**: Monitor PayFast webhooks, subscription activations, failures
+3. **Batch Processing**: Batch completion rates, average batch duration, failures
+4. **External APIs**: CloudConvert quota usage, error rates, latency
+
+---
+
+## Weekly Review Process
+
+### Every Monday at 10 AM:
+
+1. **Review Weekly Digest Email**:
+   - New error types
+   - Error frequency trends
+   - Performance regressions
+   - User impact summary
+
+2. **Check Top Issues**:
+   - Go to: https://pdf-lab-pro.sentry.io/issues/
+   - Sort by: "Priority" or "Events"
+   - Triage top 5 issues
+
+3. **Performance Review**:
+   - Check P95 response times
+   - Identify slow endpoints
+   - Review database query performance
+
+4. **Alert Tuning**:
+   - Review false positives
+   - Adjust thresholds if needed
+   - Update muted alerts
+
+---
+
+## Incident Response Workflow
+
+### When Critical Alert Fires:
+
+**Step 1: Acknowledge (Within 5 minutes)**
+- Click Sentry alert link
+- Review error details
+- Check user impact (how many users affected?)
+
+**Step 2: Assess Severity**
+```
+P0 (Critical): Payment failures, data loss, site down
+P1 (High): Conversion failures, auth issues, API errors
+P2 (Medium): Performance degradation, minor bugs
+P3 (Low): UI issues, cosmetic bugs
+```
+
+**Step 3: Investigate**
+- Check Sentry breadcrumbs for context
+- Review server logs (`docker logs pdflab-backend-prod`)
+- Check external service status (CloudConvert, PayFast)
+- Query database for related issues
+
+**Step 4: Resolve**
+- Apply hotfix if needed
+- Deploy fix to production
+- Verify error stops in Sentry
+- Mark issue as resolved
+
+**Step 5: Post-Mortem**
+- Document root cause
+- Create GitHub issue for long-term fix
+- Update alerts if needed
+- Share learnings with team
+
+---
+
+## Security & PII Handling
+
+### DO NOT Log Sensitive Data
+
+**Never send to Sentry**:
+- Passwords (even hashed)
+- JWT tokens
+- PayFast merchant keys
+- CloudConvert API keys
+- User credit card info
+- Session tokens
+
+### Safe PII Handling
+
+**Enable only if needed**:
+```typescript
+Sentry.init({
+  sendDefaultPii: false, // Keep false in production
+});
+```
+
+**Scrub sensitive data**:
+```typescript
+Sentry.init({
+  beforeSend(event) {
+    // Remove sensitive query params
+    if (event.request?.query_string) {
+      event.request.query_string = event.request.query_string
+        .replace(/token=[^&]+/g, 'token=[REDACTED]')
+        .replace(/api_key=[^&]+/g, 'api_key=[REDACTED]');
+    }
+
+    // Scrub authorization headers
+    if (event.request?.headers?.Authorization) {
+      event.request.headers.Authorization = '[REDACTED]';
+    }
+
+    return event;
+  },
+});
+```
+
+---
+
+## Testing Sentry Integration
+
+### Manual Test
+
+**Trigger test error**:
+```bash
+# In backend
+curl -X POST http://localhost:3006/api/test/sentry-error
+
+# Expected: Error appears in Sentry dashboard within 30 seconds
+```
+
+**Test alert**:
+```bash
+# Trigger multiple errors to fire rate limit alert
+for i in {1..15}; do
+  curl -X POST http://localhost:3006/api/test/sentry-error
+done
+
+# Expected: Alert notification in Slack/Email
+```
+
+### Automated Tests
+
+**Add to E2E tests**:
+```typescript
+// e2e/sentry.spec.ts
+test('Sentry captures conversion errors', async ({ request }) => {
+  // Trigger error
+  const response = await request.post('/api/upload', {
+    data: { invalid: 'payload' },
+  });
+
+  // Check Sentry (requires Sentry API key)
+  // Or check server logs for Sentry event ID
+  expect(response.status).toBe(400);
+});
+```
+
+---
+
+## Troubleshooting
+
+### Issue: Events Not Appearing in Sentry
+
+**Check**:
+1. ✅ DSN is correct in `.env`
+2. ✅ `SENTRY_DSN` environment variable is loaded
+3. ✅ Sentry.init() is called before other imports
+4. ✅ Internet connectivity from server
+5. ✅ No firewall blocking `sentry.io`
+
+**Debug**:
+```typescript
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  debug: true, // Enable debug logging
+});
+```
+
+### Issue: Too Many Events (Quota Exceeded)
+
+**Solutions**:
+1. Reduce `tracesSampleRate` to 0.1 (10%)
+2. Add `beforeSend` filters for noise
+3. Upgrade Sentry plan
+4. Implement rate limiting per error type
+
+### Issue: Missing Stack Traces
+
+**Solutions**:
+1. Upload source maps correctly
+2. Ensure `sourceMap: true` in tsconfig.json
+3. Set correct `release` version
+4. Check source map files in Sentry releases
+
+---
+
+## Resources
+
+### Sentry Documentation
+- **Node.js Guide**: https://docs.sentry.io/platforms/javascript/guides/node/
+- **Performance Monitoring**: https://docs.sentry.io/product/performance/
+- **Alerts Setup**: https://docs.sentry.io/product/alerts/
+- **Source Maps**: https://docs.sentry.io/platforms/javascript/sourcemaps/
+
+### PDFLab Sentry
+- **Dashboard**: https://pdf-lab-pro.sentry.io
+- **Issues**: https://pdf-lab-pro.sentry.io/issues/
+- **Performance**: https://pdf-lab-pro.sentry.io/insights/performance/
+- **Alerts**: https://pdf-lab-pro.sentry.io/alerts/
+
+### Internal Docs
+- **Sentry Setup Guide**: [docs/guides/SENTRY_SETUP_GUIDE.md](../../docs/guides/SENTRY_SETUP_GUIDE.md)
+- **Deployment**: [docs/deployment/DEPLOYMENT_SUCCESS_V1.1.0.md](../../docs/deployment/DEPLOYMENT_SUCCESS_V1.1.0.md)
+
+---
+
+## Quick Commands
+
+```bash
+# Check if Sentry is initialized in logs
+docker logs pdflab-backend-prod | grep -i sentry
+
+# Test Sentry connection
+curl -X POST https://pdflab.pro/api/test/sentry-error
+
+# View Sentry events in last hour
+# (Requires Sentry CLI and auth)
+sentry-cli events list --project pdflab-backend --last 1h
+
+# Upload source maps for new release
+npm run build
+sentry-cli releases new 1.1.0
+sentry-cli releases files 1.1.0 upload-sourcemaps ./dist
+sentry-cli releases finalize 1.1.0
+
+# Deploy new release
+sentry-cli releases deploys 1.1.0 new -e production
+```
+
+---
+
+## Skill Version History
+
+- **v1.0.0** (2025-11-09): Initial skill creation with comprehensive Sentry monitoring setup
+
+---
+
+**End of Skill**

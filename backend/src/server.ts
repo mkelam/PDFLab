@@ -64,15 +64,21 @@ import paymentAdminRoutes from './routes/payment.admin.routes'
 import systemAdminRoutes from './routes/system.admin.routes'
 import analyticsAdminRoutes from './routes/analytics.admin.routes'
 import auditAdminRoutes from './routes/audit.admin.routes'
+import analyticsRoutes from './routes/analytics.routes'
+import profileRoutes from './routes/profile.routes'
+import testRoutes from './routes/test.routes'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
 
-// The Sentry request handler must be the first middleware on the app (if Sentry is configured)
+// Trust proxy (required for rate limiting behind Nginx)
+app.set('trust proxy', true)
+
+// Sentry middleware (only if DSN is configured)
+// Note: Modern @sentry/node doesn't require explicit middleware
+// Sentry.init() automatically instruments Express
 if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.requestHandler())
-  // TracingHandler creates a trace for every incoming request
-  app.use(Sentry.Handlers.tracingHandler())
+  console.log('✓ Sentry Express instrumentation active')
 }
 
 // =====================
@@ -102,7 +108,9 @@ app.use(helmet())
 // CORS configuration
 const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
   'http://localhost:3000',
-  'http://localhost:3002'
+  'http://localhost:3002',
+  'https://pdflab.pro',
+  'http://pdflab.pro'
 ]
 
 app.use(
@@ -111,9 +119,10 @@ app.use(
       // Allow requests with no origin (mobile apps, Postman, etc.)
       if (!origin) return callback(null, true)
 
-      if (corsOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      if (corsOrigins.includes(origin)) {
         callback(null, true)
       } else {
+        console.warn(`[CORS] Blocked request from origin: ${origin}`)
         callback(new Error('Not allowed by CORS'))
       }
     },
@@ -193,6 +202,8 @@ app.get('/health', async (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)
+app.use('/api/analytics', analyticsRoutes)
+app.use('/api/profile', profileRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/admin', conversionAdminRoutes)
 app.use('/api/admin/payments', paymentAdminRoutes)
@@ -200,6 +211,12 @@ app.use('/api/admin/system', systemAdminRoutes)
 app.use('/api/admin/analytics', analyticsAdminRoutes)
 app.use('/api/admin/audit-logs', auditAdminRoutes)
 app.use('/api', conversionRoutes)
+
+// Test routes (only in development/staging - NOT production)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api', testRoutes)
+  console.log('✓ Sentry test routes enabled (development/staging only)')
+}
 
 // Root route
 app.get('/', async (req: Request, res: Response) => {
@@ -240,10 +257,8 @@ app.use((req: Request, res: Response) => {
   })
 })
 
-// The Sentry error handler must be before any other error middleware (if Sentry is configured)
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.errorHandler())
-}
+// Sentry error handling is automatic with Sentry.init()
+// Modern @sentry/node automatically captures unhandled errors
 
 // Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

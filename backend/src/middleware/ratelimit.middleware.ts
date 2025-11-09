@@ -20,7 +20,13 @@ export const apiLimiter = rateLimit({
     retryAfter: '15 minutes'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  // Fix trust proxy warning by using a keyGenerator
+  keyGenerator: (req: Request) => {
+    // In production behind nginx, use X-Forwarded-For
+    // In development, use socket IP
+    return req.ip || req.socket?.remoteAddress || 'unknown'
+  }
   // TODO: Add Redis store in production
   // store: new RedisStore({
   //   client: redisClient,
@@ -77,7 +83,11 @@ export const authLimiter = rateLimit({
     message: 'Too many failed login attempts. Please try again in 15 minutes.'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  // Fix trust proxy warning by using a keyGenerator
+  keyGenerator: (req: Request) => {
+    return req.ip || req.socket?.remoteAddress || 'unknown'
+  }
   // TODO: Add Redis store in production
 })
 
