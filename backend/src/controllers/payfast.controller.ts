@@ -3,9 +3,10 @@ import { v4 as uuidv4 } from 'uuid'
 import path from 'path'
 import ejs from 'ejs'
 import payfastService from '../services/payfast.service'
-import { User, SubscriptionStatus as UserSubscriptionStatus } from '../models/User'
+import { User, SubscriptionStatus as UserSubscriptionStatus, UserPlan } from '../models/User'
 import { Subscription, SubscriptionStatus, PlanType } from '../models/subscription.model'
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
+import { updateUserPlan } from '../utils/quota.utils'
 
 // Helper function to render with layout
 const renderWithLayout = async (view: string, data: any = {}): Promise<string> => {
@@ -17,13 +18,12 @@ const renderWithLayout = async (view: string, data: any = {}): Promise<string> =
 }
 
 // Pricing plans configuration
-// NOTE: PayFast ONLY accepts ZAR currency
-// Display prices are in USD on frontend, but PayFast processes in ZAR
+// PayFast supports multi-currency via dashboard settings (Settings > Multi-currency)
+// Once enabled, PayFast automatically handles currency conversion and display
 const PRICING_PLANS = {
   free: {
     name: 'Free',
-    displayPrice: 0,      // USD for display
-    payfastPrice: 0,      // ZAR for PayFast processing
+    price: 0,             // $0/month USD
     conversions: 3,
     maxFileSize: 10485760, // 10MB
     features: {
@@ -37,8 +37,7 @@ const PRICING_PLANS = {
   },
   starter: {
     name: 'Starter',
-    displayPrice: 4.55,   // $4.55/month USD (display only)
-    payfastPrice: 85,     // R85/month ZAR (PayFast processing)
+    price: 9.99,          // $9.99/month USD
     conversions: 100,
     maxFileSize: 26214400, // 25MB
     features: {
@@ -52,8 +51,7 @@ const PRICING_PLANS = {
   },
   pro: {
     name: 'Pro',
-    displayPrice: 13.50,  // $13.50/month USD (display only)
-    payfastPrice: 250,    // R250/month ZAR (PayFast processing)
+    price: 29.99,         // $29.99/month USD
     conversions: -1, // Unlimited
     maxFileSize: 104857600, // 100MB
     features: {
@@ -67,8 +65,7 @@ const PRICING_PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    displayPrice: 99.99,  // $99.99/month USD (display only)
-    payfastPrice: 1850,   // R1850/month ZAR (PayFast processing)
+    price: 99.99,         // $99.99/month USD
     conversions: -1, // Unlimited
     maxFileSize: 524288000, // 500MB
     features: {
@@ -91,7 +88,7 @@ export const getPlans = async (_req: Request, res: Response): Promise<void> => {
     const plans = Object.entries(PRICING_PLANS).map(([id, plan]) => ({
       id,
       name: plan.name,
-      price: plan.displayPrice, // Display price in USD
+      price: plan.price, // USD price - PayFast handles multi-currency display
       currency: 'USD',
       billing_cycle: 'per month',
       description: `Perfect for ${id === 'free' ? 'getting started' : id === 'starter' ? 'individuals' : id === 'pro' ? 'professionals' : 'businesses'}`,
@@ -157,26 +154,26 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
       return
     }
 
-    // Create subscription record (store display price in USD)
+    // Create subscription record (USD pricing)
     const subscription = await Subscription.create({
       user_id: user.id,
       plan: planId as PlanType,
       status: SubscriptionStatus.PENDING,
-      amount: plan.displayPrice, // Store display price for records
+      amount: plan.price, // USD price
       currency: 'USD',
       started_at: new Date()
     })
 
-    // Create payment log (store display price for tracking)
+    // Create payment log (USD pricing)
     await PaymentLog.create({
       user_id: user.id,
       subscription_id: subscription.id,
       transaction_id: transactionId,
       payment_type: PaymentType.SUBSCRIPTION,
       status: PaymentStatus.PENDING,
-      amount_gross: plan.displayPrice,
+      amount_gross: plan.price,
       amount_fee: 0,
-      amount_net: plan.displayPrice,
+      amount_net: plan.price,
       currency: 'USD',
       plan: planId,
       name_first: userName || user.name || user.email.split('@')[0],
@@ -187,18 +184,18 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
         plan_id: planId,
         user_id: user.id,
         subscription_id: subscription.id,
-        display_price_usd: plan.displayPrice,
-        payfast_price_zar: plan.payfastPrice
+        price_usd: plan.price
       }
     })
 
-    // Generate PayFast payment data with subscription (use ZAR price for PayFast)
+    // Generate PayFast payment data with subscription (USD pricing)
+    // PayFast multi-currency handles conversion automatically
     const paymentData = payfastService.createSubscriptionPaymentData({
       userId: user.id,
       userEmail: userEmail || user.email,
       userName: userName || user.name || user.email.split('@')[0],
       planName: plan.name,
-      planPrice: plan.payfastPrice, // CRITICAL: Use ZAR price for PayFast
+      planPrice: plan.price, // USD price - PayFast handles conversion
       transactionId
     })
 
@@ -323,21 +320,14 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
         await subscription.save()
       }
 
-      // Update user plan
-      user.plan = planId as any
+      // Update user subscription metadata
       user.subscription_id = pf_payment_id
       user.subscription_status = UserSubscriptionStatus.ACTIVE
 
-      // Update conversion limits based on plan
-      const plan = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]
-      if (plan) {
-        user.conversions_limit = plan.conversions
-        user.conversions_used = 0 // Reset usage on new subscription
-      }
+      // Update user plan and sync quota (this ensures quota is correct)
+      await updateUserPlan(user, planId as UserPlan, true) // true = reset usage on new subscription
 
-      await user.save()
-
-      console.log(`✓ Subscription activated for user ${user.email} - Plan: ${planId}`)
+      console.log(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`)
     }
 
     // Send 200 OK response to PayFast

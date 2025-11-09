@@ -1,0 +1,15 @@
+{
+    "message": "Login successful",
+    "user": {
+        "id": "e18bdeb3-8159-4b51-aad1-21638c6d4c4c",
+        "email": "testuser@pdflab.com",
+        "name": "Test User",
+        "role": "user",
+        "plan": "free",
+        "conversions_used": 0,
+        "conversions_limit": 3,
+        "last_login": "2025-11-08T12:16:18.002Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlMThiZGViMy04MTU5LTRiNTEtYWFkMS0yMTYzOGM2ZDRjNGMiLCJlbWFpbCI6InRlc3R1c2VyQHBkZmxhYi5jb20iLCJwbGFuIjoiZnJlZSIsImlhdCI6MTc2MjYwNDE3OCwiZXhwIjoxNzYzMjA4OTc4fQ.ocyimavoCypFyztzOsY89-levRpWH7wkd-krN2OEKns",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlMThiZGViMy04MTU5LTRiNTEtYWFkMS0yMTYzOGM2ZDRjNGMiLCJlbWFpbCI6InRlc3R1c2VyQHBkZmxhYi5jb20iLCJwbGFuIjoiZnJlZSIsImlhdCI6MTc2MjYwNDE3OCwiZXhwIjoxNzY1MTk2MTc4fQ.oO_tGCKG2S3gQ5oz1TnZs0luRCM6CMZC9UAGLzFhJtY"
+}

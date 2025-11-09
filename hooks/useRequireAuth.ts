@@ -9,26 +9,24 @@ import { useAuth } from '@/contexts/AuthContext'
  */
 export function useRequireAuth(allowedRoles?: string[]) {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
 
   useEffect(() => {
-    if (!loading) {
-      // Not authenticated - redirect to login
-      if (!user) {
-        router.push('/login?redirect=/admin')
+    // Not authenticated - redirect to login
+    if (!user) {
+      router.push('/login?redirect=/admin')
+      return
+    }
+
+    // Check role permissions if specified
+    if (allowedRoles && allowedRoles.length > 0) {
+      const hasPermission = user.role && allowedRoles.includes(user.role)
+      if (!hasPermission) {
+        router.push('/')
         return
       }
-
-      // Check role permissions if specified
-      if (allowedRoles && allowedRoles.length > 0) {
-        const hasPermission = user.role && allowedRoles.includes(user.role)
-        if (!hasPermission) {
-          router.push('/')
-          return
-        }
-      }
     }
-  }, [user, loading, router, allowedRoles])
+  }, [user, router, allowedRoles])
 
-  return { user, loading }
+  return { user }
 }

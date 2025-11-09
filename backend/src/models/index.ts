@@ -1,6 +1,7 @@
 // Central export for all models
 export { User, UserPlan, UserRole, SubscriptionStatus } from './User'
 export { ConversionJob, ConversionType, JobStatus } from './ConversionJob'
+export { BatchJob, BatchOperationType, BatchStatus } from './BatchJob'
 export { UsageLog } from './UsageLog'
 export { AdminAuditLog, AuditLogSeverity } from './AdminAuditLog'
 export { SystemHealthLog, HealthStatus } from './SystemHealthLog'

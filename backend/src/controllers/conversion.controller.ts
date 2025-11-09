@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import fs from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import archiver from 'archiver'
 import { ConversionJob, ConversionType, JobStatus } from '../models'
 import { conversionQueue } from '../config/redis'
 
@@ -193,6 +194,188 @@ export const mergePDFs = async (req: Request, res: Response): Promise<void> => {
     logError('Merge PDFs error', error, { user_id: req.user?.id, file_count: req.files?.length })
 
     sendInternalServerError(res, 'An error occurred during PDF merge. Please try again, or contact support if the issue persists.')
+  }
+}
+
+/**
+ * Batch convert multiple PDF files to the same format
+ * Requires authentication (Pro/Enterprise plans)
+ */
+export const batchConvert = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' })
+      return
+    }
+
+    // Check plan - batch conversion is Pro/Enterprise only
+    if (user.plan === 'free') {
+      res.status(403).json({
+        error: 'Premium feature',
+        message: 'Batch processing is available on Pro and Enterprise plans',
+        current_plan: user.plan,
+        required_plans: ['pro', 'enterprise'],
+        upgrade_options: [
+          {
+            plan: 'pro',
+            price: '$29.99/month',
+            features: ['Unlimited conversions', 'Batch processing (up to 10 files)', '100MB file size'],
+            cta: 'Upgrade to Pro',
+            url: '/pricing'
+          }
+        ]
+      })
+      return
+    }
+
+    // Check if files were uploaded
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      res.status(400).json({
+        error: 'No files uploaded',
+        message: 'Please provide at least 1 PDF file for batch conversion'
+      })
+      return
+    }
+
+    const files = req.files as Express.Multer.File[]
+
+    // Limit to 10 files
+    if (files.length > 10) {
+      // Delete excess files
+      files.forEach(file => fs.unlinkSync(file.path))
+      res.status(400).json({
+        error: 'Too many files',
+        message: 'Batch conversion supports up to 10 files at once',
+        uploaded_count: files.length,
+        max_files: 10
+      })
+      return
+    }
+
+    const { conversion_type, dpi, pages } = req.body
+
+    // Validate conversion type
+    if (!conversion_type || !Object.values(ConversionType).includes(conversion_type)) {
+      files.forEach(file => fs.unlinkSync(file.path))
+      res.status(400).json({
+        error: 'Invalid conversion type',
+        message: `Conversion type must be one of: ${Object.values(ConversionType).join(', ')}`
+      })
+      return
+    }
+
+    // Batch conversion only supports specific types
+    const allowedBatchTypes = [
+      ConversionType.PDF_TO_PPTX,
+      ConversionType.PDF_TO_DOCX,
+      ConversionType.PDF_TO_XLSX,
+      ConversionType.PDF_TO_IMAGES
+    ]
+    if (!allowedBatchTypes.includes(conversion_type as ConversionType)) {
+      files.forEach(file => fs.unlinkSync(file.path))
+      res.status(400).json({
+        error: 'Invalid batch conversion type',
+        message: 'Batch conversion supports: PPTX, DOCX, XLSX, Images',
+        requested_type: conversion_type,
+        allowed_types: allowedBatchTypes
+      })
+      return
+    }
+
+    // Validate total file size
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0)
+    const maxFileSize = user.getMaxFileSize()
+
+    if (totalSize > maxFileSize) {
+      files.forEach(file => fs.unlinkSync(file.path))
+      res.status(413).json({
+        error: 'Total file size too large',
+        message: `Combined file size exceeds your plan limit (${Math.round(maxFileSize / 1024 / 1024)}MB)`,
+        total_size: totalSize,
+        max_file_size: maxFileSize,
+        upgrade_required: true
+      })
+      return
+    }
+
+    // Check quota (each file counts as 1 conversion)
+    if (user.conversions_limit !== -1 && user.conversions_used + files.length > user.conversions_limit) {
+      files.forEach(file => fs.unlinkSync(file.path))
+      res.status(429).json({
+        error: 'Quota exceeded',
+        message: `You need ${files.length} conversions, but only have ${user.conversions_limit - user.conversions_used} remaining`,
+        conversions_used: user.conversions_used,
+        conversions_limit: user.conversions_limit,
+        files_count: files.length,
+        upgrade_required: true
+      })
+      return
+    }
+
+    // Create individual jobs for each file
+    const jobIds: string[] = []
+    const jobPromises = files.map(async (file) => {
+      const jobId = uuidv4()
+      jobIds.push(jobId)
+
+      const job = await ConversionJob.create({
+        id: jobId,
+        user_id: user.id,
+        type: conversion_type as ConversionType,
+        status: JobStatus.PENDING,
+        progress: 0,
+        input_file: file.path,
+        file_name: file.originalname,
+        file_size: file.size,
+        estimated_time: estimateProcessingTime(conversion_type, file.size),
+        created_at: new Date(),
+        updated_at: new Date(),
+        expires_at: new Date(Date.now() + 7 * 24 * 3600000) // 7 days
+      })
+
+      // Add job to queue
+      await conversionQueue.add({
+        job_id: jobId,
+        user_id: user.id,
+        input_file: file.path,
+        output_format: getOutputFormat(conversion_type as ConversionType),
+        conversion_type: conversion_type,
+        options: {
+          dpi: dpi ? parseInt(dpi) : 300,
+          pages: pages || 'all'
+        }
+      })
+
+      // Update job status to queued
+      job.status = JobStatus.QUEUED
+      await job.save()
+
+      return jobId
+    })
+
+    await Promise.all(jobPromises)
+
+    // Increment user's conversion count by number of files
+    user.conversions_used += files.length
+    await user.save()
+
+    res.status(201).json({
+      message: `${files.length} files uploaded successfully, batch conversion queued`,
+      job_ids: jobIds,
+      file_count: files.length,
+      total_size: totalSize,
+      conversion_type: conversion_type,
+      estimated_time: estimateProcessingTime(conversion_type, totalSize),
+      conversions_used: user.conversions_used,
+      conversions_remaining: user.conversions_limit === -1 ? 'unlimited' : user.conversions_limit - user.conversions_used,
+      created_at: new Date()
+    })
+  } catch (error) {
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Batch convert error', error, { user_id: req.user?.id, file_count: req.files?.length })
+
+    sendInternalServerError(res, 'An error occurred during batch conversion. Please try again, or contact support if the issue persists.')
   }
 }
 
@@ -557,6 +740,154 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
 
     if (!res.headersSent) {
       sendInternalServerError(res, 'An error occurred while downloading the file. Please try again, or contact support if the issue persists.')
+    }
+  }
+}
+
+/**
+ * Download multiple batch conversion results as a ZIP file
+ * Supports batch conversions where multiple files were converted
+ */
+export const downloadBatchZip = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user
+    const { job_ids } = req.query
+
+    // Validate job_ids parameter
+    if (!job_ids || typeof job_ids !== 'string') {
+      res.status(400).json({
+        error: 'Missing job IDs',
+        message: 'Please provide job_ids as comma-separated values'
+      })
+      return
+    }
+
+    const jobIdArray = job_ids.split(',').map(id => id.trim()).filter(id => id.length > 0)
+
+    if (jobIdArray.length === 0) {
+      res.status(400).json({
+        error: 'No job IDs provided',
+        message: 'At least one job ID is required'
+      })
+      return
+    }
+
+    if (jobIdArray.length > 50) {
+      res.status(400).json({
+        error: 'Too many job IDs',
+        message: 'Maximum 50 job IDs can be downloaded at once'
+      })
+      return
+    }
+
+    // Fetch all jobs
+    const jobs = await ConversionJob.findAll({
+      where: { id: jobIdArray }
+    })
+
+    if (jobs.length === 0) {
+      res.status(404).json({
+        error: 'No jobs found',
+        message: 'None of the provided job IDs exist'
+      })
+      return
+    }
+
+    // Check ownership for authenticated users
+    if (user) {
+      const unauthorizedJobs = jobs.filter(job => job.user_id && job.user_id !== user.id)
+      if (unauthorizedJobs.length > 0) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'You do not have access to some of these files'
+        })
+        return
+      }
+    }
+
+    // Check if all jobs are completed
+    const incompleteJobs = jobs.filter(job => job.status !== JobStatus.COMPLETED)
+    if (incompleteJobs.length > 0) {
+      res.status(400).json({
+        error: 'Jobs not completed',
+        message: `${incompleteJobs.length} job(s) are not yet completed`,
+        incomplete_job_ids: incompleteJobs.map(job => job.id)
+      })
+      return
+    }
+
+    // Check if output files exist
+    const missingFiles: string[] = []
+    const validJobs = jobs.filter(job => {
+      if (!job.output_file || !fs.existsSync(job.output_file)) {
+        missingFiles.push(job.id)
+        return false
+      }
+      return true
+    })
+
+    if (validJobs.length === 0) {
+      res.status(410).json({
+        error: 'Files expired',
+        message: 'All files have expired or been deleted',
+        expired_job_ids: missingFiles
+      })
+      return
+    }
+
+    // Create ZIP archive
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Maximum compression
+    })
+
+    // Set response headers
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
+    const zipFileName = `pdflab-batch-${timestamp}-${validJobs.length}files.zip`
+
+    res.setHeader('Content-Type', 'application/zip')
+    res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`)
+
+    // Pipe archive to response
+    archive.pipe(res)
+
+    // Add each file to the archive
+    validJobs.forEach((job, index) => {
+      if (job.output_file && fs.existsSync(job.output_file)) {
+        // Extract original filename without extension
+        const originalName = path.parse(job.file_name).name
+        const outputExt = path.extname(job.output_file)
+
+        // Create unique filename: originalname-converted.ext
+        const archivedFileName = `${originalName}-converted${outputExt}`
+
+        archive.file(job.output_file, { name: archivedFileName })
+      }
+    })
+
+    // Handle archive errors
+    archive.on('error', (error) => {
+      const { logError } = require('../utils/error.utils')
+      logError('Archive creation error', error, { job_ids: jobIdArray })
+
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: 'Archive creation failed',
+          message: 'An error occurred while creating the ZIP file'
+        })
+      }
+    })
+
+    // Finalize the archive
+    await archive.finalize()
+
+    console.log(`[Batch Download] Created ZIP with ${validJobs.length} files for user ${user?.id || 'guest'}`)
+
+  } catch (error) {
+    const { sendInternalServerError, logError } = require('../utils/error.utils')
+    logError('Download batch ZIP error', error, { query: req.query })
+
+    if (!res.headersSent) {
+      sendInternalServerError(res, 'An error occurred while creating the batch download. Please try again.')
     }
   }
 }

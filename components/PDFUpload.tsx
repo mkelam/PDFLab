@@ -17,7 +17,7 @@ import {
   Merge,
   Zap,
   Image,
-  FilePresentation,
+  Presentation,
   FileSpreadsheet,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -221,7 +221,7 @@ export function PDFUpload({ mode = "convert", onSuccess, onError }: PDFUploadPro
                     <SelectContent>
                       <SelectItem value="pptx">
                         <div className="flex items-center">
-                          <FilePresentation className="w-4 h-4 mr-2" />
+                          <Presentation className="w-4 h-4 mr-2" />
                           PowerPoint (.pptx)
                         </div>
                       </SelectItem>
@@ -358,7 +358,7 @@ export function PDFUpload({ mode = "convert", onSuccess, onError }: PDFUploadPro
           >
             {mode === "convert" ? (
               <>
-                {outputFormat === "pptx" && <FilePresentation className="w-4 h-4 mr-2" />}
+                {outputFormat === "pptx" && <Presentation className="w-4 h-4 mr-2" />}
                 {outputFormat === "docx" && <FileText className="w-4 h-4 mr-2" />}
                 {outputFormat === "xlsx" && <FileSpreadsheet className="w-4 h-4 mr-2" />}
                 Convert to {outputFormat === "pptx" ? "PowerPoint" : outputFormat === "docx" ? "Word" : "Excel"}

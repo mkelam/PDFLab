@@ -18,7 +18,7 @@ export default function TermsPage() {
         <div className="mb-12">
           <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
           <p className="text-muted-foreground">
-            Last Updated: <span className="font-medium">October 27, 2025</span>
+            Last Updated: <span className="font-medium">November 6, 2025</span>
           </p>
         </div>
 
@@ -44,9 +44,11 @@ export default function TermsPage() {
               pdflab.pro provides online PDF conversion and manipulation services, including but not limited to:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4 ml-4">
-              <li>PDF to PowerPoint conversion</li>
-              <li>PDF to Word conversion</li>
-              <li>PDF to Excel conversion</li>
+              <li>PDF to PowerPoint (PPTX) conversion</li>
+              <li>PDF to Word (DOCX) conversion</li>
+              <li>PDF to Excel (XLSX) conversion</li>
+              <li>PDF to Image (PNG) conversion</li>
+              <li>PDF compression and optimization</li>
               <li>PDF merging</li>
               <li>OCR (Optical Character Recognition) services</li>
             </ul>
@@ -76,15 +78,23 @@ export default function TermsPage() {
             <div className="bg-card border rounded-lg p-6 mt-4 space-y-3">
               <div>
                 <h3 className="font-semibold">Free Plan</h3>
-                <p className="text-sm text-muted-foreground">3 conversions per day, 10MB file limit</p>
+                <p className="text-sm text-muted-foreground">3 conversions per month, 10MB file limit</p>
               </div>
               <div>
-                <h3 className="font-semibold">Starter Plan ($7/month)</h3>
+                <h3 className="font-semibold">Student Plan ($4.99/month)</h3>
+                <p className="text-sm text-muted-foreground">200 conversions per month, 50MB file limit (.edu email verification required)</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Starter Plan ($9.99/month)</h3>
                 <p className="text-sm text-muted-foreground">100 conversions per month, 25MB file limit</p>
               </div>
               <div>
-                <h3 className="font-semibold">Pro Plan ($19/month)</h3>
+                <h3 className="font-semibold">Pro Plan ($29.99/month)</h3>
                 <p className="text-sm text-muted-foreground">Unlimited conversions, 100MB file limit</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Enterprise Plan ($99.99/month)</h3>
+                <p className="text-sm text-muted-foreground">Unlimited conversions, 500MB file limit, API access, priority support</p>
               </div>
             </div>
             <p className="text-muted-foreground leading-relaxed mt-4">
@@ -116,9 +126,9 @@ export default function TermsPage() {
               When you upload files to the Service:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4 ml-4">
-              <li>Files are processed temporarily on our servers</li>
-              <li>Uploaded and converted files are automatically deleted within 1 hour</li>
-              <li>We do not permanently store your files unless explicitly stated</li>
+              <li>Files are processed temporarily on our servers via CloudConvert API</li>
+              <li>Uploaded and converted files are automatically deleted within 24 hours</li>
+              <li>We do not permanently store your files or file contents</li>
               <li>You retain all ownership rights to your uploaded content</li>
               <li>You grant us a limited license to process your files to provide the Service</li>
             </ul>
@@ -146,10 +156,12 @@ export default function TermsPage() {
               For paid subscriptions:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4 ml-4">
-              <li>Payments are processed securely through Stripe</li>
+              <li>Payments are processed securely through PayFast (South African payment gateway)</li>
+              <li>Subscription amounts are displayed in USD but billed in ZAR (South African Rand) at current exchange rate</li>
               <li>Subscriptions renew automatically unless cancelled</li>
-              <li>You may cancel your subscription at any time</li>
+              <li>You may cancel your subscription at any time through your dashboard</li>
               <li>Refunds are provided on a case-by-case basis within 14 days of purchase</li>
+              <li>Refunds processed through PayFast may take 5-10 business days to reflect</li>
               <li>No refunds for partial usage of subscription periods</li>
             </ul>
           </section>
@@ -224,8 +236,9 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">13. Governing Law and Dispute Resolution</h2>
             <p className="text-muted-foreground leading-relaxed">
-              These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction],
-              without regard to conflict of law principles.
+              These Terms shall be governed by and construed in accordance with the laws of South Africa,
+              without regard to conflict of law principles. This jurisdiction is chosen due to our payment processing
+              through PayFast (a South African payment gateway).
             </p>
             <p className="text-muted-foreground leading-relaxed mt-4">
               Any disputes arising from these Terms or the Service shall be resolved through:
@@ -233,7 +246,7 @@ export default function TermsPage() {
             <ol className="list-decimal list-inside text-muted-foreground space-y-2 mt-4 ml-4">
               <li>Good faith negotiations between parties</li>
               <li>Binding arbitration if negotiations fail</li>
-              <li>Courts of [Your Jurisdiction] as a last resort</li>
+              <li>Courts of South Africa as a last resort</li>
             </ol>
           </section>
 

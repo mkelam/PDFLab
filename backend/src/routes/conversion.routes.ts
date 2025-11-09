@@ -1,10 +1,12 @@
 import { Router } from 'express'
 import {
   uploadFile,
+  batchConvert,
   compressPDF,
   mergePDFs,
   getJobStatus,
   downloadFile,
+  downloadBatchZip,
   getConversionHistory
 } from '../controllers/conversion.controller'
 import { authMiddleware, optionalAuthMiddleware, checkConversionQuota } from '../middleware/auth.middleware'
@@ -27,6 +29,17 @@ router.post(
   handleUploadError,
   trackUpload, // Track successful uploads
   uploadFile
+)
+
+// Batch convert multiple files (requires authentication - Pro/Enterprise only)
+router.post(
+  '/batch-convert',
+  uploadLimiter,
+  authMiddleware,
+  uploadMultipleMiddleware.array('files', 10),
+  handleUploadError,
+  trackUpload,
+  batchConvert
 )
 
 // Compress PDF (requires authentication)
@@ -56,6 +69,9 @@ router.get('/status/:job_id', getJobStatus)
 
 // Download converted file (supports both authenticated and guest users)
 router.get('/download/:job_id', downloadLimiter, optionalAuthMiddleware, trackDownload, downloadFile)
+
+// Download multiple files as ZIP (batch conversion results)
+router.get('/download-batch', downloadLimiter, optionalAuthMiddleware, downloadBatchZip)
 
 // Get conversion history (requires authentication)
 router.get('/history', authMiddleware, getConversionHistory)

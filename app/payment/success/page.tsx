@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext"
 function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, refreshUser } = useAuth()
+  const { user } = useAuth()
   const [isVerifying, setIsVerifying] = useState(true)
   const [verificationComplete, setVerificationComplete] = useState(false)
 
@@ -24,14 +24,11 @@ function PaymentSuccessContent() {
     const timer = setTimeout(() => {
       setIsVerifying(false)
       setVerificationComplete(true)
-      // Refresh user data to get updated plan
-      if (refreshUser) {
-        refreshUser()
-      }
+      // User data will refresh on next page load
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [refreshUser])
+  }, [])
 
   if (isVerifying) {
     return (

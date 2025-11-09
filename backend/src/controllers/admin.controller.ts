@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { User } from '../models/User'
 import bcrypt from 'bcryptjs'
 import { Op } from 'sequelize'
+import { fixAllUserQuotas, syncUserQuota, getQuotaInfo } from '../utils/quota.utils'
 
 /**
  * GET /api/admin/users
@@ -894,6 +895,119 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     console.error('Get stats error:', error)
     res.status(500).json({
       error: 'Failed to fetch stats',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+/**
+ * GET /api/admin/quota-status
+ * Get quota status for all users (shows who needs fixing)
+ */
+export const getQuotaStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await User.findAll()
+
+    const status = users.map(user => {
+      const info = getQuotaInfo(user)
+      return {
+        id: user.id,
+        email: user.email,
+        plan: user.plan,
+        conversions_used: info.conversions_used,
+        conversions_limit: info.conversions_limit,
+        conversions_remaining: info.conversions_remaining,
+        expected_limit: info.expected_limit,
+        is_synced: info.is_synced,
+        needs_fix: !info.is_synced
+      }
+    })
+
+    const needsFix = status.filter(s => s.needs_fix).length
+
+    res.json({
+      success: true,
+      total_users: users.length,
+      users_needing_fix: needsFix,
+      users: status
+    })
+  } catch (error) {
+    console.error('Get quota status error:', error)
+    res.status(500).json({
+      error: 'Failed to get quota status',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+/**
+ * POST /api/admin/fix-quotas
+ * Fix quota limits for ALL users based on their plans
+ */
+export const fixQuotas = async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('🔧 Admin triggered quota fix for all users')
+
+    const result = await fixAllUserQuotas()
+
+    res.json({
+      success: true,
+      message: `Fixed ${result.fixed} out of ${result.total} users`,
+      fixed: result.fixed,
+      total: result.total,
+      unchanged: result.total - result.fixed
+    })
+  } catch (error) {
+    console.error('Fix quotas error:', error)
+    res.status(500).json({
+      error: 'Failed to fix quotas',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+/**
+ * POST /api/admin/users/:id/sync-quota
+ * Sync quota for a specific user
+ */
+export const syncUserQuotaEndpoint = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params
+
+    const user = await User.findByPk(id)
+    if (!user) {
+      res.status(404).json({ error: 'User not found' })
+      return
+    }
+
+    const beforeInfo = getQuotaInfo(user)
+
+    await syncUserQuota(user)
+
+    const afterInfo = getQuotaInfo(user)
+
+    res.json({
+      success: true,
+      message: `Quota synced for user ${user.email}`,
+      user: {
+        email: user.email,
+        plan: user.plan
+      },
+      before: {
+        conversions_limit: beforeInfo.conversions_limit,
+        expected_limit: beforeInfo.expected_limit,
+        is_synced: beforeInfo.is_synced
+      },
+      after: {
+        conversions_limit: afterInfo.conversions_limit,
+        expected_limit: afterInfo.expected_limit,
+        is_synced: afterInfo.is_synced
+      }
+    })
+  } catch (error) {
+    console.error('Sync user quota error:', error)
+    res.status(500).json({
+      error: 'Failed to sync quota',
       message: error instanceof Error ? error.message : 'Unknown error'
     })
   }

@@ -1,0 +1,2787 @@
+
+> pdflab-backend@1.0.0 dev
+> tsx watch src/server.ts
+
+✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:236:7) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+22:12:40 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:269:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+01:01:25 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:269:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+01:21:39 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:269:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:518:28)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:518:28)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+02:27:32 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:265:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+02:31:47 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+02:38:11 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+09:11:59 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+✓ PDFLab API Server running
+✓ Environment: development
+✓ Port: 3006
+✓ Health check: http://localhost:3006/health
+✓ API endpoint: http://localhost:3006/api
+20:23:51 [tsx] change in ./src\services\payfast.service.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:24:09 [tsx] change in ./src\services\payfast.service.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:24:41 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:01 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:21 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+23:14:46 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+✓ PDFLab API Server running
+✓ Environment: development
+✓ Port: 3006
+✓ Health check: http://localhost:3006/health
+✓ API endpoint: http://localhost:3006/api
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                22:12:40 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:269:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+01:01:25 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:269:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+01:21:39 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:269:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+02:27:32 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:265:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+02:31:47 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\comma✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\02:38:11 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\comma✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\09:11:59 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:23:51 [tsx] change in ./src\services\payfast.service.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:24:09 [tsx] change in ./src\services\payfast.service.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+✓ PDFLab API Server running
+✓ Environment: development
+✓ Port: 3006
+✓ Health check: http://localhost:3006/health
+✓ API endpoint: http://localhost:3006/api
+20:24:41 [tsx] change in ./src\controllers\payfast.controller.ts Restarting...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:01 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:21 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+23:14:46 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+23:14:46 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+g existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:21 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+✓ PDFLab API Server running
+✓ Environment: development
+✓ Port: 3006
+✓ Health check: http://localhost:3006/health
+✓ API endpoint: http://localhost:3006/api
+23:14:46 [tsx] change in ./src\controllers\payfast.controller.ts Restarting...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+1-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-01-31 22:00:00' AND `Subscription`.`created_at` < '2025-02-28 22:00:00');
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-01-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-02-28 22:00:00');
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-01-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-02-28 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-02-28 22:00:00' AND `Subscription`.`created_at` < '2025-03-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-02-28 22:00:00' AND `Subscription`.`canceled_at` < '2025-03-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`created_at` < '2025-10-05 23:42:50';
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-02-28 22:00:00' AND `PaymentLog`.`created_at` < '2025-03-31 22:00:00');
+Executing (default): SELECT count(DISTINCT(`user_id`)) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`created_at` BETWEEN '2025-10-05 23:42:50' AND '2025-11-04 23:42:50';
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`created_at` BETWEEN '2025-10-05 23:42:50' AND '2025-11-04 23:42:50';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-03-31 22:00:00' AND `Subscription`.`created_at` < '2025-04-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-03-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-04-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`created_at` BETWEEN '2025-09-05 23:42:50' AND '2025-10-05 23:42:50';
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-03-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-04-30 22:00:00');
+Executing (default): SELECT `id`, `user_id`, `plan`, `status`, `payfast_token`, `payfast_subscription_id`, `amount`, `currency`, `billing_date`, `next_billing_date`, `cancel_at`, `canceled_at`, `trial_end`, `started_at`, `ended_at`, `created_at`, `updated_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'active';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-04-30 22:00:00' AND `Subscription`.`created_at` < '2025-05-31 22:00:00');
+Executing (default): SELECT DATE(created_at) as date, COUNT(*) as signups
+      FROM users
+      WHERE created_at BETWEEN '2025-10-06 01:42:50' AND '2025-11-05 01:42:50'
+      GROUP BY DATE(created_at)
+      ORDER BY DATE(created_at)
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-04-30 22:00:00' AND `Subscription`.`canceled_at` < '2025-05-31 22:00:00');
+Executing (default): SELECT DATE(created_at) as date, COUNT(*) as conversions
+      FROM conversion_jobs
+      WHERE created_at BETWEEN '2025-10-06 01:42:50' AND '2025-11-05 01:42:50'
+      GROUP BY DATE(created_at)
+      ORDER BY DATE(created_at)
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-04-30 22:00:00' AND `PaymentLog`.`created_at` < '2025-05-31 22:00:00');
+Executing (default): SELECT type, COUNT(*) as count
+      FROM conversion_jobs
+      WHERE created_at BETWEEN '2025-10-06 01:42:50' AND '2025-11-05 01:42:50'
+      GROUP BY type
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-05-31 22:00:00' AND `Subscription`.`created_at` < '2025-06-30 22:00:00');
+[0mGET /api/admin/analytics/overview [36m304[0m 61.692 ms - -[0m
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-05-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-06-30 22:00:00');
+[0mGET /api/admin/audit-logs?page=1&limit=5 [36m304[0m 150.042 ms - -[0m
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-05-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-06-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-06-30 22:00:00' AND `Subscription`.`created_at` < '2025-07-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-06-30 22:00:00' AND `Subscription`.`canceled_at` < '2025-07-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-06-30 22:00:00' AND `PaymentLog`.`created_at` < '2025-07-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-07-31 22:00:00' AND `Subscription`.`created_at` < '2025-08-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-07-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-08-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-07-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-08-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-08-31 22:00:00' AND `Subscription`.`created_at` < '2025-09-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-08-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-09-30 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-08-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-09-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-09-30 22:00:00' AND `Subscription`.`created_at` < '2025-10-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-09-30 22:00:00' AND `Subscription`.`canceled_at` < '2025-10-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-09-30 22:00:00' AND `PaymentLog`.`created_at` < '2025-10-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-10-31 22:00:00' AND `Subscription`.`created_at` < '2025-11-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-10-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-11-30 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-10-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-11-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'failed';
+Executing (default): SELECT count(*) AS `count` FROM `payment_logs` AS `PaymentLog`;
+Executing (default): INSERT INTO `system_health_logs` (`id`,`metric_name`,`metric_value`,`status`,`details`,`created_at`) VALUES (?,?,?,?,?,?);
+[0mGET /api/admin/payments/analytics [36m304[0m 461.092 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT `id`, `user_id`, `plan`, `status`, `payfast_token`, `payfast_subscription_id`, `amount`, `currency`, `billing_date`, `next_billing_date`, `cancel_at`, `canceled_at`, `trial_end`, `started_at`, `ended_at`, `created_at`, `updated_at`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'active';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'active' AND `Subscription`.`created_at` < '2025-10-05 23:42:50';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND `Subscription`.`canceled_at` >= '2025-10-05 23:42:50';
+Executing (default): SELECT `plan`, SUM(`amount`) AS `total`, COUNT(`id`) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'active' GROUP BY `plan`;
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2024-11-30 22:00:00' AND `Subscription`.`created_at` < '2024-12-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2024-11-30 22:00:00' AND `Subscription`.`canceled_at` < '2024-12-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2024-11-30 22:00:00' AND `PaymentLog`.`created_at` < '2024-12-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2024-12-31 22:00:00' AND `Subscription`.`created_at` < '2025-01-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2024-12-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-01-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2024-12-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-01-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-01-31 22:00:00' AND `Subscription`.`created_at` < '2025-02-28 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-01-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-02-28 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-01-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-02-28 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-02-28 22:00:00' AND `Subscription`.`created_at` < '2025-03-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-02-28 22:00:00' AND `Subscription`.`canceled_at` < '2025-03-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-02-28 22:00:00' AND `PaymentLog`.`created_at` < '2025-03-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-03-31 22:00:00' AND `Subscription`.`created_at` < '2025-04-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-03-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-04-30 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-03-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-04-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-04-30 22:00:00' AND `Subscription`.`created_at` < '2025-05-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-04-30 22:00:00' AND `Subscription`.`canceled_at` < '2025-05-31 22:00:00');
+[0mGET /api/admin/system/health [32m200[0m 543.582 ms - 563[0m
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-04-30 22:00:00' AND `PaymentLog`.`created_at` < '2025-05-31 22:00:00');
+Executing (default): INSERT INTO `admin_audit_logs` (`id`,`admin_user_id`,`action`,`entity_type`,`ip_address`,`user_agent`,`severity`,`checksum`,`created_at`) VALUES (?,?,?,?,?,?,?,?,?);
+Executing (default): INSERT INTO `admin_audit_logs` (`id`,`admin_user_id`,`action`,`entity_type`,`ip_address`,`user_agent`,`severity`,`checksum`,`created_at`) VALUES (?,?,?,?,?,?,?,?,?);
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-05-31 22:00:00' AND `Subscription`.`created_at` < '2025-06-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-05-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-06-30 22:00:00');
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-05-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-06-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-06-30 22:00:00' AND `Subscription`.`created_at` < '2025-07-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-06-30 22:00:00' AND `Subscription`.`canceled_at` < '2025-07-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-06-30 22:00:00' AND `PaymentLog`.`created_at` < '2025-07-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-07-31 22:00:00' AND `Subscription`.`created_at` < '2025-08-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-07-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-08-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-07-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-08-31 22:00:00');
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-08-31 22:00:00' AND `Subscription`.`created_at` < '2025-09-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-08-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-09-30 22:00:00');
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-08-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-09-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`created_at` >= '2025-11-03 23:42:50';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-09-30 22:00:00' AND `Subscription`.`created_at` < '2025-10-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`status` = 'completed' AND `ConversionJob`.`created_at` >= '2025-11-03 23:42:50';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-09-30 22:00:00' AND `Subscription`.`canceled_at` < '2025-10-31 22:00:00');
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-09-30 22:00:00' AND `PaymentLog`.`created_at` < '2025-10-31 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`status` = 'failed' AND `ConversionJob`.`created_at` >= '2025-11-03 23:42:50';
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE (`Subscription`.`created_at` >= '2025-10-31 22:00:00' AND `Subscription`.`created_at` < '2025-11-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `subscriptions` AS `Subscription` WHERE `Subscription`.`status` = 'canceled' AND (`Subscription`.`canceled_at` >= '2025-10-31 22:00:00' AND `Subscription`.`canceled_at` < '2025-11-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`status` = 'completed' AND `ConversionJob`.`created_at` >= '2025-11-04 22:00:00';
+Executing (default): SELECT sum(`amount_net`) AS `sum` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'complete' AND (`PaymentLog`.`created_at` >= '2025-10-31 22:00:00' AND `PaymentLog`.`created_at` < '2025-11-30 22:00:00');
+Executing (default): SELECT count(*) AS `count` FROM `conversion_jobs` AS `ConversionJob` WHERE `ConversionJob`.`status` = 'failed' AND `ConversionJob`.`created_at` >= '2025-11-04 22:00:00';
+Executing (default): SELECT count(*) AS `count` FROM `payment_logs` AS `PaymentLog` WHERE `PaymentLog`.`status` = 'failed';
+Executing (default): SELECT count(*) AS `count` FROM `payment_logs` AS `PaymentLog`;
+[0mGET /api/admin/payments/analytics [36m304[0m 197.596 ms - -[0m
+Executing (default): INSERT INTO `system_health_logs` (`id`,`metric_name`,`metric_value`,`status`,`details`,`created_at`) VALUES (?,?,?,?,?,?);
+[0mGET /api/admin/system/health [32m200[0m 176.350 ms - 563[0m
+Executing (default): INSERT INTO `admin_audit_logs` (`id`,`admin_user_id`,`action`,`entity_type`,`ip_address`,`user_agent`,`severity`,`checksum`,`created_at`) VALUES (?,?,?,?,?,?,?,?,?);
+Executing (default): INSERT INTO `admin_audit_logs` (`id`,`admin_user_id`,`action`,`entity_type`,`ip_address`,`user_agent`,`severity`,`checksum`,`created_at`) VALUES (?,?,?,?,?,?,?,?,?);
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Executing (default): SELECT `id`, `email`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC LIMIT 0, 25;
+Executing (default): INSERT INTO `admin_audit_logs` (`id`,`admin_user_id`,`action`,`entity_type`,`ip_address`,`user_agent`,`severity`,`checksum`,`created_at`) VALUES (?,?,?,?,?,?,?,?,?);
+[0mGET /api/admin/users?page=1&limit=25 [32m200[0m 42.413 ms - -[0m
+Executing (default): SELECT `id`, `email`, `password_hash`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '71216de9-2a78-4e91-ac37-cabb8c8c070a';
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Executing (default): SELECT `id`, `email`, `name`, `role`, `plan`, `conversions_used`, `conversions_limit`, `stripe_customer_id`, `subscription_id`, `subscription_status`, `subscription_end_date`, `email_verified`, `email_verified_at`, `failed_reset_attempts`, `reset_locked_until`, `created_at`, `updated_at`, `last_login`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC LIMIT 0, 25;
+[0mGET /api/admin/users?page=1&limit=25 [36m304[0m 36.767 ms - -[0m
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+[0mGET /health [32m200[0m 207.836 ms - 11750[0m
+02:27:32 [tsx] change in ./src\server.ts Restarting...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Database sync skipped (tables exist)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:265:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+02:31:47 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+02:38:11 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+Executing (default): SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'users' AND TABLE_SCHEMA = 'pdflab'
+Executing (default): SHOW FULL COLUMNS FROM `users`;
+Executing (default): SELECT CONSTRAINT_NAME as constraint_name,CONSTRAINT_NAME as constraintName,CONSTRAINT_SCHEMA as constraintSchema,CONSTRAINT_SCHEMA as constraintCatalog,TABLE_NAME as tableName,TABLE_SCHEMA as tableSchema,TABLE_SCHEMA as tableCatalog,COLUMN_NAME as columnName,REFERENCED_TABLE_SCHEMA as referencedTableSchema,REFERENCED_TABLE_SCHEMA as referencedTableCatalog,REFERENCED_TABLE_NAME as referencedTableName,REFERENCED_COLUMN_NAME as referencedColumnName FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME = 'users' AND CONSTRAINT_NAME!='PRIMARY' AND CONSTRAINT_SCHEMA='pdflab' AND REFERENCED_TABLE_NAME IS NOT NULL;
+Executing (default): ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;
+✗ Database sync failed: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+✗ Failed to start server: Error
+    at Query.run (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\dialects\mysql\query.js:46:25)
+    at <anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:650:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async syncDatabase (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\config\database.ts:40:5)
+    at async startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:231:5) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  original: Error: Too many keys specified; max 64 keys allowed
+      at Packet.asError (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:477:34)
+      at PacketParser.onPacket (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5) {
+    code: 'ER_TOO_MANY_KEYS',
+    errno: 1069,
+    sqlState: '42000',
+    sqlMessage: 'Too many keys specified; max 64 keys allowed',
+    sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+    parameters: undefined
+  },
+  sql: 'ALTER TABLE `users` CHANGE `email` `email` VARCHAR(255) NOT NULL UNIQUE;',
+  parameters: {}
+}
+09:11:59 [tsx] change in ./src\server.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:23:51 [tsx] change in ./src\services\payfast.service.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:24:09 [tsx] change in ./src\services\payfast.service.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:24:41 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:01 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+20:25:21 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed
+23:14:46 [tsx] change in ./src\controllers\payfast.controller.ts Rerunning...
+c✓ Email service initialized with SMTP: smtp.hostinger.com
+🚀 Starting PDFLab Backend API...
+Executing (default): SELECT 1+1 AS result
+✓ Database connection established successfully
+✓ Using existing database tables (sync disabled)
+✓ Redis client connected
+🔧 Initializing Bull queues...
+  Creating conversion queue...
+  ✓ Conversion queue created
+  Creating cleanup queue...
+  ✓ Cleanup queue created
+✓ Bull queues initialized
+✓ Initializing conversion worker...
+✓ Initializing cleanup worker...
+✓ Job workers initialized
+[Quota Reset] Initializing monthly quota reset cron job...
+[Quota Reset] Schedule: 0 0 1 * * (1st of month at midnight)
+✓ Quota reset cron job initialized and scheduled
+✓ Next reset: 2025-12-01T00:00:00.000-05:00
+✓ Monthly quota reset scheduled
+Uncaught Exception: Error: listen EADDRINUSE: address already in use :::3006
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\src\server.ts:263:9) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3006
+}
+
+UNCAUGHT_EXCEPTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+Unhandled Rejection at: Promise {
+  <rejected> Error: Connection is closed.
+      at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+      at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+      at Object.onceWrapper (node:events:633:26)
+      at Socket.emit (node:events:530:35)
+      at TCP.<anonymous> (node:net:351:12)
+} reason: Error: Connection is closed.
+    at close (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:214:25)
+    at Socket.<anonymous> (C:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\backend\node_modules\ioredis\built\redis\event_handler.js:181:20)
+    at Object.onceWrapper (node:events:633:26)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:351:12)
+
+UNHANDLED_REJECTION received. Starting graceful shutdown...
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ All queues and Redis connection closed
+✓ Database connection closed
+✓ Graceful shutdown completed

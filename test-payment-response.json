@@ -1,0 +1,31 @@
+{
+    "success": true,
+    "message": "Payment initialized",
+    "paymentUrl": "https://sandbox.payfast.co.za/eng/process",
+    "paymentData": {
+        "merchant_id": "10000100",
+        "merchant_key": "46f0cd694581a",
+        "return_url": "http://localhost:3000/payment/success",
+        "cancel_url": "http://localhost:3000/payment/cancel",
+        "notify_url": "https://major-eagles-doubt.loca.lt/api/payfast/webhook",
+        "name_first": "Test",
+        "name_last": "User",
+        "email_address": "testuser@pdflab.com",
+        "m_payment_id": "99f0327e-29fe-40dc-b009-2a41d356a530",
+        "amount": "9.99",
+        "item_name": "PDFLab Starter Plan",
+        "item_description": "PDFLab Starter monthly subscription",
+        "custom_str1": "e18bdeb3-8159-4b51-aad1-21638c6d4c4c",
+        "custom_str2": "starter",
+        "email_confirmation": "1",
+        "confirmation_address": "testuser@pdflab.com",
+        "subscription_type": "1",
+        "billing_date": "2025-12-08",
+        "recurring_amount": "9.99",
+        "frequency": "3",
+        "cycles": "0",
+        "signature": "899631bafeb3e1b1d221e7ac794a2b8d"
+    },
+    "transactionId": "99f0327e-29fe-40dc-b009-2a41d356a530",
+    "subscriptionId": "5cf0dc58-4469-4262-a254-9d3600c1943e"
+}

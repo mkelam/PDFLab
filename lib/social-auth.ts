@@ -6,6 +6,7 @@ export interface SocialProvider {
   name: string
   icon: string
   enabled: boolean
+  action: () => Promise<{ success: boolean; error?: string; user?: any }>
 }
 
 export const socialProviders: SocialProvider[] = [
@@ -14,18 +15,30 @@ export const socialProviders: SocialProvider[] = [
     name: 'Google',
     icon: 'google',
     enabled: false, // Not implemented yet
+    action: async () => {
+      await initiateOAuth('google')
+      return { success: false, error: 'Google authentication not implemented yet' }
+    }
   },
   {
     id: 'github',
     name: 'GitHub',
     icon: 'github',
     enabled: false, // Not implemented yet
+    action: async () => {
+      await initiateOAuth('github')
+      return { success: false, error: 'GitHub authentication not implemented yet' }
+    }
   },
   {
     id: 'microsoft',
     name: 'Microsoft',
     icon: 'microsoft',
     enabled: false, // Not implemented yet
+    action: async () => {
+      await initiateOAuth('microsoft')
+      return { success: false, error: 'Microsoft authentication not implemented yet' }
+    }
   },
 ]
 

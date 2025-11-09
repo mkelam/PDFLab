@@ -1,0 +1,181 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e6]:
+        - link "PDF Lab Pro" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img [ref=e9]
+          - generic [ref=e12]: PDF Lab Pro
+        - generic [ref=e13]:
+          - link "Pricing" [ref=e14] [cursor=pointer]:
+            - /url: /pricing
+            - button "Pricing" [ref=e15]
+          - link "Sign in" [ref=e16] [cursor=pointer]:
+            - /url: /login
+            - button "Sign in" [ref=e17]
+          - link "Sign up" [ref=e18] [cursor=pointer]:
+            - /url: /signup
+            - button "Sign up" [ref=e19]
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Choose Your Plan" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Transform your PDF workflow with our powerful conversion tools. Start free and upgrade as you grow.
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - img [ref=e30]
+            - generic [ref=e32]: Free
+            - generic [ref=e33]: Perfect for occasional PDF tasks
+            - generic [ref=e35]: Free
+          - generic [ref=e36]:
+            - list [ref=e37]:
+              - listitem [ref=e38]:
+                - img [ref=e39]
+                - generic [ref=e41]: 3 conversions per month
+              - listitem [ref=e42]:
+                - img [ref=e43]
+                - generic [ref=e45]: Basic PDF-to-PowerPoint
+              - listitem [ref=e46]:
+                - img [ref=e47]
+                - generic [ref=e49]: 10MB file size limit
+              - listitem [ref=e50]:
+                - img [ref=e51]
+                - generic [ref=e53]: Standard processing speed
+              - listitem [ref=e54]:
+                - img [ref=e55]
+                - generic [ref=e57]: Email support
+            - button "Get Started" [ref=e58] [cursor=pointer]
+        - generic [ref=e59]:
+          - generic [ref=e60]: Most Popular
+          - generic [ref=e61]:
+            - img [ref=e64]
+            - generic [ref=e66]: Starter
+            - generic [ref=e67]: Ideal for professionals and small teams
+            - generic [ref=e68]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: $9.99
+                - generic [ref=e71]: Save 54%
+              - generic [ref=e72]:
+                - text: $4.55
+                - generic [ref=e73]: /month
+          - generic [ref=e74]:
+            - list [ref=e75]:
+              - listitem [ref=e76]:
+                - img [ref=e77]
+                - generic [ref=e79]: 100 conversions per month
+              - listitem [ref=e80]:
+                - img [ref=e81]
+                - generic [ref=e83]: OCR-Enhanced PDF conversion
+              - listitem [ref=e84]:
+                - img [ref=e85]
+                - generic [ref=e87]: 25MB file size limit
+              - listitem [ref=e88]:
+                - img [ref=e89]
+                - generic [ref=e91]: Standard processing speed
+              - listitem [ref=e92]:
+                - img [ref=e93]
+                - generic [ref=e95]: Email support
+            - button "Choose Starter" [ref=e96] [cursor=pointer]
+        - generic [ref=e97]:
+          - generic [ref=e98]:
+            - img [ref=e101]
+            - generic [ref=e103]: Pro
+            - generic [ref=e104]: Advanced features for power users
+            - generic [ref=e105]:
+              - generic [ref=e106]:
+                - generic [ref=e107]: $29.99
+                - generic [ref=e108]: Save 55%
+              - generic [ref=e109]:
+                - text: $13.5
+                - generic [ref=e110]: /month
+          - generic [ref=e111]:
+            - list [ref=e112]:
+              - listitem [ref=e113]:
+                - img [ref=e114]
+                - generic [ref=e116]: Unlimited per month
+              - listitem [ref=e117]:
+                - img [ref=e118]
+                - generic [ref=e120]: OCR-Enhanced PDF conversion
+              - listitem [ref=e121]:
+                - img [ref=e122]
+                - generic [ref=e124]: 100MB file size limit
+              - listitem [ref=e125]:
+                - img [ref=e126]
+                - generic [ref=e128]: Priority processing
+              - listitem [ref=e129]:
+                - img [ref=e130]
+                - generic [ref=e132]: Advanced analytics
+              - listitem [ref=e133]:
+                - img [ref=e134]
+                - generic [ref=e136]: Batch processing
+              - listitem [ref=e137]:
+                - img [ref=e138]
+                - generic [ref=e140]: PDF merging
+              - listitem [ref=e141]:
+                - img [ref=e142]
+                - generic [ref=e144]: Priority support
+            - button "Choose Pro" [ref=e145] [cursor=pointer]
+        - generic [ref=e146]:
+          - generic [ref=e147]:
+            - img [ref=e150]
+            - generic [ref=e152]: Enterprise
+            - generic [ref=e153]: For large organizations with custom needs
+            - generic [ref=e155]: Custom
+          - generic [ref=e156]:
+            - list [ref=e157]:
+              - listitem [ref=e158]:
+                - img [ref=e159]
+                - generic [ref=e161]: Unlimited per month
+              - listitem [ref=e162]:
+                - img [ref=e163]
+                - generic [ref=e165]: OCR-Enhanced PDF conversion
+              - listitem [ref=e166]:
+                - img [ref=e167]
+                - generic [ref=e169]: 500MB file size limit
+              - listitem [ref=e170]:
+                - img [ref=e171]
+                - generic [ref=e173]: Priority processing
+              - listitem [ref=e174]:
+                - img [ref=e175]
+                - generic [ref=e177]: Advanced analytics
+              - listitem [ref=e178]:
+                - img [ref=e179]
+                - generic [ref=e181]: Batch processing
+              - listitem [ref=e182]:
+                - img [ref=e183]
+                - generic [ref=e185]: PDF merging
+              - listitem [ref=e186]:
+                - img [ref=e187]
+                - generic [ref=e189]: API access
+              - listitem [ref=e190]:
+                - img [ref=e191]
+                - generic [ref=e193]: White-label options
+              - listitem [ref=e194]:
+                - img [ref=e195]
+                - generic [ref=e197]: Priority support
+            - button "Contact Sales" [ref=e198] [cursor=pointer]
+      - generic [ref=e199]:
+        - heading "Frequently Asked Questions" [level=2] [ref=e200]
+        - generic [ref=e201]:
+          - generic [ref=e202]:
+            - generic [ref=e204]: Can I change my plan anytime?
+            - paragraph [ref=e206]: Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any billing adjustments.
+          - generic [ref=e207]:
+            - generic [ref=e209]: Is there a free trial for paid plans?
+            - paragraph [ref=e211]: Yes, we offer a 14-day free trial for the Professional plan. No credit card required to start.
+          - generic [ref=e212]:
+            - generic [ref=e214]: What file formats do you support?
+            - paragraph [ref=e216]: We support all major document formats including PDF, Word, Excel, PowerPoint, images (JPG, PNG, TIFF), and many more. Professional and Enterprise plans include access to all formats.
+      - generic [ref=e219]:
+        - heading "Ready to get started?" [level=3] [ref=e220]
+        - paragraph [ref=e221]: Join thousands of professionals who trust PDF Lab Pro for their document conversion needs.
+        - generic [ref=e222]:
+          - button "Choose Starter Plan" [ref=e223] [cursor=pointer]
+          - button "Choose Pro Plan" [ref=e224] [cursor=pointer]
+  - region "Notifications (F8)":
+    - list
+  - alert [ref=e225]
+```

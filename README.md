@@ -23,8 +23,8 @@ A production-ready PDF conversion and manipulation platform with a modern Next.j
 
 ### **Payment Integration** ✅ LIVE
 - PayFast payment gateway (Production Mode)
-- Dual-currency system (USD display, ZAR processing)
-- Subscription plans: Free, Starter, Pro, Enterprise
+- Multi-currency support (USD primary, auto-conversion by PayFast)
+- Subscription plans: Free, Starter ($9.99), Pro ($29.99), Enterprise ($99.99)
 - Payment logging and audit trail
 
 ### **Admin Panel** ✅ LIVE

@@ -91,6 +91,21 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     }
   }
 
+  public getMaxBatchSize(): number {
+    switch (this.plan) {
+      case UserPlan.FREE:
+        return 5 // 5 files per batch
+      case UserPlan.STARTER:
+        return 10 // 10 files per batch
+      case UserPlan.PRO:
+        return 20 // 20 files per batch
+      case UserPlan.ENTERPRISE:
+        return 50 // 50 files per batch
+      default:
+        return 5
+    }
+  }
+
   public resetMonthlyUsage(): void {
     this.conversions_used = 0
   }

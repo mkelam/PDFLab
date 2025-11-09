@@ -1,10 +1,47 @@
+// IMPORTANT: Sentry must be imported FIRST, before any other imports
+import * as Sentry from '@sentry/node'
+import dotenv from 'dotenv'
+
+// Load environment variables FIRST (needed for Sentry DSN)
+dotenv.config()
+
+// Initialize Sentry (only if DSN is configured)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    environment: process.env.NODE_ENV || 'development',
+
+    beforeSend(event) {
+      // Remove sensitive data
+      if (event.user) {
+        delete event.user.email
+        delete event.user.ip_address
+      }
+      if (event.request?.headers) {
+        delete event.request.headers.authorization
+        delete event.request.headers.cookie
+      }
+
+      // Don't send in development unless SENTRY_DEV=true
+      if (process.env.NODE_ENV === 'development' && !process.env.SENTRY_DEV) {
+        return null
+      }
+
+      return event
+    },
+  })
+  console.log('✓ Sentry error tracking initialized')
+} else {
+  console.log('⚠ Sentry DSN not configured - error tracking disabled')
+}
+
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
-import dotenv from 'dotenv'
 import path from 'path'
 import ejs from 'ejs'
 import { testConnection, syncDatabase } from './config/database'
@@ -19,6 +56,7 @@ import './models/SystemHealthLog'
 // Import routes
 import authRoutes from './routes/auth.routes'
 import conversionRoutes from './routes/conversion.routes'
+import batchRoutes from './routes/batch.routes'
 import payfastRoutes from './routes/payfast.routes'
 import adminRoutes from './routes/admin.routes'
 import conversionAdminRoutes from './routes/conversion.admin.routes'
@@ -27,11 +65,15 @@ import systemAdminRoutes from './routes/system.admin.routes'
 import analyticsAdminRoutes from './routes/analytics.admin.routes'
 import auditAdminRoutes from './routes/audit.admin.routes'
 
-// Load environment variables
-dotenv.config()
-
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
+
+// The Sentry request handler must be the first middleware on the app (if Sentry is configured)
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.requestHandler())
+  // TracingHandler creates a trace for every incoming request
+  app.use(Sentry.Handlers.tracingHandler())
+}
 
 // =====================
 // View Engine Setup
@@ -149,6 +191,7 @@ app.get('/health', async (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/auth', authRoutes)
+app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/admin', conversionAdminRoutes)
@@ -197,6 +240,11 @@ app.use((req: Request, res: Response) => {
   })
 })
 
+// The Sentry error handler must be before any other error middleware (if Sentry is configured)
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler())
+}
+
 // Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error handler:', err)
@@ -228,8 +276,9 @@ const startServer = async () => {
     }
 
     // Sync database (create tables)
-    await syncDatabase(false) // Don't force recreate tables
-    console.log('✓ Database tables synchronized')
+    // Temporarily disabled due to too many keys error - tables already exist
+    // await syncDatabase(false) // Don't force recreate tables
+    console.log('✓ Using existing database tables (sync disabled)')
 
     // Connect to Redis (optional for testing)
     const redisConnected = await connectRedis()
@@ -310,3 +359,4 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Start the server
 startServer()
+

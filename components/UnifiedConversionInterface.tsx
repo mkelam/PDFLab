@@ -30,8 +30,10 @@ interface UnifiedConversionInterfaceProps {
   onError?: (error: string) => void
 }
 
-type TabMode = "convert" | "merge"
+type TabMode = "convert" | "merge" | "compress"
 type OutputFormat = "image" | "powerpoint" | "word" | "excel"
+type CompressionLevel = "good" | "recommended" | "extreme"
+type ConversionMode = "single" | "batch"
 
 interface UploadedFile {
   file: File
@@ -48,11 +50,14 @@ interface ProcessingState {
   result?: ConversionResponse
   error?: string
   isGuest?: boolean
+  batchJobIds?: string[] // For batch downloads
 }
 
 export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConversionInterfaceProps) {
   const [activeTab, setActiveTab] = useState<TabMode>("convert") // Auto-select Convert mode (most popular)
+  const [conversionMode, setConversionMode] = useState<ConversionMode>("single")
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("powerpoint")
+  const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>("recommended")
   const [showFutureFeatureAlert, setShowFutureFeatureAlert] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
@@ -82,7 +87,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
   }, [])
 
   // File handling
-  const maxFiles = activeTab === "convert" ? 1 : 10
+  const maxFiles = activeTab === "convert" ? (conversionMode === "batch" ? 10 : 1) : 10
   const acceptedFiles = { "application/pdf": [".pdf"] }
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -96,12 +101,12 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
       }
     })
 
-    if (activeTab === "convert") {
+    if (activeTab === "convert" && conversionMode === "single") {
       setUploadedFiles(newFiles.slice(0, 1))
     } else {
       setUploadedFiles((prev) => [...prev, ...newFiles].slice(0, maxFiles))
     }
-  }, [activeTab, maxFiles])
+  }, [activeTab, conversionMode, maxFiles])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -130,6 +135,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
     // Reset to default output format when switching tabs
     if (tab === "convert") {
       setOutputFormat("powerpoint")
+      setConversionMode("single") // Reset to single mode when switching to convert tab
     }
   }
 
@@ -153,6 +159,8 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
       progress: 0,
       stage: activeTab === "convert"
         ? `Converting to ${outputFormat === "image" ? "images" : "PowerPoint"}...`
+        : activeTab === "compress"
+        ? "Compressing PDF..."
         : "Merging PDF files...",
     })
 
@@ -167,6 +175,11 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
         { progress: 40, stage: "Extracting content with OCR...", timeRemaining: "3 seconds remaining" },
         { progress: 60, stage: "Processing layout...", timeRemaining: "2 seconds remaining" },
         { progress: 80, stage: outputFormat === "image" ? "Creating images..." : `Creating editable ${formatName}...`, timeRemaining: "1 second remaining" },
+        { progress: 90, stage: "Finalizing...", timeRemaining: "Almost done..." }
+      ] : activeTab === "compress" ? [
+        { progress: 25, stage: "Analyzing PDF content...", timeRemaining: "2 seconds remaining" },
+        { progress: 50, stage: `Applying ${compressionLevel} compression...`, timeRemaining: "1 second remaining" },
+        { progress: 75, stage: "Optimizing file size...", timeRemaining: "Almost done..." },
         { progress: 90, stage: "Finalizing...", timeRemaining: "Almost done..." }
       ] : [
         { progress: 25, stage: "Preparing files...", timeRemaining: "1 second remaining" },
@@ -198,13 +211,79 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
       let result: ConversionResponse
 
       if (activeTab === "convert") {
-        if (outputFormat === "image") {
-          result = await pdflabAPI.convertPDFToImages(validFiles[0].file)
-        } else {
+        // Check if batch mode with multiple files
+        if (conversionMode === "batch" && validFiles.length > 1) {
           // Map output format to API format
-          const apiFormat = outputFormat === "powerpoint" ? "pptx" : outputFormat === "word" ? "docx" : "xlsx"
-          result = await pdflabAPI.convertPDFToOffice(validFiles[0].file, apiFormat as "pptx" | "docx" | "xlsx")
+          const apiFormat = outputFormat === "image" ? "images" : outputFormat === "powerpoint" ? "pptx" : outputFormat === "word" ? "docx" : "xlsx"
+
+          // Upload batch
+          const batchResponse = await pdflabAPI.batchConvertPDFs(
+            validFiles.map(f => f.file),
+            apiFormat as "pptx" | "docx" | "xlsx" | "images"
+          )
+
+          // Poll all jobs in parallel
+          const batchResults = await pdflabAPI.pollBatchJobStatuses(batchResponse.job_ids)
+
+          // Check if any failed
+          const failedJobs = batchResults.filter(r => r.error)
+          const successfulJobs = batchResults.filter(r => !r.error)
+
+          if (failedJobs.length > 0 && successfulJobs.length === 0) {
+            // All failed
+            throw new Error(`Batch conversion failed: ${failedJobs[0].error}`)
+          }
+
+          // Store all successful job IDs for ZIP download
+          const successfulJobIds = successfulJobs.map(j => j.jobId)
+
+          // Return batch result (UI will show batch summary with ZIP download)
+          result = {
+            success: true,
+            message: `${successfulJobs.length}/${validFiles.length} files converted successfully`,
+            outputFile: 'batch', // Special marker for batch downloads
+            originalFile: `${successfulJobs.length} files`,
+            processingTime: '~5 seconds per file',
+            fileCount: successfulJobs.length,
+            jobId: successfulJobIds[0] || 'batch' // Use first job ID for any legacy code
+          }
+
+          // We'll set batch job IDs after setting the result
+          // Store this for later
+          const tempBatchJobIds = successfulJobIds
+
+          if (progressTimer) clearInterval(progressTimer)
+
+          setProcessing({
+            isProcessing: false,
+            progress: 100,
+            stage: "Complete!",
+            result,
+            isGuest: result.isGuest,
+            batchJobIds: tempBatchJobIds // Set batch job IDs here
+          })
+
+          // Show guest prompt for guest users
+          if (result.isGuest) {
+            setShowGuestPrompt(true)
+          }
+
+          onSuccess?.(result)
+
+          // Exit early to skip the normal processing state update
+          return
+        } else {
+          // Single file conversion
+          if (outputFormat === "image") {
+            result = await pdflabAPI.convertPDFToImages(validFiles[0].file)
+          } else {
+            // Map output format to API format
+            const apiFormat = outputFormat === "powerpoint" ? "pptx" : outputFormat === "word" ? "docx" : "xlsx"
+            result = await pdflabAPI.convertPDFToOffice(validFiles[0].file, apiFormat as "pptx" | "docx" | "xlsx")
+          }
         }
+      } else if (activeTab === "compress") {
+        result = await pdflabAPI.compressPDF(validFiles[0].file, compressionLevel)
       } else {
         result = await pdflabAPI.mergePDFs(validFiles.map((f) => f.file))
       }
@@ -262,12 +341,36 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
     }
   }
 
-  const downloadFile = () => {
+  const downloadFile = async () => {
     if (processing.result?.outputFile) {
-      pdflabAPI.triggerDownload(
-        processing.result.outputFile,
-        processing.result.originalFile || processing.result.outputFile
-      )
+      // Check if this is a batch download
+      if (processing.result.outputFile === 'batch' && processing.batchJobIds && processing.batchJobIds.length > 0) {
+        try {
+          await pdflabAPI.downloadBatchConversionZip(
+            processing.batchJobIds,
+            `pdflab-batch-${processing.batchJobIds.length}files`
+          )
+          toast({
+            title: "Download started",
+            description: `Downloading ${processing.batchJobIds.length} converted files as ZIP`,
+            variant: "success",
+            duration: 3000,
+          })
+        } catch (error) {
+          toast({
+            title: "Download failed",
+            description: error instanceof Error ? error.message : "Failed to download batch files",
+            variant: "destructive",
+            duration: 5000,
+          })
+        }
+      } else {
+        // Single file download
+        pdflabAPI.triggerDownload(
+          processing.result.outputFile,
+          processing.result.originalFile || processing.result.outputFile
+        )
+      }
     }
   }
 
@@ -331,6 +434,12 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
         subtitle: "Select 2 or more PDF files to merge"
       }
     }
+    if (activeTab === "convert" && conversionMode === "batch") {
+      return {
+        title: "Drop multiple PDFs here",
+        subtitle: `Add up to ${maxFiles} PDF files`
+      }
+    }
     return {
       title: "Drop your PDF here",
       subtitle: "Or click to browse files"
@@ -376,7 +485,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                   onClick={() => handleTabChange("merge")}
                   data-testid="merge-mode-button"
                   className={`
-                    p-3 rounded-lg text-center font-medium transition-all duration-300 border
+                    p-2 rounded-lg text-center font-medium transition-all duration-300 border
                     ${activeTab === "merge"
                       ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/20"
                       : "bg-muted/30 border-border text-muted-foreground hover:bg-primary/10 hover:border-primary/50"
@@ -385,8 +494,67 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                 >
                   Merge
                 </button>
+                <button
+                  onClick={() => handleTabChange("compress")}
+                  data-testid="compress-mode-button"
+                  className={`
+                    p-2 rounded-lg text-center font-medium transition-all duration-300 border
+                    ${activeTab === "compress"
+                      ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/20"
+                      : "bg-muted/30 border-border text-muted-foreground hover:bg-primary/10 hover:border-primary/50"
+                    }
+                  `}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>Compress</span>
+                    <Badge className="bg-green-500/20 text-green-700 text-[10px] px-1.5 py-0.5 font-normal">
+                      New
+                    </Badge>
+                  </div>
+                </button>
               </div>
             </div>
+
+            {/* Batch Mode Toggle - Only visible in Convert mode */}
+            {activeTab === "convert" && (
+              <div className="border-t border-primary/10 pt-3 pb-2">
+                <div className="flex items-center justify-center gap-1 bg-muted/20 rounded-lg p-1">
+                  <button
+                    onClick={() => {
+                      setConversionMode("single")
+                      setUploadedFiles([]) // Clear files when switching mode
+                    }}
+                    className={`
+                      flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200
+                      ${conversionMode === "single"
+                        ? "bg-primary text-white shadow-sm"
+                        : "text-muted-foreground hover:text-primary"
+                      }
+                    `}
+                  >
+                    Single File
+                  </button>
+                  <button
+                    onClick={() => {
+                      setConversionMode("batch")
+                      setUploadedFiles([]) // Clear files when switching mode
+                    }}
+                    className={`
+                      flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1
+                      ${conversionMode === "batch"
+                        ? "bg-primary text-white shadow-sm"
+                        : "text-muted-foreground hover:text-primary"
+                      }
+                    `}
+                  >
+                    <span>Batch Processing</span>
+                    <Badge className="bg-purple-500/20 text-purple-700 text-[9px] px-1 py-0 font-normal border-0">
+                      Pro
+                    </Badge>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Subsection 2: Drag and Drop */}
             <div className="flex-1 flex flex-col border-t border-primary/10 pt-4">
@@ -438,13 +606,46 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
               <h3 className="text-primary font-semibold text-sm lg:text-base">Step 2</h3>
             </div>
 
-            {/* Subsection 3: Select Output */}
+            {/* Subsection 3: Select Output / Compression Level */}
             <div className="flex-1 flex flex-col">
-              <h4 className="text-primary/90 text-xs font-semibold mb-2">3. Select Output</h4>
+              <h4 className="text-primary/90 text-xs font-semibold mb-2">
+                {activeTab === "compress" ? "3. Compression Level" : "3. Select Output"}
+              </h4>
               <div className="flex flex-col justify-center flex-1 space-y-2">
                 {activeTab === "merge" ? (
                   <div className="text-center py-4 text-muted-foreground text-sm">
                     PDF output format
+                  </div>
+                ) : activeTab === "compress" ? (
+                  <div className="flex flex-col gap-2">
+                    {(["good", "recommended", "extreme"] as CompressionLevel[]).map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => setCompressionLevel(level)}
+                        data-testid={`compression-level-${level}`}
+                        className={`
+                          p-3 rounded-lg border transition-all duration-200 flex flex-col items-start gap-1
+                          ${compressionLevel === level
+                            ? "bg-primary/20 border-primary text-primary shadow-md"
+                            : "bg-muted/20 border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/5"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <span className="text-xs font-semibold capitalize">{level}</span>
+                          {level === "recommended" && (
+                            <Badge className="bg-primary/30 text-primary text-[9px] px-1.5 py-0.5 font-normal ml-auto">
+                              Popular
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-left">
+                          {level === "good" && "Best quality, moderate compression"}
+                          {level === "recommended" && "Balanced quality & file size"}
+                          {level === "extreme" && "Maximum compression, lower quality"}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
@@ -580,10 +781,26 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                           {activeTab === "convert" ? (
                             <>
                               <Upload className="w-4 h-4 mr-2" />
-                              {outputFormat === "image" && "Export to Images"}
-                              {outputFormat === "powerpoint" && "Convert to PowerPoint"}
-                              {outputFormat === "word" && "Convert to Word"}
-                              {outputFormat === "excel" && "Convert to Excel"}
+                              {conversionMode === "batch" && uploadedFiles.length > 1 ? (
+                                <>
+                                  {outputFormat === "image" && `Export ${uploadedFiles.length} Files to Images`}
+                                  {outputFormat === "powerpoint" && `Convert ${uploadedFiles.length} Files to PowerPoint`}
+                                  {outputFormat === "word" && `Convert ${uploadedFiles.length} Files to Word`}
+                                  {outputFormat === "excel" && `Convert ${uploadedFiles.length} Files to Excel`}
+                                </>
+                              ) : (
+                                <>
+                                  {outputFormat === "image" && "Export to Images"}
+                                  {outputFormat === "powerpoint" && "Convert to PowerPoint"}
+                                  {outputFormat === "word" && "Convert to Word"}
+                                  {outputFormat === "excel" && "Convert to Excel"}
+                                </>
+                              )}
+                            </>
+                          ) : activeTab === "compress" ? (
+                            <>
+                              <Upload className="w-4 h-4 mr-2" />
+                              Compress PDF
                             </>
                           ) : (
                             <>
@@ -612,6 +829,8 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                       <h4 className="font-semibold text-green-700 text-sm">
                         {activeTab === "convert"
                           ? (outputFormat === "image" ? "Export Complete!" : "Conversion Complete!")
+                          : activeTab === "compress"
+                          ? "Compression Complete!"
                           : "Merge Complete!"
                         }
                       </h4>
@@ -621,7 +840,11 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                     </div>
                     <div className="space-y-1 text-xs text-muted-foreground">
                       <p>Processing time: {processing.result.processingTime}</p>
-                      <p>Output: {processing.result.outputFile}</p>
+                      {processing.result.outputFile === 'batch' && processing.batchJobIds ? (
+                        <p>Output: {processing.batchJobIds.length} files ready as ZIP</p>
+                      ) : (
+                        <p>Output: {processing.result.outputFile}</p>
+                      )}
                     </div>
                     <div className="flex space-x-2">
                       <Button
@@ -636,7 +859,7 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                         className="bg-green-600 hover:bg-green-700 text-xs px-3 py-2"
                       >
                         <Download className="w-3 h-3 mr-1" />
-                        Download
+                        {processing.result.outputFile === 'batch' ? 'Download ZIP' : 'Download'}
                       </Button>
                       <Button
                         variant="outline"

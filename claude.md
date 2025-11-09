@@ -92,11 +92,20 @@ PDFLab/
 
 ## Development Environment
 
-### Ports
+### Local Development Ports
 - **Frontend**: http://localhost:3000 (Next.js)
 - **Backend**: http://localhost:3006 (Express API)
 - **MySQL**: localhost:3306 (Docker container: pdflab-mysql)
 - **Redis**: localhost:6379 (Docker container: pdflab-redis)
+
+### Production Environment
+- **Production URL**: https://pdflab.pro
+- **VPS IP**: 141.136.44.168 (Hostinger VPS)
+- **Backend Port**: 3006 (Node.js Express)
+- **Deployment Date**: November 5, 2025
+- **Infrastructure**: Docker Compose with MySQL + Redis
+- **SSL**: Let's Encrypt (auto-renewed)
+- **Web Server**: Nginx reverse proxy
 
 ### Running the Application
 
@@ -130,25 +139,34 @@ docker start pdflab-mysql pdflab-redis
 - **Size Validation**: Total size checked against user plan
 - **Background Processing**: Async merge via job queue
 
-### 3. Authentication System
+### 3. PDF Compression ✨ NEW
+- **Compression Levels**: Good, Recommended, Extreme
+- **Quality vs Size**: Balance between quality retention and file size reduction
+- **Authentication Required**: Only available to logged-in users
+- **Compression Stats**: Shows original size, compressed size, and compression ratio
+- **Processing**: CloudConvert optimize API integration
+- **Typical Results**: 40-60% file size reduction (recommended level)
+
+### 4. Authentication System
 - **JWT Tokens**: Access + refresh tokens
 - **Session Persistence**: localStorage + auto-restore
 - **Protected Routes**: `useRequireAuth()` hook
 - **Guest Routes**: `useGuestOnly()` hook redirects authenticated users
 
-### 4. Payment Integration (PayFast)
-- **Currency**: Dual-currency system (CRITICAL - PayFast only accepts ZAR)
-  - **Display**: USD shown to customers on frontend
-  - **Processing**: ZAR sent to PayFast gateway
+### 5. Payment Integration (PayFast)
+- **Currency**: USD (PayFast multi-currency enabled)
+  - **Multi-Currency**: PayFast natively supports multiple currencies via dashboard settings
+  - **Automatic Conversion**: PayFast handles currency display and conversion automatically
+  - **Settlement**: All payments settled in ZAR to merchant account
 - **Plans**:
-  - Free: $0 / R0 (3 conversions/month, 10MB)
-  - Starter: $9.99 / R185/month (100 conversions, 25MB)
-  - Pro: $29.99 / R555/month (unlimited, 100MB)
-  - Enterprise: $99.99 / R1850/month (unlimited, 500MB, API access)
+  - Free: $0 (3 conversions/month, 10MB)
+  - Starter: $9.99/month (100 conversions, 25MB)
+  - Pro: $29.99/month (unlimited, 100MB)
+  - Enterprise: $99.99/month (unlimited, 500MB, API access)
 - **Subscriptions**: Recurring monthly billing
 - **ITN Webhooks**: Instant transaction notifications
 - **Payment Logs**: Full audit trail in database
-- **Important Note**: PayFast ONLY processes ZAR. Customers see USD prices, but PayFast receives ZAR amounts. This dual-currency system is required for PayFast compliance.
+- **Configuration**: Multi-currency must be enabled in PayFast dashboard (Settings > Multi-currency > Enable USD)
 
 ## Database Schema
 
@@ -190,10 +208,11 @@ itn_data (JSON), created_at
 
 ### Conversion
 - `POST /api/upload` - Upload PDF for conversion (requires auth)
+- `POST /api/compress` - Compress PDF file (requires auth) ✨ NEW
+- `POST /api/merge` - Merge multiple PDFs (requires auth)
 - `GET /api/status/:job_id` - Check job status
 - `GET /api/download/:job_id` - Download converted file
 - `GET /api/history` - User's conversion history
-- `POST /api/merge` - Merge multiple PDFs (requires auth)
 
 ### PayFast Payment
 - `GET /api/payfast/plans` - Get pricing plans (public)
@@ -232,7 +251,7 @@ CLOUDCONVERT_SANDBOX=false
 JWT_SECRET=<secret>
 JWT_EXPIRATION=7d
 
-# PayFast (USD Currency)
+# PayFast (Multi-Currency - USD)
 PAYFAST_MERCHANT_ID=25263515
 PAYFAST_MERCHANT_KEY=***REMOVED***
 PAYFAST_PASSPHRASE=
@@ -366,13 +385,19 @@ node -e "const {Sequelize} = require('sequelize'); const db = new Sequelize('pdf
 
 ## Recent Updates
 
+### November 2025
+- ✅ **2025-11-06**: **PDF COMPRESSION FEATURE ADDED** - Compress PDFs with 3 levels (good/recommended/extreme)
 - ✅ **2025-11-06**: Documentation organized into docs/ folder structure
 - ✅ **2025-11-06**: Dual-currency system clarified and documented
-- ✅ **2025-11-05**: VPS deployment completed and verified
+- ✅ **2025-11-06**: PROJECT_STATUS_AND_ROADMAP.md updated with production deployment info
+- ✅ **2025-11-05**: **PRODUCTION DEPLOYMENT COMPLETED** - Live at https://pdflab.pro
+- ✅ **2025-11-05**: VPS deployment (141.136.44.168) completed and verified
 - ✅ **2025-11-04**: Admin panel integration successful
 - ✅ **2025-11-03**: Error messaging improvements implemented
+
+### October 2025
 - ✅ **2025-10-30**: CloudConvert integration stabilized
-- ✅ **2025-10-29**: PayFast payment gateway integrated (dual-currency: USD display, ZAR processing)
+- ✅ **2025-10-29**: PayFast payment gateway integrated with multi-currency support (USD)
 - ✅ Authentication integration complete (login/signup)
 - ✅ PDF merge functionality implemented
 - ✅ Frontend-backend API integration complete

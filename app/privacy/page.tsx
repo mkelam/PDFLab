@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
           <p className="text-muted-foreground">
-            Last Updated: <span className="font-medium">October 27, 2025</span>
+            Last Updated: <span className="font-medium">November 6, 2025</span>
           </p>
         </div>
 
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
               <li><strong>Name:</strong> First and last name</li>
               <li><strong>Email Address:</strong> For account creation and communication</li>
               <li><strong>Password:</strong> Encrypted and stored securely</li>
-              <li><strong>Payment Information:</strong> Processed securely through Stripe (we do not store card details)</li>
+              <li><strong>Payment Information:</strong> Processed securely through PayFast (we do not store card details). Subscription amounts are displayed in USD but billed in ZAR (South African Rand) through PayFast.</li>
             </ul>
 
             <h3 className="text-xl font-medium mb-3 mt-6">1.2 File Data</h3>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4 bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
               <strong>Important:</strong> All uploaded and converted files are automatically deleted from our servers
-              within 1 hour of processing. We do not permanently store your file contents.
+              within 24 hours of processing. We do not permanently store your file contents.
             </p>
 
             <h3 className="text-xl font-medium mb-3 mt-6">1.3 Usage Data</h3>
@@ -108,7 +108,7 @@ export default function PrivacyPage() {
               <li>File is securely uploaded to our server via HTTPS</li>
               <li>File is processed in memory or temporary storage</li>
               <li>Converted file is generated and made available for download</li>
-              <li>Both original and converted files are deleted within 1 hour</li>
+              <li>Both original and converted files are deleted within 24 hours</li>
             </ol>
 
             <h3 className="text-xl font-medium mb-3 mt-6">3.2 No Long-Term Storage</h3>
@@ -132,7 +132,7 @@ export default function PrivacyPage() {
               <li>Fraud prevention and security monitoring</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              File contents are NOT retained beyond the 1-hour processing window.
+              File contents are NOT retained beyond the 24-hour processing window.
             </p>
           </section>
 
@@ -145,8 +145,9 @@ export default function PrivacyPage() {
 
             <h3 className="text-xl font-medium mb-3 mt-6">4.1 Service Providers</h3>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4 ml-4">
-              <li><strong>Stripe:</strong> For payment processing (subject to Stripe&apos;s privacy policy)</li>
-              <li><strong>Hosting Providers:</strong> For server infrastructure and file processing</li>
+              <li><strong>PayFast:</strong> For payment processing in ZAR (subject to PayFast&apos;s privacy policy)</li>
+              <li><strong>CloudConvert:</strong> For PDF conversion and optimization processing (subject to CloudConvert&apos;s privacy policy). Files are processed securely and deleted after conversion.</li>
+              <li><strong>Hosting Providers:</strong> For server infrastructure (Hostinger VPS with SSL encryption)</li>
               <li><strong>Analytics Services:</strong> For usage analytics (anonymized where possible)</li>
             </ul>
 
@@ -175,11 +176,12 @@ export default function PrivacyPage() {
               We implement security measures to protect your information:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-4 ml-4">
-              <li><strong>Encryption:</strong> HTTPS/TLS for all data transmission</li>
-              <li><strong>Password Security:</strong> Passwords are hashed using industry-standard algorithms</li>
-              <li><strong>Access Controls:</strong> Limited employee access to personal data</li>
-              <li><strong>Automatic Deletion:</strong> Files deleted within 1 hour of processing</li>
+              <li><strong>Encryption:</strong> TLS 1.3 for all data transmission, AES-256 encryption at rest</li>
+              <li><strong>Password Security:</strong> Passwords are hashed using bcrypt with salt rounds</li>
+              <li><strong>Access Controls:</strong> Limited employee access to personal data, zero access to file contents</li>
+              <li><strong>Automatic Deletion:</strong> Files deleted within 24 hours of processing</li>
               <li><strong>Regular Audits:</strong> Security assessments and vulnerability testing</li>
+              <li><strong>Infrastructure Security:</strong> Hardened VPS with fail2ban, UFW firewall, and auto-updates</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4 bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
               <strong>Important:</strong> No method of transmission over the internet is 100% secure. While we strive to
@@ -259,7 +261,7 @@ export default function PrivacyPage() {
             <div className="bg-card border rounded-lg p-6 mt-4 space-y-3">
               <div>
                 <h3 className="font-semibold">File Contents</h3>
-                <p className="text-sm text-muted-foreground">Deleted within 1 hour of processing</p>
+                <p className="text-sm text-muted-foreground">Deleted within 24 hours of processing</p>
               </div>
               <div>
                 <h3 className="font-semibold">Account Information</h3>

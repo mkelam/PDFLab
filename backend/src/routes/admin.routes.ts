@@ -15,7 +15,10 @@ import {
   deleteUser,
   getStats,
   resendVerificationEmail,
-  verifyUserEmail
+  verifyUserEmail,
+  getQuotaStatus,
+  fixQuotas,
+  syncUserQuotaEndpoint
 } from '../controllers/admin.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { requireAdmin, requirePermission, requireRole } from '../middleware/admin.middleware'
@@ -84,5 +87,15 @@ router.get('/users/:id/activity', requirePermission('users.view'), getUserActivi
 
 // Delete user (super_admin only)
 router.delete('/users/:id', requirePermission('users.delete'), deleteUser)
+
+// Quota Management Routes (admin and super_admin only)
+// Get quota status for all users (shows who needs fixing)
+router.get('/quota-status', requirePermission('users.view'), getQuotaStatus)
+
+// Fix ALL user quotas based on their plans
+router.post('/fix-quotas', requirePermission('users.edit'), fixQuotas)
+
+// Sync quota for a specific user
+router.post('/users/:id/sync-quota', requirePermission('users.edit'), syncUserQuotaEndpoint)
 
 export default router

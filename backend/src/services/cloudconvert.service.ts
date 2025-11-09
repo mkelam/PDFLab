@@ -70,28 +70,36 @@ export class CloudConvertService {
         output_format: outputFormat
       }
 
-      // Format-specific options with enhanced OCR
+      // Format-specific options with enhanced OCR for maximum text editability
       if (outputFormat === 'pptx') {
         taskConfig.pages = conversionOptions.pages || 'all'
-        taskConfig.layout_preserving = true
-        // Enhanced OCR configuration
-        taskConfig.ocr = true  // Always enable OCR
-        taskConfig.ocr_lang = 'eng'  // English language (can be made configurable)
-        taskConfig.ocr_mode = 'auto'  // Auto-detect if OCR is needed
-        // Disable watermark/footer additions
+        // CRITICAL: Enable OCR to extract text from PDFs (makes text editable)
+        taskConfig.ocr = true  // Extract text from images/scanned PDFs
+        taskConfig.ocr_lang = 'eng'  // English language detection
+        taskConfig.ocr_mode = 'force'  // Force OCR even if PDF has embedded text (ensures editability)
+        // Layout and formatting preservation
+        taskConfig.layout_preserving = true  // Maintain original layout
+        taskConfig.extract_text = true  // Extract embedded text from PDF
+        taskConfig.image_quality = 'high'  // High quality for better text recognition
+        // Disable watermarks
         taskConfig.watermark = false
         taskConfig.no_watermark = true
       } else if (outputFormat === 'docx') {
-        // Enhanced OCR configuration for DOCX
-        taskConfig.ocr = true
-        taskConfig.ocr_lang = 'eng'
-        taskConfig.ocr_mode = 'auto'
+        // Enhanced OCR configuration for DOCX - Focus on editable text
         taskConfig.pages = conversionOptions.pages || 'all'
+        taskConfig.ocr = true  // Extract text from images/scanned PDFs
+        taskConfig.ocr_lang = 'eng'  // English language detection
+        taskConfig.ocr_mode = 'force'  // Force OCR for maximum text extraction
+        taskConfig.extract_text = true  // Extract embedded text from PDF
+        taskConfig.image_quality = 'high'  // High quality for better text recognition
+        taskConfig.layout_preserving = true  // Maintain formatting where possible
       } else if (outputFormat === 'xlsx') {
-        // Enhanced OCR configuration for XLSX
-        taskConfig.ocr = true
-        taskConfig.ocr_lang = 'eng'
-        taskConfig.auto_detect_tables = true
+        // Enhanced OCR configuration for XLSX - Focus on tables
+        taskConfig.ocr = true  // Extract text from images/scanned PDFs
+        taskConfig.ocr_lang = 'eng'  // English language detection
+        taskConfig.ocr_mode = 'force'  // Force OCR for maximum text extraction
+        taskConfig.auto_detect_tables = true  // Automatically detect table structures
+        taskConfig.extract_text = true  // Extract embedded text
       } else if (outputFormat === 'png' || outputFormat === 'jpg') {
         taskConfig.pages = conversionOptions.pages || 'all'
         taskConfig.density = conversionOptions.dpi || 300
@@ -395,7 +403,26 @@ export class CloudConvertService {
   }
 
   /**
+   * Map user-friendly compression levels to CloudConvert API profiles
+   * @param level User-friendly compression level
+   * @returns CloudConvert API profile value
+   */
+  private mapCompressionLevel(level: 'good' | 'recommended' | 'extreme'): 'print' | 'web' | 'max' {
+    const mapping = {
+      'good': 'print' as const,        // Best quality, moderate compression (~20-30% reduction)
+      'recommended': 'web' as const,   // Balanced quality & file size (~40-60% reduction)
+      'extreme': 'max' as const        // Maximum compression, lower quality (~60-80% reduction)
+    }
+    return mapping[level]
+  }
+
+  /**
    * Compress PDF file to reduce file size
+   *
+   * Compression Levels:
+   * - 'good': Best quality, moderate compression (~20-30% reduction) - Uses CloudConvert 'print' profile
+   * - 'recommended': Balanced quality & file size (~40-60% reduction) - Uses CloudConvert 'web' profile
+   * - 'extreme': Maximum compression, lower quality (~60-80% reduction) - Uses CloudConvert 'max' profile
    */
   async compressPDF(inputFilePath: string, outputFilePath: string, compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'): Promise<{
     success: boolean
@@ -421,6 +448,9 @@ export class CloudConvertService {
         fs.mkdirSync(outputDir, { recursive: true })
       }
 
+      // Map user-friendly compression level to CloudConvert profile
+      const cloudConvertProfile = this.mapCompressionLevel(compressionLevel)
+
       // Create CloudConvert job with optimize task
       let job = await cloudConvertClient.jobs.create({
         tasks: {
@@ -432,7 +462,7 @@ export class CloudConvertService {
             input: 'upload-file',
             input_format: 'pdf',
             output_format: 'pdf',
-            profile: compressionLevel  // 'good', 'recommended', or 'extreme'
+            profile: cloudConvertProfile  // CloudConvert API profile: 'print', 'web', or 'max'
           },
           'export-file': {
             operation: 'export/url',

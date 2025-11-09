@@ -352,6 +352,229 @@ export const pdflabAPI = {
   },
 
   /**
+   * Compress PDF file to reduce size
+   */
+  async compressPDF(
+    file: File,
+    compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'
+  ): Promise<ConversionResponse & { originalSize?: number; compressedSize?: number; compressionRatio?: number }> {
+    const startTime = Date.now()
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error('Authentication required. Please log in to compress PDFs.')
+    }
+
+    // Upload and start compression
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('compression_level', compressionLevel)
+
+    let uploadResponse
+    try {
+      uploadResponse = await fetch(`${API_URL}/api/compress`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      })
+
+      if (!uploadResponse.ok) {
+        const errorResponse = await parseEnhancedAPIError(uploadResponse)
+        trackErrorEvent(errorResponse, 'PDF Compression')
+        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+      }
+    } catch (error) {
+      if (error instanceof EnhancedAPIError) {
+        throw error
+      }
+      if (!uploadResponse) {
+        const errorMessage = handleAPIError(error, undefined, 'PDF Compression')
+        throw new Error(errorMessage)
+      }
+      throw error
+    }
+
+    const uploadData = await uploadResponse.json()
+    const jobId = uploadData.job_id
+
+    // Poll for completion
+    const result = await pollJobStatus(jobId)
+
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
+
+    return {
+      success: true,
+      message: `Successfully compressed PDF`,
+      outputFile: result.output_file,
+      originalFile: file.name,
+      processingTime: `${processingTime} seconds`,
+      jobId,
+      isGuest: false,
+      originalSize: result.original_size,
+      compressedSize: result.compressed_size,
+      compressionRatio: result.compression_ratio
+    }
+  },
+
+  /**
+   * Batch convert multiple PDF files to the same format
+   * Requires authentication (Pro/Enterprise plans)
+   */
+  async batchConvertPDFs(
+    files: File[],
+    format: 'pptx' | 'docx' | 'xlsx' | 'images'
+  ): Promise<{
+    job_ids: string[]
+    file_count: number
+    total_size: number
+    conversion_type: string
+  }> {
+    const startTime = Date.now()
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error('Authentication required. Please log in to use batch processing.')
+    }
+
+    // Map format to conversion type
+    const conversionTypeMap = {
+      'pptx': 'pdf_to_pptx',
+      'docx': 'pdf_to_docx',
+      'xlsx': 'pdf_to_xlsx',
+      'images': 'pdf_to_images'
+    }
+
+    // Upload files for batch conversion
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+    formData.append('conversion_type', conversionTypeMap[format])
+
+    let uploadResponse
+    try {
+      uploadResponse = await fetch(`${API_URL}/api/batch-convert`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      })
+
+      if (!uploadResponse.ok) {
+        const errorResponse = await parseEnhancedAPIError(uploadResponse)
+        trackErrorEvent(errorResponse, 'Batch Convert')
+        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+      }
+    } catch (error) {
+      if (error instanceof EnhancedAPIError) {
+        throw error
+      }
+      if (!uploadResponse) {
+        const errorMessage = handleAPIError(error, undefined, 'Batch Convert')
+        throw new Error(errorMessage)
+      }
+      throw error
+    }
+
+    const response = await uploadResponse.json()
+    return response
+  },
+
+  /**
+   * Poll multiple job statuses in parallel
+   */
+  async pollBatchJobStatuses(
+    jobIds: string[],
+    onProgress?: (completedJobs: number, totalJobs: number) => void
+  ): Promise<Array<{ jobId: string; result?: any; error?: string }>> {
+    console.log(`📊 Starting batch status polling for ${jobIds.length} jobs`)
+
+    // Poll all jobs in parallel
+    const pollPromises = jobIds.map(async (jobId, index) => {
+      try {
+        console.log(`📡 Polling job ${index + 1}/${jobIds.length}: ${jobId}`)
+        const result = await pollJobStatus(jobId)
+        console.log(`✅ Job ${index + 1}/${jobIds.length} completed: ${jobId}`)
+
+        // Call progress callback if provided
+        if (onProgress) {
+          onProgress(index + 1, jobIds.length)
+        }
+
+        return { jobId, result }
+      } catch (error) {
+        console.error(`❌ Job ${index + 1}/${jobIds.length} failed: ${jobId}`, error)
+        return {
+          jobId,
+          error: error instanceof Error ? error.message : 'Conversion failed'
+        }
+      }
+    })
+
+    // Wait for all jobs to complete
+    const allResults = await Promise.all(pollPromises)
+
+    const successCount = allResults.filter(r => !r.error).length
+    console.log(`🎉 Batch polling complete: ${successCount}/${jobIds.length} successful`)
+
+    return allResults
+  },
+
+  /**
+   * Download batch conversion results as ZIP
+   * @param jobIds - Array of job IDs from batch conversion
+   * @param batchName - Optional name for the ZIP file
+   */
+  async downloadBatchConversionZip(jobIds: string[], batchName?: string): Promise<void> {
+    const token = getAuthToken()
+
+    // Build query string with job IDs
+    const queryParams = new URLSearchParams({
+      job_ids: jobIds.join(',')
+    })
+
+    const response = await fetch(`${API_URL}/api/download-batch?${queryParams}`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Batch download failed' }))
+      throw new Error(error.error || 'Batch download failed')
+    }
+
+    // Get the blob
+    const blob = await response.blob()
+
+    // Get filename from Content-Disposition or use default
+    const contentDisposition = response.headers.get('Content-Disposition')
+    let downloadFileName = batchName || `pdflab-batch-${jobIds.length}files.zip`
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+      if (filenameMatch && filenameMatch[1]) {
+        downloadFileName = filenameMatch[1]
+      }
+    }
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = downloadFileName
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    console.log(`✅ Downloaded batch ZIP: ${downloadFileName} (${jobIds.length} files)`)
+  },
+
+  /**
    * Trigger file download
    */
   async triggerDownload(outputFile: string, originalFileName: string): Promise<void> {
@@ -395,6 +618,132 @@ export const pdflabAPI = {
     const a = document.createElement('a')
     a.href = url
     a.download = downloadFileName
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  },
+
+  /**
+   * Upload multiple files for batch processing
+   */
+  async uploadBatch(
+    files: File[],
+    operationType: 'convert' | 'compress' | 'merge',
+    options: {
+      batchName?: string
+      outputFormat?: 'pptx' | 'docx' | 'xlsx' | 'png'
+      compressionLevel?: 'good' | 'recommended' | 'extreme'
+    }
+  ): Promise<{
+    batch_id: string
+    batch_name: string
+    operation_type: string
+    total_files: number
+    status: string
+    conversion_job_ids: string[]
+  }> {
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error('Authentication required. Please log in to use batch processing.')
+    }
+
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+    formData.append('operation_type', operationType)
+    if (options.batchName) formData.append('batch_name', options.batchName)
+    if (options.outputFormat) formData.append('output_format', options.outputFormat)
+    if (options.compressionLevel) formData.append('compression_level', options.compressionLevel)
+
+    const response = await fetch(`${API_URL}/api/batch/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      const errorResponse = await parseEnhancedAPIError(response)
+      trackErrorEvent(errorResponse, 'Batch Upload')
+      throw new EnhancedAPIError(errorResponse.message, errorResponse)
+    }
+
+    return await response.json()
+  },
+
+  /**
+   * Get batch job status with individual file progress
+   */
+  async getBatchStatus(batchId: string): Promise<{
+    batch_id: string
+    batch_name: string
+    operation_type: string
+    status: string
+    progress: number
+    total_files: number
+    completed_files: number
+    failed_files: number
+    success_rate: number
+    files: Array<{
+      job_id: string
+      file_name: string
+      status: string
+      progress: number
+      error_message?: string
+    }>
+  }> {
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error('Authentication required.')
+    }
+
+    const response = await fetch(`${API_URL}/api/batch/status/${batchId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to get batch status')
+    }
+
+    return await response.json()
+  },
+
+  /**
+   * Download batch ZIP file
+   */
+  async downloadBatchZip(batchId: string, batchName: string): Promise<void> {
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error('Authentication required.')
+    }
+
+    const response = await fetch(`${API_URL}/api/batch/download/${batchId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Download failed' }))
+      throw new Error(error.error || 'Download failed')
+    }
+
+    // Get the blob
+    const blob = await response.blob()
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${batchName.replace(/[^a-z0-9]/gi, '_')}.zip`
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)

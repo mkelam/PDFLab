@@ -37,7 +37,8 @@ export const testConnection = async (): Promise<boolean> => {
 
 export const syncDatabase = async (force: boolean = false): Promise<void> => {
   try {
-    await sequelize.sync({ force, alter: !force })
+    // Skip alter to avoid "too many keys" error - use migrations instead
+    await sequelize.sync({ force, alter: false })
     console.log('✓ Database synchronized successfully')
   } catch (error) {
     console.error('✗ Database sync failed:', error)
