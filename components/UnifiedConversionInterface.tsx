@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { AlertCircle, ChevronDown, Upload, FileText, Download, CheckCircle, X } from "lucide-react"
+import { AlertCircle, ChevronDown, Upload, FileText, Download, CheckCircle, X, Presentation, FileSpreadsheet, Image as ImageIcon, FileType } from "lucide-react"
 import { PDFUpload } from "@/components/PDFUpload"
 import { ConversionResponse, pdflabAPI, formatFileSize, validatePDFFile, EnhancedAPIError } from "@/lib/api"
 import { GuestConversionPrompt } from "@/components/GuestConversionPrompt"
@@ -648,43 +648,45 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    {(["powerpoint", "word", "excel", "image"] as OutputFormat[]).map((format) => (
-                      <button
-                        key={format}
-                        onClick={() => handleOutputFormatChange(format)}
-                        data-testid={`output-format-option-${format}`}
-                        className={`
-                          p-3 rounded-lg border transition-all duration-200 flex flex-col items-center gap-1
-                          ${outputFormat === format
-                            ? "bg-primary/20 border-primary text-primary shadow-md"
-                            : "bg-muted/20 border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/5"
-                          }
-                        `}
-                      >
-                        <span className="text-2xl">
-                          {format === "image" && "📷"}
-                          {format === "powerpoint" && "📊"}
-                          {format === "word" && "📝"}
-                          {format === "excel" && "📈"}
-                        </span>
-                        <span className="text-xs font-medium">
-                          {format === "image" && "Image"}
-                          {format === "powerpoint" && "PowerPoint"}
-                          {format === "word" && "Word"}
-                          {format === "excel" && "Excel"}
-                        </span>
-                        {format === "powerpoint" && (
-                          <span className="text-[10px] text-primary/70">Slides/Images</span>
-                        )}
-                        {format === "word" && (
-                          <span className="text-[10px] text-primary/70">Text-heavy</span>
-                        )}
-                        {format === "excel" && (
-                          <span className="text-[10px] text-primary/70">Tables only</span>
-                        )}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 gap-3">
+                    {(["powerpoint", "word", "excel", "image"] as OutputFormat[]).map((format) => {
+                      // Get icon component for each format
+                      const IconComponent = format === "image" ? ImageIcon :
+                        format === "powerpoint" ? Presentation :
+                        format === "word" ? FileType :
+                        FileSpreadsheet
+
+                      return (
+                        <button
+                          key={format}
+                          onClick={() => handleOutputFormatChange(format)}
+                          data-testid={`output-format-option-${format}`}
+                          className={`
+                            p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 hover:scale-105
+                            ${outputFormat === format
+                              ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/20"
+                              : "bg-muted/20 border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/10"
+                            }
+                          `}
+                        >
+                          <IconComponent className={`${outputFormat === format ? 'w-10 h-10' : 'w-8 h-8'} ${outputFormat === format ? 'text-primary' : 'text-muted-foreground'} transition-all duration-200`} />
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className={`font-semibold transition-all duration-200 ${outputFormat === format ? 'text-base' : 'text-sm'}`}>
+                              {format === "image" && "Images"}
+                              {format === "powerpoint" && "PowerPoint"}
+                              {format === "word" && "Word"}
+                              {format === "excel" && "Excel"}
+                            </span>
+                            <span className={`text-center leading-tight transition-all duration-200 ${outputFormat === format ? 'text-xs opacity-90' : 'text-[11px] opacity-80'}`}>
+                              {format === "powerpoint" && "Slides/Images"}
+                              {format === "word" && "Text-heavy"}
+                              {format === "excel" && "Tables only"}
+                              {format === "image" && "JPG format"}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -886,9 +888,9 @@ export function UnifiedConversionInterface({ onSuccess, onError }: UnifiedConver
       {/* Excel Format Warning */}
       {activeTab === "convert" && outputFormat === "excel" && !processing.isProcessing && !processing.result && (
         <div className="max-w-7xl mx-auto">
-          <Alert className="border-blue-200 bg-blue-50/50">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-700">
+          <Alert className="border-teal-500/30 bg-black/40 backdrop-blur-sm">
+            <AlertCircle className="h-4 w-4 text-teal-400" />
+            <AlertDescription className="text-teal-300">
               <strong>Excel conversion works best with PDFs containing tables.</strong> If your PDF has mostly text or images, consider using Word or PowerPoint format instead.
             </AlertDescription>
           </Alert>

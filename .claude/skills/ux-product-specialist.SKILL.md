@@ -50,6 +50,176 @@ This skill provides expert guidance on user experience (UX) design, product stra
 - **Progress Indicators**: Show progress for long operations
 - **Instant Feedback**: Acknowledge user actions immediately
 
+## ⚠️ CRITICAL: Fundamental Design Basics (ALWAYS CHECK FIRST)
+
+### Color Contrast & Readability (NON-NEGOTIABLE)
+```
+RULE 1: Text Must Be Readable
+✓ Light text on dark background (e.g., text-teal-300 on bg-black/40)
+✓ Dark text on light background (e.g., text-gray-900 on bg-white)
+❌ NEVER: Colored text on same-colored background (e.g., text-teal-700 on bg-teal-50)
+
+RULE 2: Background Should Support Text Color
+✓ Teal text → Use neutral/dark background (black, gray)
+✓ Dark text → Use light/white background
+❌ NEVER: Teal text on teal background (poor contrast)
+
+RULE 3: Minimum Contrast Ratio
+✓ Normal text: 4.5:1 contrast ratio minimum
+✓ Large text (18pt+): 3:1 contrast ratio minimum
+✓ Use tools: WebAIM Contrast Checker
+
+Example:
+✅ GOOD: text-teal-300 (light teal) on bg-black/40 (dark neutral)
+❌ BAD: text-teal-700 (dark teal) on bg-teal-50 (light teal)
+```
+
+### Visual Hierarchy & Sizing (NON-NEGOTIABLE)
+```
+RULE 4: Important Elements Must Be BIGGER
+✓ Primary actions: Larger buttons, more padding
+✓ Selected states: Bigger than unselected (scale up)
+✓ Key information: Larger text, bold weight
+❌ NEVER: Same size for selected and unselected states
+
+RULE 5: Use Size to Show Importance
+✓ Selected format icon: w-10 h-10 (40px)
+✓ Unselected format icon: w-8 h-8 (32px)
+✓ Selected text: text-base font-semibold
+✓ Unselected text: text-sm
+
+RULE 6: Icons Must Be Professional & Scalable
+✓ Use Lucide React icons (SVG, scalable)
+✓ Minimum interactive size: 44×44px (mobile)
+❌ NEVER: Emoji icons for professional interfaces (not scalable)
+
+Example:
+✅ GOOD: Selected button scales to 105%, icon w-10, text-base
+❌ BAD: All buttons same size regardless of selection state
+```
+
+### Alert & Notification Design (NON-NEGOTIABLE)
+```
+RULE 7: Alerts Must Stand Out
+✓ Dark background for light text (visibility)
+✓ Sufficient padding and spacing
+✓ Border to define boundaries
+✓ Icon + text combination
+❌ NEVER: Light alert on light background (invisible)
+
+RULE 8: Alert Background Must Be Neutral
+✓ Info alerts: Dark neutral (bg-black/40, bg-gray-900/50)
+✓ Success alerts: Dark green background (bg-green-950/40)
+✓ Error alerts: Dark red background (bg-red-950/40)
+✓ Warning alerts: Dark yellow background (bg-yellow-950/40)
+❌ NEVER: Colored text on same-colored background
+
+Example - Excel Warning:
+✅ GOOD:
+  - Background: bg-black/40 (dark neutral)
+  - Text: text-teal-300 (light teal pops on dark)
+  - Border: border-teal-500/30 (subtle frame)
+
+❌ BAD:
+  - Background: bg-teal-50 (light teal)
+  - Text: text-teal-700 (dark teal on light teal = poor contrast)
+```
+
+### Semantic Color Usage (NON-NEGOTIABLE)
+```
+RULE 9: Colors Must Have Meaning
+✓ Teal/Primary: Brand, actions, links
+✓ Green: Success, completion, positive
+✓ Red: Errors, warnings, destructive actions
+✓ Gray/Neutral: Backgrounds, disabled states
+❌ NEVER: Random color choices without meaning
+
+RULE 10: Background vs Foreground Color Logic
+✓ If text is colored → Background should be neutral
+✓ If background is colored → Text should be neutral/white
+✓ Brand colors (teal) for accents, not backgrounds
+❌ NEVER: Both text AND background in brand color
+
+Color Pairing Matrix:
+| Text Color      | Background Color | Contrast | Use Case |
+|----------------|------------------|----------|----------|
+| text-teal-300  | bg-black/40      | ✅ High  | Alerts   |
+| text-teal-700  | bg-white         | ✅ High  | Buttons  |
+| text-teal-700  | bg-teal-50       | ❌ Low   | AVOID    |
+| text-white     | bg-teal-600      | ✅ High  | Buttons  |
+```
+
+### Pre-Design Checklist (RUN BEFORE EVERY DESIGN)
+```
+Before proposing ANY design change, verify:
+
+☑️ 1. CONTRAST CHECK
+   - Is text readable against background?
+   - Run contrast ratio test (4.5:1 minimum)
+   - Light text on dark? Dark text on light?
+
+☑️ 2. SIZE CHECK
+   - Are selected states BIGGER than unselected?
+   - Are icons properly sized (minimum 32×32px)?
+   - Is text size appropriate for hierarchy?
+
+☑️ 3. COLOR LOGIC CHECK
+   - If text is colored, is background neutral?
+   - If background is colored, is text neutral?
+   - Do colors have semantic meaning?
+
+☑️ 4. VISIBILITY CHECK
+   - Will alerts/notifications stand out?
+   - Are important elements visually prominent?
+   - Does visual hierarchy guide the eye?
+
+☑️ 5. PROFESSIONAL STANDARDS
+   - Using professional icons (not emojis)?
+   - Following design system patterns?
+   - Accessible (WCAG AA compliance)?
+
+IF ANY CHECK FAILS → REDESIGN BEFORE PROPOSING
+```
+
+### Common Mistakes to NEVER Make Again
+```
+❌ MISTAKE 1: Same-Color Text and Background
+Example: text-teal-700 on bg-teal-50
+Fix: Use neutral background (bg-black/40) for colored text
+
+❌ MISTAKE 2: Light Alert on Light Background
+Example: bg-teal-50/50 alert on white page
+Fix: Use dark background (bg-black/40) for visibility
+
+❌ MISTAKE 3: Same Size for Selected/Unselected
+Example: All buttons w-8 h-8 regardless of state
+Fix: Selected bigger (w-10 h-10), unselected smaller (w-8 h-8)
+
+❌ MISTAKE 4: Emoji Icons in Professional UI
+Example: Using 📊📝📈 instead of Lucide icons
+Fix: Use Presentation, FileText, FileSpreadsheet icons
+
+❌ MISTAKE 5: No Visual Hierarchy
+Example: Everything same size and color
+Fix: Use size, weight, color to create hierarchy
+```
+
+### Automatic Design Review Questions
+```
+When user requests UI changes, ALWAYS ask yourself:
+
+1. "Will the text be readable?" (Contrast check)
+2. "Does the selected state pop out?" (Size check)
+3. "Is the background appropriate for text color?" (Logic check)
+4. "Will this be visible on the page?" (Visibility check)
+5. "Is this accessible?" (A11y check)
+
+If answer to ANY question is "No" or "Maybe":
+→ REDESIGN before proposing
+→ Explain WHY the design needs adjustment
+→ Reference these fundamental rules
+```
+
 ## UX Design Process
 
 ### Step 1: Understand the Problem
