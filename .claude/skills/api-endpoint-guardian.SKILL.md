@@ -138,6 +138,200 @@ router.get('/api/admin/users', authMiddleware, requireAdmin, getUsers)
 router.post('/api/payfast/webhook', payfastWebhook)
 ```
 
+#### 🔴 CRITICAL: CORS Configuration (PRODUCTION DEPLOYMENT MANDATORY)
+
+**Historical Failure:** v1.1.1 hotfix (Nov 9, 2025) - CORS missing production domain caused 100% authentication failure for 15 minutes
+
+**Production Lesson Learned**: Deployed to production without including production domain (https://pdflab.pro) in CORS origins. All API calls from frontend were blocked with "Not allowed by CORS" error. Required emergency hotfix v1.1.1.
+
+**⚠️ MANDATORY: CORS Pre-Deployment Checklist (NON-NEGOTIABLE)**
+
+**Before ANY Production Deployment:**
+```bash
+# Step 1: List ALL CORS origins in server.ts
+□ localhost:3000 (development)
+□ localhost:3002 (alternative dev port)
+□ https://pdflab.pro (PRODUCTION - MANDATORY)
+□ http://pdflab.pro (production HTTP fallback)
+□ https://staging.pdflab.pro (staging - if exists)
+
+# Step 2: Verify CORS configuration code
+□ Check CORS_ORIGIN environment variable includes production domain
+□ Verify CORS middleware applied BEFORE routes
+□ Test CORS preflight OPTIONS requests
+□ Check CORS credentials setting matches frontend
+
+# Step 3: Test from production domain BEFORE deployment
+□ Use browser DevTools → Network tab
+□ Check for "Access-Control-Allow-Origin" header in response
+□ Verify no CORS errors in console
+□ Test API call from https://pdflab.pro
+
+# Step 4: Production verification (AFTER deployment)
+□ Open https://pdflab.pro in browser
+□ Try login from production domain
+□ Check Network tab for CORS errors
+□ Verify API calls succeed (not 500 errors)
+```
+
+**Real Production Issue (Nov 9, 2025):**
+```typescript
+// ❌ BROKEN: Missing production domain (v1.1.0)
+const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:3002'
+  // Missing: 'https://pdflab.pro'
+]
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (corsOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))  // ← Blocks production!
+    }
+  }
+}))
+
+// Result: 100% authentication failure in production
+// Error: "Error: Not allowed by CORS" (500 status)
+// Impact: All users blocked for 15 minutes until v1.1.1 hotfix
+
+// ✅ FIXED: Production domains included (v1.1.1)
+const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:3002',
+  'https://pdflab.pro',      // ← MANDATORY for production
+  'http://pdflab.pro'        // ← HTTP fallback
+]
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (corsOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      console.warn(`[CORS] Blocked request from origin: ${origin}`)
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true  // If using cookies/auth headers
+}))
+
+// Result: Production working, authentication successful
+```
+
+**CORS Testing Commands:**
+```bash
+# Test CORS from production domain
+curl -H "Origin: https://pdflab.pro" \
+     -H "Access-Control-Request-Method: POST" \
+     -H "Access-Control-Request-Headers: Content-Type,Authorization" \
+     -X OPTIONS \
+     https://pdflab.pro/api/auth/login
+
+# Expected response headers:
+Access-Control-Allow-Origin: https://pdflab.pro
+Access-Control-Allow-Methods: GET,POST,PUT,DELETE
+Access-Control-Allow-Headers: Content-Type,Authorization
+Access-Control-Allow-Credentials: true
+
+# If missing → CORS NOT CONFIGURED CORRECTLY
+```
+
+#### 🔴 CRITICAL: Express Trust Proxy (PRODUCTION DEPLOYMENT MANDATORY)
+
+**Historical Failure:** v1.1.1 hotfix (Nov 9, 2025) - Trust proxy not enabled caused rate limiter ValidationError
+
+**Production Lesson Learned**: Production uses Nginx reverse proxy, but Express `trust proxy` setting was false. This caused express-rate-limit to throw ValidationError because X-Forwarded-For header was set but Express didn't trust it. Rate limiting broken in production.
+
+**⚠️ MANDATORY: Trust Proxy Configuration (NON-NEGOTIABLE for Production)**
+
+**Before ANY Deployment Behind Reverse Proxy (Nginx/Apache/CloudFlare):**
+```typescript
+// Step 1: Enable trust proxy IMMEDIATELY after creating Express app
+const app = express()
+const PORT = parseInt(process.env.PORT || '3006')
+
+// ✅ CRITICAL: Enable trust proxy for production (behind Nginx)
+app.set('trust proxy', true)  // ← MANDATORY for reverse proxy deployments
+
+// Step 2: Verify rate limiting works
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Now works correctly with X-Forwarded-For header
+})
+
+app.use('/api/', apiLimiter)
+```
+
+**Real Production Issue (Nov 9, 2025):**
+```typescript
+// ❌ BROKEN: Trust proxy not enabled (v1.1.0)
+const app = express()
+// Missing: app.set('trust proxy', true)
+
+// Rate limiter fails with:
+// ValidationError: The 'X-Forwarded-For' header is set but the Express
+// 'trust proxy' setting is false
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+})
+app.use('/api/', apiLimiter)  // ← Throws ValidationError in production
+
+// Result: Rate limiting broken, misleading client IPs in logs
+// Nginx sets X-Forwarded-For header, but Express doesn't trust it
+
+// ✅ FIXED: Trust proxy enabled (v1.1.1)
+const app = express()
+app.set('trust proxy', true)  // ← ADDED - Now trusts Nginx headers
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+})
+app.use('/api/', apiLimiter)  // ← Now works correctly
+
+// Result: Rate limiting working, correct client IPs logged
+```
+
+**Trust Proxy Checklist:**
+```bash
+# Step 1: Identify if behind reverse proxy
+□ Using Nginx? → Requires trust proxy
+□ Using Apache? → Requires trust proxy
+□ Using CloudFlare? → Requires trust proxy
+□ Using AWS ALB/ELB? → Requires trust proxy
+□ Direct to internet? → Do NOT enable trust proxy
+
+# Step 2: Verify X-Forwarded headers
+curl -I https://pdflab.pro/api/health
+# Check for: X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host
+
+# Step 3: Test rate limiting works
+for i in {1..10}; do
+  curl https://pdflab.pro/api/health
+done
+# Should work without ValidationError
+
+# Step 4: Verify correct client IPs in logs
+docker logs pdflab-backend-prod | grep "IP:"
+# Should show real client IPs, not proxy IP
+```
+
+**Production Deployment Checklist (CORS + Trust Proxy):**
+- [ ] CORS origins include production domain(s)
+- [ ] Trust proxy enabled if behind Nginx/Apache/CloudFlare
+- [ ] Test API call from production domain BEFORE deployment
+- [ ] Verify rate limiting works in production
+- [ ] Check browser DevTools Network tab for CORS errors
+- [ ] Monitor logs for "Not allowed by CORS" warnings
+- [ ] Verify X-Forwarded-For headers trusted correctly
+
 #### 🔴 CRITICAL: Request Validation
 
 **Historical Failure:** Missing file validation allowed 10GB upload, crashed server

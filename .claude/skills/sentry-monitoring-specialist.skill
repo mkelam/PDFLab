@@ -328,39 +328,107 @@ try {
 }
 ```
 
-### 2. Performance Monitoring
+### 2. Performance Monitoring (SDK COMPATIBILITY WARNING)
 
-**Track Long-Running Operations**:
+**⚠️ CRITICAL: Sentry SDK Version Compatibility (Production Lesson Nov 10, 2025)**
+
+**Production Lesson Learned**: Sentry `startTransaction()` API was deprecated in @sentry/node v8+. Attempting to use it causes TypeScript compilation errors and blocks deployment.
+
+**Deprecated API (DO NOT USE)**:
 ```typescript
+// ❌ DEPRECATED: Sentry.startTransaction() removed in @sentry/node v8+
 const transaction = Sentry.startTransaction({
   op: 'batch.processing',
   name: 'Process Batch Conversion',
-  tags: {
-    batch_id: batchId,
-    file_count: files.length,
-  },
 });
+// Error: Property 'startTransaction' does not exist on type 'typeof Sentry'
+
+transaction.startChild({ op: 'conversion' });  // Also doesn't exist
+transaction.finish();  // Won't work
+```
+
+**Modern API (USE THIS)**:
+
+**Option 1: Simple Performance Tracking with Breadcrumbs**
+```typescript
+// ✅ WORKS: Use breadcrumbs for simple performance tracking
+const startTime = Date.now();
 
 try {
-  for (const file of files) {
-    const span = transaction.startChild({
-      op: 'conversion',
-      description: `Convert ${file.name}`,
-    });
+  await processFile(file);
 
-    await processFile(file);
-
-    span.finish();
-  }
-
-  transaction.setStatus('ok');
+  const duration = Date.now() - startTime;
+  Sentry.addBreadcrumb({
+    category: 'performance',
+    message: 'File processing completed',
+    level: duration > 5000 ? 'warning' : 'info',
+    data: {
+      duration_ms: duration,
+      file_name: file.name,
+      operation: 'batch.processing',
+    },
+  });
 } catch (error) {
-  transaction.setStatus('internal_error');
-  Sentry.captureException(error);
-} finally {
-  transaction.finish();
+  const duration = Date.now() - startTime;
+  Sentry.addBreadcrumb({
+    category: 'performance',
+    message: 'File processing failed',
+    level: 'error',
+    data: {
+      duration_ms: duration,
+      error_message: error.message,
+    },
+  });
+  throw error;
 }
 ```
+
+**Option 2: Auto-Instrumentation (Recommended for Complex Tracking)**
+```typescript
+// ✅ BEST: Use Sentry's auto-instrumentation
+// Sentry automatically tracks HTTP requests, database queries, etc.
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    nodeProfilingIntegration(),
+    // Automatic performance instrumentation
+  ],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+});
+
+// No manual transaction code needed - Sentry handles it automatically
+```
+
+**Before Deploying ANY Sentry Code:**
+```bash
+# Step 1: Check Sentry SDK version
+npm list @sentry/node
+# If v8+: DO NOT use startTransaction()
+
+# Step 2: Review Sentry documentation for current SDK
+https://docs.sentry.io/platforms/node/
+
+# Step 3: Test TypeScript compilation
+npm run typecheck
+# Must pass with zero errors
+
+# Step 4: Verify methods exist before using
+// Check if method exists:
+if (typeof Sentry.startTransaction === 'function') {
+  // Safe to use
+} else {
+  // Method doesn't exist - use alternative
+}
+```
+
+**SDK Compatibility Checklist:**
+- [ ] Check @sentry/node version (v8+ = no startTransaction)
+- [ ] Use breadcrumbs for simple performance tracking
+- [ ] Use auto-instrumentation for complex tracking
+- [ ] Test TypeScript compilation before deployment
+- [ ] Review Sentry changelog for breaking changes
+- [ ] Never assume SDK methods exist without checking docs
 
 ### 3. Breadcrumbs for Context
 
