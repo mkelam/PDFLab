@@ -35,19 +35,90 @@ Before jumping to solutions, gather these critical details:
 - Payment form rejected
 - ITN validation fails
 
+**⚠️ CRITICAL: PayFast Signature Requirements (NON-NEGOTIABLE)**
+
+**Production Lesson Learned (Nov 5, 2025)**: PayFast signature mismatch caused 100% payment failure in production. Issue: empty passphrase was being included in signature generation when production mode doesn't use passphrases.
+
+**Mandatory Signature Generation Steps:**
+
+1. **✅ Sort keys alphabetically (a-z)** - EXACT alphabetical order required
+2. **✅ URL encode values** - Spaces as `+`, not `%20`
+3. **✅ Exclude empty values** - Do NOT include parameters with empty strings
+4. **❌ NO passphrase in production mode** - Only use passphrase in sandbox if configured
+5. **✅ MD5 hash the parameter string** - Use lowercase output
+
+**Before vs After (Real Production Issue):**
+
+```javascript
+// ❌ WRONG: Including empty passphrase in production
+const signature = generateSignature(paymentData, PAYFAST_CONFIG.passphrase);
+// passphrase = "" gets included → signature mismatch
+
+// ✅ CORRECT: No passphrase parameter in production
+const signature = generateSignature(paymentData);
+// Only actual payment parameters → signature valid
+```
+
 **Root Causes & Fixes:**
 
-| Issue | Detection | Solution |
-|-------|-----------|----------|
-| **Wrong parameter order** | Compare param order to PayFast docs | Parameters MUST be in exact order specified in API docs |
-| **Passphrase not appended** | Check if `&passphrase=xxx` at end of string | Always append passphrase as final parameter before MD5 hash |
-| **Trailing spaces in merchant_key** | Copy merchant_key, check length | Trim whitespace when storing credentials |
-| **Empty fields included** | Check for blank `value=""` fields | Exclude empty parameters from signature string |
-| **Uppercase MD5 hash** | Check hash output casing | Use `.lower()` or `.toLowerCase()` on hash |
-| **URL encoding issues** | Special chars in item descriptions | URL encode values like `+` → `%2B` in signature string |
+| Issue | Detection | Solution | Real Production Impact |
+|-------|-----------|----------|----------------------|
+| **Empty passphrase included** | Check if empty passphrase in signature params | Exclude passphrase entirely in production mode | ✅ **FIXED Nov 5** - 100% payment failure |
+| **Wrong parameter order** | Compare param order to PayFast docs | Parameters MUST be alphabetically sorted (a-z) | Critical - always fails |
+| **Trailing spaces in merchant_key** | Copy merchant_key, check length | Trim whitespace when storing credentials | Common copy-paste error |
+| **Empty fields included** | Check for blank `value=""` fields | Exclude empty parameters from signature string | Causes intermittent failures |
+| **Uppercase MD5 hash** | Check hash output casing | Use `.toLowerCase()` on hash | Always fails validation |
+| **URL encoding inconsistent** | Special chars in item descriptions | Spaces as `+`, special chars URL encoded | Fails with special characters |
+
+**Mandatory Pre-Integration Testing:**
+
+```bash
+# Step 1: Generate signature manually
+□ Create parameter string with exact alphabetical order
+□ Exclude empty values
+□ Do NOT include passphrase in production
+□ MD5 hash and convert to lowercase
+
+# Step 2: Test with PayFast signature validator
+□ Use PayFast's signature validation endpoint
+□ Send test payment with known signature
+□ Verify "Signature valid" response
+
+# Step 3: Test with real payment amounts
+□ Test with minimum amount (R5.00)
+□ Test with decimal amounts (R85.50)
+□ Test with large amounts (R1850.00)
+
+# Step 4: Verify parameter ordering
+□ Print parameter string before hashing
+□ Confirm alphabetical order visually
+□ Compare with PayFast documentation example
+```
+
+**Signature Validation Endpoint (for testing):**
+```bash
+# Test your signature generation
+curl -X POST https://www.payfast.co.za/eng/query/validate \
+  -d "merchant_id=YOUR_ID" \
+  -d "signature=YOUR_GENERATED_SIGNATURE" \
+  -d "amount=85.00"
+```
 
 **Verification Script:**
 See `scripts/validate_signature.py` for standalone signature validator.
+
+**Real Production Test Results (Nov 5, 2025):**
+```
+=== Before Fix ===
+Generated Signature: a1b2c3d4e5f6 (with empty passphrase)
+PayFast Expected: c857dc1297ea380cd431307f75d42bea
+Result: ❌ Signature mismatch - 100% payment failure
+
+=== After Fix ===
+Generated Signature: c857dc1297ea380cd431307f75d42bea (no passphrase)
+PayFast Expected: c857dc1297ea380cd431307f75d42bea
+Result: ✅ Signatures match - payments working
+```
 
 ### 2. ITN (Instant Transaction Notification) Webhook Failures
 

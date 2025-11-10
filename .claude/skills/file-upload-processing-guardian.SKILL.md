@@ -473,38 +473,89 @@ setInterval(async () => {
 }, 7 * 24 * 60 * 60 * 1000)
 ```
 
-#### 🟡 HIGH: CloudConvert Integration
+#### 🟡 HIGH: CloudConvert Integration (SDK DOWNLOAD METHOD DOESN'T WORK)
 
-**Historical Issue:** CloudConvert job failures leaving files in limbo
+**Historical Issue:** CloudConvert SDK download method failed in production - "Download not available" errors (Oct 2025)
+
+**Production Lesson Learned**: CloudConvert SDK's `job.wait()` and download methods don't work as documented. SDK download method is not available in the API. Must use native Node.js `https.get()` to download files from export task URL.
+
+**⚠️ CRITICAL: CloudConvert SDK Download Workaround (MANDATORY)**
+
+**CloudConvert SDK Limitations:**
+```typescript
+// ❌ DOESN'T WORK: SDK download method (not in official API)
+const download = await job.wait();
+const stream = cloudConvert.download(download.url);
+// Error: download() method doesn't exist in SDK
+
+// ❌ DOESN'T WORK: Direct file access
+const file = exportTask.result.files[0];
+const fileContent = await cloudConvert.download(file.id);
+// Error: No download method available
+
+// ✅ WORKS: Native HTTPS request to export URL
+import https from 'https';
+import fs from 'fs';
+
+const exportTask = completedJob.tasks.find(t => t.name === 'export-my-file');
+const fileUrl = exportTask.result.files[0].url;  // HTTPS URL from CloudConvert
+
+const outputPath = inputPath.replace('.pdf', `.${outputFormat}`);
+const fileStream = fs.createWriteStream(outputPath);
+
+https.get(fileUrl, (response) => {
+  response.pipe(fileStream);
+  fileStream.on('finish', () => {
+    fileStream.close();
+    console.log('✅ File downloaded successfully');
+  });
+}).on('error', (err) => {
+  fs.unlink(outputPath);  // Delete partial file
+  throw new Error(`Download failed: ${err.message}`);
+});
+```
 
 **Scan for:**
+- [ ] **CRITICAL: NOT using SDK download method (it doesn't exist)**
+- [ ] **CRITICAL: Using native https.get() for file downloads**
 - [ ] API key validation
-- [ ] Sandbox vs production mode
+- [ ] Sandbox vs production mode (CLOUDCONVERT_SANDBOX=false)
 - [ ] Error handling for all CloudConvert operations
 - [ ] Webhook signature verification
-- [ ] Job timeout handling
+- [ ] Job timeout handling (max 10 minutes)
 - [ ] Retry logic for transient failures
-- [ ] File download from CloudConvert
+- [ ] File download error handling (partial files)
 
-**Red flags:**
+**Red flags that WILL cause production failure:**
+- ❌ Using `cloudConvert.download()` method (doesn't exist)
+- ❌ No error handling for API calls
+- ❌ Waiting forever for job (no timeout)
+- ❌ Using sandbox in production
+- ❌ No webhook signature verification
+- ❌ No download error handling (partial files left on disk)
+
+**Before vs After (Real Production Issue):**
 ```typescript
-// ❌ No error handling
-const job = await cloudconvert.jobs.create({
-  tasks: { import: {}, convert: {}, export: {} }
-})  // What if API call fails?
+// ❌ BROKEN: Tried using SDK download method
+const job = await cloudconvert.jobs.wait(jobId);
+const download = await job.download();  // Error: Method doesn't exist
+// Result: All conversions failing with "Download not available"
 
-// ❌ Waiting forever for job
-await cloudconvert.jobs.wait(job.id)  // No timeout!
+// ✅ FIXED: Using native HTTPS download
+const exportTask = job.tasks.find(t => t.operation === 'export/url');
+const fileUrl = exportTask.result.files[0].url;
 
-// ❌ Using sandbox in production
-if (process.env.CLOUDCONVERT_SANDBOX === 'true') {
-  // Still using sandbox API → jobs fail
-}
-
-// ❌ No webhook signature verification
-app.post('/webhook/cloudconvert', (req, res) => {
-  const event = req.body  // Trust without verification!
-})
+await new Promise((resolve, reject) => {
+  https.get(fileUrl, (response) => {
+    const fileStream = fs.createWriteStream(outputPath);
+    response.pipe(fileStream);
+    fileStream.on('finish', () => {
+      fileStream.close();
+      resolve(outputPath);
+    });
+  }).on('error', reject);
+});
+// Result: Downloads working, conversions successful
 ```
 
 **Hardening:**

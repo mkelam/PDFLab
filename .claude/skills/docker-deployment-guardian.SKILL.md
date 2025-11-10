@@ -54,28 +54,117 @@ COPY public/ /app/public/
 RUN ls -la /app/views /app/public  # Verification
 ```
 
-#### 🔴 CRITICAL: Native Module Build Process
-**Historical Failure:** bcrypt native bindings failed in container
+#### 🔴 CRITICAL: Native Module Build Process (MANDATORY CHECK)
+**Historical Failure:** bcrypt native bindings failed in production (Nov 5, 2025) - caused 100% authentication failure
+
+**Production Lesson Learned**: Using `npm ci --ignore-scripts` prevented bcrypt from compiling native bindings for Alpine Linux. Container started but all authentication failed with "Cannot find module 'bcrypt'" error.
+
+**⚠️ MANDATORY: Native Module Validation Checklist**
+
+**Before Building Docker Image:**
+```bash
+# Step 1: Identify ALL native modules
+□ Scan package.json for native dependencies:
+  - bcrypt (password hashing)
+  - sharp (image processing)
+  - sqlite3 (database)
+  - canvas (image generation)
+  - node-sass (CSS preprocessing)
+  - grpc (RPC)
+  - ANY module with "node-gyp" in install scripts
+
+# Step 2: Verify build tools in Dockerfile
+□ Alpine Linux: apk add --no-cache python3 make g++
+□ Debian/Ubuntu: apt-get install python3 make g++
+□ Verify tools installed BEFORE npm install
+
+# Step 3: Validate npm install process
+□ DO NOT use npm ci --ignore-scripts (blocks native compilation)
+□ DO use npm ci (allows post-install scripts)
+□ DO use npm rebuild [module] --build-from-source (explicit rebuild)
+
+# Step 4: Test native modules in container
+□ Run: docker run --rm your-image node -e "require('bcrypt')"
+□ Should output: {} (not "Cannot find module" error)
+□ Test ALL native modules before deployment
+```
 
 **Scan for:**
-- [ ] Native modules in package.json (bcrypt, node-gyp, sharp, sqlite3, etc.)
-- [ ] Post-install rebuild commands
-- [ ] Build tools in base image (python, make, g++)
-- [ ] Architecture matching (ARM vs x64)
+- [ ] Native modules in package.json (bcrypt, node-gyp, sharp, sqlite3, canvas, etc.)
+- [ ] Build tools installed BEFORE npm commands (python3, make, g++)
+- [ ] npm rebuild step for each native module
+- [ ] NO use of --ignore-scripts flag
+- [ ] Platform-specific compilation (Alpine vs Debian)
+- [ ] Test command to verify native modules load
 
-**Red flags:**
-- Native modules without rebuild step
-- Missing build dependencies in Dockerfile
-- No platform-specific build instructions
+**Red flags that WILL cause production failure:**
+- ❌ Native modules without rebuild step
+- ❌ Using `npm ci --ignore-scripts` (blocks native compilation)
+- ❌ Missing build dependencies (python3, make, g++)
+- ❌ No verification that native modules load in container
+- ❌ Building on macOS/Windows and deploying to Alpine Linux without rebuild
 
-**Optimization:**
+**Real Production Issue (Nov 5, 2025):**
 ```dockerfile
-# ✅ COMPLETE - Native module handling
+# ❌ BROKEN: Caused 100% authentication failure
 FROM node:18-alpine
-RUN apk add --no-cache python3 make g++
 COPY package*.json ./
+RUN npm ci --ignore-scripts  # ← FATAL: Prevents bcrypt compilation
+# Result: Container starts but bcrypt cannot be loaded
+
+# ✅ FIXED: Authentication working
+FROM node:18-alpine
+RUN apk add --no-cache python3 make g++  # ← Build tools FIRST
+COPY package*.json ./
+RUN npm ci  # ← Allows post-install scripts
+RUN npm rebuild bcrypt --build-from-source  # ← Explicit Alpine build
+# Result: bcrypt compiles for Alpine Linux, authentication works
+```
+
+**Architecture-Specific Considerations:**
+
+| Platform | Command | Why |
+|----------|---------|-----|
+| **Alpine Linux** | `npm rebuild bcrypt --build-from-source` | Alpine uses musl libc, needs fresh build |
+| **Debian/Ubuntu** | `npm rebuild bcrypt` | glibc compatible, but still rebuild recommended |
+| **ARM64 (M1 Mac)** | `npm rebuild --arch=x64` | Cross-compile for x64 servers |
+
+**Post-Build Verification (MANDATORY):**
+```bash
+# Test native modules before deployment
+docker run --rm your-image:latest node -e "
+const bcrypt = require('bcrypt');
+console.log('bcrypt OK');
+"
+
+# If you see "Cannot find module 'bcrypt'" → REBUILD REQUIRED
+# If you see "bcrypt OK" → Ready for production
+```
+
+**Complete Example (PDFLab Production Dockerfile):**
+```dockerfile
+FROM node:18-alpine
+
+# STEP 1: Install build tools (BEFORE npm install)
+RUN apk add --no-cache python3 make g++
+
+# STEP 2: Copy dependency files
+COPY package*.json ./
+
+# STEP 3: Install dependencies (allow post-install scripts)
 RUN npm ci
+
+# STEP 4: Rebuild native modules for Alpine Linux
 RUN npm rebuild bcrypt --build-from-source
+
+# STEP 5: Copy application code
+COPY . .
+
+# STEP 6: Verify native modules (optional but recommended)
+RUN node -e "require('bcrypt'); console.log('Native modules OK')"
+
+# STEP 7: Start application
+CMD ["node", "dist/server.js"]
 ```
 
 #### 🟡 HIGH: Environment Variable Validation

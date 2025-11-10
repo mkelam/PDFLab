@@ -109,9 +109,160 @@ interface ModelCreationAttributes
 }
 ```
 
-#### 🔴 CRITICAL: Migration Script Safety
+#### 🔴 CRITICAL: Migration Script Safety (MANDATORY ROLLBACK SCRIPTS)
 
-**Historical Failure:** Migration ran successfully but forgot to copy data, losing all records
+**Historical Failure:** v1.1.0 deployment (Nov 9, 2025) had no documented rollback procedure for batch_jobs table - high risk of data loss if rollback was needed
+
+**Production Lesson Learned**: Deployed major database migration without rollback script. While migration succeeded, there was NO way to undo changes if issues arose. This could have caused catastrophic data loss if deployment failed.
+
+**⚠️ MANDATORY: Every Migration MUST Have Rollback Script (NON-NEGOTIABLE)**
+
+**Before Writing ANY Migration:**
+```bash
+# RULE 1: Every up() migration MUST have a down() migration
+□ Write down() migration FIRST before implementing up()
+□ Test rollback procedure on local database
+□ Document rollback steps in deployment guide
+□ Estimate rollback time (must be <5 minutes for production)
+
+# RULE 2: Rollback script must be COMPLETE
+□ Reverses ALL changes from up() migration
+□ Handles both DDL (schema) and DML (data) changes
+□ Does NOT assume data still exists (handle missing tables/columns gracefully)
+□ Logs rollback actions for audit trail
+
+# RULE 3: Test rollback BEFORE production deployment
+□ Run up() migration on test database
+□ Immediately run down() migration
+□ Verify database returned to original state
+□ Check no orphaned data or constraints remain
+```
+
+**Real Production Example (Nov 9, 2025):**
+
+```typescript
+// ❌ DANGEROUS: v1.1.0 deployment had NO rollback script documented
+// Migration: 001_add_batch_processing.sql
+// Created batch_jobs table with foreign keys
+// Result: If deployment failed, NO documented way to rollback
+// Risk: Data corruption, orphaned records, production downtime
+
+// ✅ CORRECT: Every migration MUST have rollback script
+// File: 001_add_batch_processing.sql (UP migration)
+CREATE TABLE batch_jobs (
+  id CHAR(36) PRIMARY KEY,
+  user_id CHAR(36) NOT NULL,
+  FOREIGN KEY fk_batch_jobs_user_id (user_id) REFERENCES users(id)
+);
+
+ALTER TABLE conversion_jobs ADD COLUMN batch_job_id CHAR(36);
+ALTER TABLE conversion_jobs ADD FOREIGN KEY fk_conversion_jobs_batch_job_id
+  (batch_job_id) REFERENCES batch_jobs(id);
+
+// File: 001_add_batch_processing_ROLLBACK.sql (DOWN migration) ← MANDATORY
+ALTER TABLE conversion_jobs DROP FOREIGN KEY fk_conversion_jobs_batch_job_id;
+ALTER TABLE conversion_jobs DROP COLUMN batch_job_id;
+DROP TABLE IF EXISTS batch_jobs;
+-- Restore database to pre-migration state
+```
+
+**What We Did Right (Nov 9):**
+- ✅ Created database backup BEFORE migration
+- ✅ Tested migration on local database first
+- ✅ Verified foreign keys post-migration
+
+**What We Should Have Done Better:**
+- ❌ No rollback SQL script prepared
+- ❌ No automated rollback testing
+- ❌ No rollback procedure in deployment documentation
+
+**Mandatory Rollback Script Structure:**
+
+```typescript
+// ========================================
+// UP Migration (001_add_feature.ts)
+// ========================================
+export async function up(queryInterface: QueryInterface) {
+  // Step 1: Create table
+  await queryInterface.createTable('batch_jobs', { /* schema */ })
+
+  // Step 2: Add indexes
+  await queryInterface.addIndex('batch_jobs', ['user_id'])
+
+  // Step 3: Add foreign keys
+  await queryInterface.addConstraint('batch_jobs', {
+    fields: ['user_id'],
+    type: 'foreign key',
+    name: 'fk_batch_jobs_user_id',
+    references: { table: 'users', field: 'id' },
+    onDelete: 'CASCADE'
+  })
+}
+
+// ========================================
+// DOWN Migration (MANDATORY - NEVER SKIP)
+// ========================================
+export async function down(queryInterface: QueryInterface) {
+  // Reverse order of up() migration
+
+  // Step 3 rollback: Remove foreign keys
+  await queryInterface.removeConstraint('batch_jobs', 'fk_batch_jobs_user_id')
+
+  // Step 2 rollback: Remove indexes (handled by dropTable)
+
+  // Step 1 rollback: Drop table
+  await queryInterface.dropTable('batch_jobs')
+
+  console.log('✅ Rollback complete - database restored to pre-migration state')
+}
+```
+
+**Rollback Testing Checklist (MANDATORY Before Production):**
+
+```bash
+# Step 1: Apply migration on test database
+npm run migrate:up
+
+# Step 2: Verify migration succeeded
+mysql -e "SHOW TABLES; DESCRIBE batch_jobs;"
+
+# Step 3: Immediately run rollback
+npm run migrate:down
+
+# Step 4: Verify complete rollback
+mysql -e "SHOW TABLES;"  # batch_jobs should NOT exist
+mysql -e "DESCRIBE conversion_jobs;"  # batch_job_id column should NOT exist
+
+# Step 5: Re-apply migration (test idempotency)
+npm run migrate:up
+
+# Step 6: Document rollback time
+echo "Rollback time: [X seconds] - acceptable for production"
+```
+
+**Production Deployment Rollback Plan (Required Documentation):**
+
+```bash
+# EMERGENCY: Rollback v1.1.0 batch processing feature
+
+# Step 1: Stop application containers
+docker stop pdflab-backend-prod pdflab-frontend-prod
+
+# Step 2: Restore database from backup
+docker exec -i pdflab-mysql-prod \
+  mysql -u pdflab -p'password' pdflab_production \
+  < /tmp/pdflab_backup_20251109_212730.sql
+
+# Step 3: Start previous container versions
+docker run -d --name pdflab-backend-prod [previous image]
+docker run -d --name pdflab-frontend-prod [previous image]
+
+# Step 4: Verify rollback
+curl https://pdflab.pro/api/health  # Should return 200
+
+# Estimated rollback time: 2-3 minutes
+# Data loss: None (backup restored)
+```
 
 **Scan for:**
 - [ ] Migration uses QueryInterface properly (not sequelize.sync())
@@ -119,7 +270,9 @@ interface ModelCreationAttributes
 - [ ] Indexes created in migration match model definition
 - [ ] Foreign keys in migration match model references
 - [ ] Enum values match exactly between model and migration
-- [ ] `down()` migration exists for rollback
+- [ ] **MANDATORY: `down()` migration exists and is COMPLETE**
+- [ ] **MANDATORY: Rollback tested on local database**
+- [ ] **MANDATORY: Rollback procedure documented**
 - [ ] Data migration strategy for existing rows (if modifying table)
 
 **Red flags:**
