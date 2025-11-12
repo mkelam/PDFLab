@@ -120,7 +120,7 @@ export default function BetaApplicationPage() {
               <h1 className="font-bold text-4xl md:text-5xl">Join PDFLab Beta</h1>
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get free access to Pro or Starter plans for 90 days. Help us shape the future of PDF processing.
+              Join our exclusive 60-day beta insider program. Get free access to Pro or Starter plans and help shape the future of PDF processing.
             </p>
           </div>
 

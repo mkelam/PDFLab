@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Upload } from "lucide-react"
+import { Upload, Sparkles } from "lucide-react"
 import { Navigation } from "@/components/Navigation"
 import { PDFUpload } from "@/components/PDFUpload"
 import { UnifiedConversionInterface } from "@/components/UnifiedConversionInterface"
@@ -28,7 +28,28 @@ export default function pdflabPro() {
     <div className="min-h-screen">
       <Navigation />
 
-      <section className="pt-24 pb-12 px-6">
+      {/* Beta Launch Banner */}
+      <div className="pt-20 pb-1 px-6">
+        <div className="max-w-4xl mx-auto">
+          <Link href="/beta">
+            <Card className="glass-strong border border-primary/50 hover:border-primary transition-all duration-300 hover:scale-[1.01] cursor-pointer">
+              <CardContent className="py-2 px-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                    <span className="font-semibold text-sm">🎉 60-Day Beta Insider Program - Free Pro Access!</span>
+                  </div>
+                  <Button size="sm" className="h-7 px-3 text-xs">
+                    Apply →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </div>
+
+      <section className="pt-8 pb-12 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="font-bold text-3xl md:text-4xl mb-3 leading-tight">
             Convert PDFs to Office Files in Seconds
@@ -37,7 +58,7 @@ export default function pdflabPro() {
           {/* Trust info - minimal */}
           <div className="mb-12">
             <p className="text-base text-primary">
-              🔒 Bank-grade security • Files auto-deleted in 24 hours • Zero data retention
+              🔒 Bank-grade security • Files auto-deleted in 24 hours • Zero data retention (storage is expensive guys)
             </p>
           </div>
 
@@ -96,7 +117,7 @@ export default function pdflabPro() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              Zero Data Retention
+              Zero Data Retention (storage is expensive guys)
             </Link>
           </div>
 
