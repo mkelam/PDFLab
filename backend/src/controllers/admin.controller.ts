@@ -77,6 +77,66 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
 }
 
 /**
+ * GET /api/admin/beta-users
+ * Get all beta users (users with is_beta_user = true)
+ * Query params: search, page, limit, sortBy, sortOrder
+ */
+export const getBetaUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      search = '',
+      page = '1',
+      limit = '25',
+      sortBy = 'created_at',
+      sortOrder = 'DESC'
+    } = req.query
+
+    const pageNum = parseInt(page as string)
+    const limitNum = parseInt(limit as string)
+    const offset = (pageNum - 1) * limitNum
+
+    // Build where clause - only beta users
+    const where: any = { is_beta_user: true }
+
+    // Search by email or name
+    if (search) {
+      where[Op.or] = [
+        { email: { [Op.like]: `%${search}%` } },
+        { name: { [Op.like]: `%${search}%` } }
+      ]
+    }
+
+    // Get beta users with pagination
+    const { count, rows: users } = await User.findAndCountAll({
+      where,
+      attributes: { exclude: ['password_hash'] },
+      order: [[sortBy as string, sortOrder as string]],
+      limit: limitNum,
+      offset
+    })
+
+    const totalPages = Math.ceil(count / limitNum)
+
+    res.json({
+      success: true,
+      users,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: count,
+        totalPages
+      }
+    })
+  } catch (error) {
+    console.error('Get beta users error:', error)
+    res.status(500).json({
+      error: 'Failed to fetch beta users',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+/**
  * GET /api/admin/users/:id
  * Get user details by ID
  */

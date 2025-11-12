@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   getAllUsers,
+  getBetaUsers,
   getUserById,
   updateUser,
   updateUserPlan,
@@ -42,6 +43,9 @@ router.use(auditLogMiddleware)
 
 // Get all users (support, admin, super_admin can view)
 router.get('/users', requirePermission('users.view'), getAllUsers)
+
+// Get beta users only (support, admin, super_admin can view)
+router.get('/beta-users', requirePermission('users.view'), getBetaUsers)
 
 // Export users to CSV (respects filters)
 router.get('/users/export', requirePermission('users.view'), exportUsersToCSV)

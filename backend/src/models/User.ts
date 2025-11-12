@@ -36,6 +36,8 @@ interface UserAttributes {
   subscription_id?: string
   subscription_status?: SubscriptionStatus
   subscription_end_date?: Date
+  is_beta_user: boolean
+  beta_expires_at?: Date
   email_verified: boolean
   email_verified_at?: Date
   failed_reset_attempts: number
@@ -45,7 +47,7 @@ interface UserAttributes {
   last_login?: Date
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string
@@ -60,6 +62,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public subscription_id?: string
   public subscription_status?: SubscriptionStatus
   public subscription_end_date?: Date
+  public is_beta_user!: boolean
+  public beta_expires_at?: Date
   public email_verified!: boolean
   public email_verified_at?: Date
   public failed_reset_attempts!: number
@@ -167,6 +171,15 @@ User.init(
       allowNull: true
     },
     subscription_end_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    is_beta_user: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
+    beta_expires_at: {
       type: DataTypes.DATE,
       allowNull: true
     },
