@@ -9,8 +9,10 @@ import { Montserrat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { TokenExpirationWarning } from "@/components/TokenExpirationWarning"
 import { Toaster } from "@/components/ui/toaster"
+import FeedbackBubble from "@/components/FeedbackBubble"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { SessionProvider } from "@/contexts/SessionContext"
+import { OnboardingProvider } from "@/contexts/OnboardingContext"
 import { performStartupHealthCheck } from "@/lib/api-health"
 import "./globals.css"
 
@@ -35,9 +37,12 @@ export default function ClientLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${montserrat.variable}`}>
         <SessionProvider>
           <AuthProvider>
-            <div className="relative z-10">{children}</div>
-            <TokenExpirationWarning />
-            <Toaster />
+            <OnboardingProvider>
+              <div className="relative z-10">{children}</div>
+              <TokenExpirationWarning />
+              <Toaster />
+              <FeedbackBubble />
+            </OnboardingProvider>
           </AuthProvider>
         </SessionProvider>
         <Analytics />

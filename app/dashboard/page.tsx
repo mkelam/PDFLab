@@ -7,8 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useAuth, useRequireAuth } from "@/contexts/AuthContext"
 import { Navigation } from "@/components/Navigation"
+import { BetaExpirationTimer } from "@/components/BetaExpirationTimer"
 import { User, FileText, Download, Settings, LogOut, Clock, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
+import { useOnboarding } from "@/contexts/OnboardingContext"
+import SampleTemplates from "@/components/onboarding/SampleTemplates"
+import QuickStartWizard from "@/components/onboarding/QuickStartWizard"
 
 interface ConversionActivity {
   id: string
@@ -25,8 +29,10 @@ export default function DashboardPage() {
   // Require authentication - will redirect to login if not authenticated
   const { user, isLoading } = useRequireAuth()
   const { logout } = useAuth()
+  const { shouldShowOnboarding, getNextStep, skipOnboarding } = useOnboarding()
   const [recentActivity, setRecentActivity] = useState<ConversionActivity[]>([])
   const [activityLoading, setActivityLoading] = useState(true)
+  const [showWizard, setShowWizard] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -203,6 +209,72 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Beta Expiration Timer - Only for beta users */}
+          {user.is_beta_user && user.beta_expires_at && (
+            <div className="mb-8">
+              <BetaExpirationTimer
+                expiresAt={user.beta_expires_at}
+                placement="dashboard"
+              />
+            </div>
+          )}
+
+          {/* Onboarding: QuickStart Wizard */}
+          {shouldShowOnboarding() && getNextStep() === 'wizard' && (
+            <QuickStartWizard
+              isOpen={showWizard}
+              onClose={() => setShowWizard(false)}
+            />
+          )}
+
+          {/* Onboarding: Sample Templates Section */}
+          {shouldShowOnboarding() && getNextStep() === 'template' && (
+            <div className="mb-8">
+              <Card className="glass-strong border-primary/30 bg-primary/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">🚀 Try Your First Conversion</h3>
+                      <p className="text-muted-foreground">
+                        Get started with one of our sample templates - no upload needed!
+                      </p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={skipOnboarding}>
+                      Skip
+                    </Button>
+                  </div>
+                  <SampleTemplates />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Onboarding: Show Wizard Button */}
+          {shouldShowOnboarding() && (getNextStep() === 'wizard' || getNextStep() === 'conversion') && (
+            <div className="mb-8">
+              <Card className="glass-strong border-primary/30 bg-primary/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">✨ Quick Start Guide</h3>
+                      <p className="text-muted-foreground">
+                        Let us guide you through your first PDF conversion in 3 easy steps
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={skipOnboarding}>
+                        Skip
+                      </Button>
+                      <Button onClick={() => setShowWizard(true)}>
+                        Start Guide →
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Recent Activity */}
           <Card className="glass-strong border-border/50">

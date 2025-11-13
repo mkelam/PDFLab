@@ -42,12 +42,15 @@ interface UserAttributes {
   email_verified_at?: Date
   failed_reset_attempts: number
   reset_locked_until?: Date
+  onboarding_completed: boolean
+  onboarding_completed_at?: Date
+  onboarding_skipped: boolean
   created_at: Date
   updated_at: Date
   last_login?: Date
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string
@@ -68,6 +71,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public email_verified_at?: Date
   public failed_reset_attempts!: number
   public reset_locked_until?: Date
+  public onboarding_completed!: boolean
+  public onboarding_completed_at?: Date
+  public onboarding_skipped!: boolean
   public readonly created_at!: Date
   public readonly updated_at!: Date
   public last_login?: Date
@@ -200,6 +206,20 @@ User.init(
     reset_locked_until: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    onboarding_completed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
+    onboarding_completed_at: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    onboarding_skipped: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     },
     created_at: {
       type: DataTypes.DATE,

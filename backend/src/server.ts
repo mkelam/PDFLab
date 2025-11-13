@@ -58,6 +58,9 @@ import authRoutes from './routes/auth.routes'
 import conversionRoutes from './routes/conversion.routes'
 import batchRoutes from './routes/batch.routes'
 import payfastRoutes from './routes/payfast.routes'
+import betaRoutes from './routes/beta.routes'
+import feedbackRoutes from './routes/feedback.routes'
+import onboardingRoutes from './routes/onboarding.routes'
 import adminRoutes from './routes/admin.routes'
 import conversionAdminRoutes from './routes/conversion.admin.routes'
 import paymentAdminRoutes from './routes/payment.admin.routes'
@@ -202,6 +205,9 @@ app.get('/health', async (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)
+app.use('/api/beta', betaRoutes)
+app.use('/api', feedbackRoutes)
+app.use('/api/onboarding', onboardingRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/admin', adminRoutes)

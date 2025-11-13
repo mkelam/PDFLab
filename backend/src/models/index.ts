@@ -8,6 +8,13 @@ export { SystemHealthLog, HealthStatus } from './SystemHealthLog'
 export { Subscription, PlanType } from './subscription.model'
 export { PaymentLog, PaymentStatus, PaymentType } from './payment-log.model'
 export { PasswordHistory } from './PasswordHistory'
+export { BetaApplication } from './BetaApplication'
+export { default as Feedback } from './Feedback'
+export type { FeedbackType, FeedbackStatus } from './Feedback'
+export { default as OnboardingProgress } from './OnboardingProgress'
+export type { OnboardingStatus } from './OnboardingProgress'
+export { default as OnboardingTemplate } from './OnboardingTemplate'
+export type { TemplateFormat } from './OnboardingTemplate'
 
 // Set up model associations
 import { User } from './User'
@@ -16,6 +23,9 @@ import { PaymentLog } from './payment-log.model'
 import { ConversionJob } from './ConversionJob'
 import { AdminAuditLog } from './AdminAuditLog'
 import { PasswordHistory } from './PasswordHistory'
+import Feedback from './Feedback'
+import OnboardingProgress from './OnboardingProgress'
+import OnboardingTemplate from './OnboardingTemplate'
 
 // User <-> Subscription (one-to-many)
 User.hasMany(Subscription, {
@@ -63,6 +73,36 @@ User.hasMany(PasswordHistory, {
   as: 'passwordHistory'
 })
 PasswordHistory.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+})
+
+// User <-> Feedback (one-to-many)
+User.hasMany(Feedback, {
+  foreignKey: 'user_id',
+  as: 'feedback'
+})
+Feedback.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+})
+
+// Admin User <-> Feedback (one-to-many)
+User.hasMany(Feedback, {
+  foreignKey: 'admin_id',
+  as: 'adminFeedback'
+})
+Feedback.belongsTo(User, {
+  foreignKey: 'admin_id',
+  as: 'admin'
+})
+
+// User <-> OnboardingProgress (one-to-one)
+User.hasOne(OnboardingProgress, {
+  foreignKey: 'user_id',
+  as: 'onboardingProgress'
+})
+OnboardingProgress.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user'
 })

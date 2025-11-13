@@ -104,6 +104,112 @@ function getAuthToken(): string | null {
 }
 
 /**
+ * Get refresh token from localStorage
+ */
+function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('refreshToken')
+}
+
+/**
+ * Set auth tokens in localStorage
+ */
+function setAuthTokens(accessToken: string, refreshToken: string): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('authToken', accessToken)
+  localStorage.setItem('refreshToken', refreshToken)
+}
+
+/**
+ * Clear auth tokens from localStorage
+ */
+function clearAuthTokens(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem('authToken')
+  localStorage.removeItem('refreshToken')
+}
+
+/**
+ * Refresh access token using refresh token
+ */
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) {
+    return null
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    })
+
+    if (!response.ok) {
+      // Refresh token expired or invalid, clear tokens
+      clearAuthTokens()
+      return null
+    }
+
+    const data = await response.json()
+
+    // Store new tokens
+    setAuthTokens(data.token, data.refresh_token)
+
+    console.log('✅ Access token refreshed successfully')
+    return data.token
+  } catch (error) {
+    console.error('❌ Failed to refresh access token:', error)
+    clearAuthTokens()
+    return null
+  }
+}
+
+/**
+ * Enhanced fetch with automatic token refresh on 401
+ */
+async function fetchWithTokenRefresh(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = getAuthToken()
+
+  // Add authorization header if token exists
+  if (token) {
+    options.headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`
+    }
+  }
+
+  // Make initial request
+  let response = await fetch(url, options)
+
+  // If 401 Unauthorized, try to refresh token and retry
+  if (response.status === 401 && token) {
+    console.log('⚠️ Access token expired, attempting refresh...')
+
+    const newToken = await refreshAccessToken()
+
+    if (newToken) {
+      // Retry request with new token
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${newToken}`
+      }
+      response = await fetch(url, options)
+      console.log('✅ Request retried with new token')
+    } else {
+      // Refresh failed, redirect to login
+      console.log('❌ Token refresh failed, user needs to re-login')
+      // Note: We don't redirect here to avoid circular dependencies
+      // The AuthContext will handle this via useEffect
+    }
+  }
+
+  return response
+}
+
+/**
  * Poll job status until completion
  */
 async function pollJobStatus(jobId: string, onProgress?: (progress: number) => void): Promise<any> {
@@ -111,14 +217,8 @@ async function pollJobStatus(jobId: string, onProgress?: (progress: number) => v
   let attempts = 0
 
   while (attempts < maxAttempts) {
-    const token = getAuthToken()
-
     try {
-      const response = await fetch(`${API_URL}/api/status/${jobId}`, {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        }
-      })
+      const response = await fetchWithTokenRefresh(`${API_URL}/api/status/${jobId}`)
 
       if (!response.ok) {
         const errorMessage = handleAPIError(new Error('Status check failed'), response, 'Job Status')
@@ -170,7 +270,6 @@ export const pdflabAPI = {
     format: 'pptx' | 'docx' | 'xlsx'
   ): Promise<ConversionResponse> {
     const startTime = Date.now()
-    const token = getAuthToken()
 
     // Map format to conversion type
     const conversionTypeMap = {
@@ -186,11 +285,8 @@ export const pdflabAPI = {
 
     let uploadResponse
     try {
-      uploadResponse = await fetch(`${API_URL}/api/upload`, {
+      uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/upload`, {
         method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
         body: formData
       })
 
@@ -860,6 +956,54 @@ export class ApiClient {
 
     return await response.blob();
   }
+
+  // Generic POST request
+  async post(endpoint: string, data: any): Promise<any> {
+    const token = getAuthToken()
+
+    const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Request failed' }))
+      // Throw error with response structure for compatibility with form error handlers
+      const error: any = new Error(errorData.message || 'Request failed')
+      error.response = { data: errorData }
+      throw error
+    }
+
+    return await response.json();
+  }
+
+  // Generic GET request
+  async get(endpoint: string): Promise<any> {
+    const token = getAuthToken()
+
+    const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Request failed' }))
+      // Throw error with response structure for compatibility with form error handlers
+      const error: any = new Error(errorData.message || 'Request failed')
+      error.response = { data: errorData }
+      throw error
+    }
+
+    return await response.json();
+  }
 }
 
 export const api = new ApiClient();
+
+// Export token management functions for use in AuthContext
+export { getAuthToken, getRefreshToken, setAuthTokens, clearAuthTokens, refreshAccessToken, fetchWithTokenRefresh };

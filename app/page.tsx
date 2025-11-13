@@ -9,10 +9,13 @@ import { Navigation } from "@/components/Navigation"
 import { PDFUpload } from "@/components/PDFUpload"
 import { UnifiedConversionInterface } from "@/components/UnifiedConversionInterface"
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel"
+import ProductTour from "@/components/onboarding/ProductTour"
+import { useOnboarding } from "@/contexts/OnboardingContext"
 
 export default function pdflabPro() {
   const [uploadResult, setUploadResult] = useState(null)
   const [uploadError, setUploadError] = useState("")
+  const { shouldShowOnboarding } = useOnboarding()
 
   const handleUploadSuccess = (result: any) => {
     setUploadResult(result)
@@ -27,6 +30,9 @@ export default function pdflabPro() {
   return (
     <div className="min-h-screen">
       <Navigation />
+
+      {/* Product Tour for New Users */}
+      {shouldShowOnboarding() && <ProductTour />}
 
       {/* Beta Launch Banner */}
       <div className="pt-20 pb-1 px-6">
@@ -63,11 +69,13 @@ export default function pdflabPro() {
           </div>
 
           {/* Unified Conversion Interface */}
-          <div className="mb-16">
-            <UnifiedConversionInterface
-              onSuccess={handleUploadSuccess}
-              onError={handleUploadError}
-            />
+          <div className="mb-16" id="upload-area">
+            <div id="conversion-formats">
+              <UnifiedConversionInterface
+                onSuccess={handleUploadSuccess}
+                onError={handleUploadError}
+              />
+            </div>
           </div>
 
           {/* Client Testimonials Carousel */}
