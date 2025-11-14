@@ -499,3 +499,327 @@ When user reports "data not showing":
 - Type errors on number methods (.toFixed, Math operations)
 - Crashes when database returns null
 - TypeScript types don't match runtime data
+
+---
+
+## 🔴 INCIDENT 4: Double API Prefix Bug (Nov 2024)
+
+**Real Production Incident:** Partner Applications page showed "No pending applications found" despite database having 10 applications.
+
+**Symptoms:**
+```typescript
+// Frontend successfully called API
+const response = await api.get('/api/partner-applications?status=pending')
+
+// Backend logs showed ZERO incoming requests
+// Network tab would show 404 error (if checked)
+// Frontend showed empty state with no errors
+```
+
+**Root Cause:**
+```typescript
+// lib/api.ts - Custom API wrapper
+class ApiClient {
+  async get(endpoint: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
+      // ↑ Already adds /api prefix!
+    })
+    return await response.json()
+  }
+}
+
+// app/admin/partner-applications/page.tsx - Component
+const response = await api.get(`/api/partner-applications?status=${filter}`)
+                                 ↑ Should NOT have /api here!
+
+// Resulted in: http://localhost:3006/api/api/partner-applications → 404
+```
+
+**Investigation Breakthrough:**
+1. ✅ Verified database has 10 applications
+2. ✅ Backend API endpoint exists at `/api/partner-applications`
+3. ❌ **Backend logs showed ZERO API requests** ← Critical clue!
+4. 🔍 This meant frontend wasn't calling API correctly
+5. 🎯 Analyzed API wrapper → Found automatic `/api` prefix
+
+**Fix:**
+```typescript
+// BEFORE (404 error)
+const response = await api.get('/api/partner-applications?status=pending')
+await api.post('/api/partner-applications/approve', body)
+
+// AFTER (Success)
+const response = await api.get('/partner-applications?status=pending')
+await api.post('/partner-applications/approve', body)
+```
+
+**Red Flags to Scan For:**
+- [ ] Backend logs show no API requests despite frontend making calls
+- [ ] Network tab shows 404 for `/api/api/...` double prefix
+- [ ] Custom API wrapper adds URL prefixes automatically
+- [ ] Inconsistent endpoint patterns across codebase
+- [ ] No errors in console but data never loads
+
+**Prevention:**
+```typescript
+// Document API wrapper behavior clearly
+/**
+ * API Client Wrapper
+ *
+ * IMPORTANT: This wrapper automatically adds '/api' prefix to all endpoints.
+ *
+ * ✅ CORRECT USAGE:
+ *   api.get('/users')          → GET /api/users
+ *   api.post('/login', data)   → POST /api/login
+ *
+ * ❌ WRONG USAGE:
+ *   api.get('/api/users')      → GET /api/api/users (404)
+ *   api.post('/api/login')     → POST /api/api/login (404)
+ */
+class ApiClient {
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+
+  async get(endpoint: string): Promise<any> {
+    // Ensure endpoint doesn't start with /api to prevent double prefix
+    const cleanEndpoint = endpoint.startsWith('/api/')
+      ? endpoint.replace('/api/', '/')
+      : endpoint
+
+    const response = await fetch(`${this.baseUrl}/api${cleanEndpoint}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return await response.json()
+  }
+}
+```
+
+**Debugging Checklist:**
+```bash
+# 1. Check backend logs first!
+tail -f backend.log | grep "GET /api/"
+
+# 2. If no logs, frontend isn't calling API
+# Check API wrapper implementation
+cat lib/api.ts | grep "baseUrl\|fetch"
+
+# 3. Search for all API calls
+grep -r "api.get\|api.post" app/ components/
+
+# 4. Verify no double /api/ prefix
+grep -r "api.get('/api/" app/ components/
+```
+
+**Lessons Learned:**
+1. **Backend logs are the first diagnostic tool** - No logs = frontend bug
+2. **API wrappers are abstraction leaks** - Must understand wrapper behavior
+3. **Double prefix is a common pattern** - Check wrapper + call site
+4. **Document wrapper behavior in JSDoc** - Prevent future misuse
+5. **Add URL validation in wrapper** - Auto-strip duplicate prefixes
+
+**Time to Fix:** 15 minutes (once backend logs revealed no requests)
+
+---
+
+## 🔴 INCIDENT 5: Component Library Selector Mismatch (Nov 2024)
+
+**Real E2E Test Failure:** Playwright test looked for `select[name="tier"]` but element was never found, causing timeout.
+
+**Symptoms:**
+```typescript
+// Test code
+await page.waitForSelector('select[name="tier"]', { timeout: 10000 })
+// TimeoutError: Timeout 10000ms exceeded waiting for selector
+
+// Error context showed combobox role, not select element
+// Screenshot showed approval dialog with tier dropdown visible
+```
+
+**Root Cause:**
+```typescript
+// Component uses Shadcn UI Select (not native HTML select)
+<Select name="tier" value={formData.tier}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="silver">Silver</SelectItem>
+  </SelectContent>
+</Select>
+
+// Renders as:
+<button role="combobox" aria-label="Partner Tier">Silver</button>
+<div role="listbox" hidden>
+  <div role="option" data-value="silver">Silver</div>
+</div>
+
+// NOT:
+<select name="tier">
+  <option value="silver">Silver</option>
+</select>
+```
+
+**Investigation Method:**
+1. ✅ Test opened approval dialog successfully
+2. ✅ Screenshot showed tier field visible
+3. ❌ `error-context.md` showed combobox role, not select
+4. 🎯 Realized Shadcn components use ARIA roles
+
+**Fix:**
+```typescript
+// BEFORE (Native HTML selector)
+await page.waitForSelector('select[name="tier"]')
+await page.selectOption('select[name="tier"]', 'silver')
+
+// AFTER (ARIA role selector)
+const tierCombobox = page.getByRole('combobox', { name: /partner tier/i })
+await tierCombobox.waitFor({ state: 'visible', timeout: 10000 })
+await tierCombobox.click()
+await page.waitForSelector('[role="listbox"]', { timeout: 5000 })
+await page.getByRole('option', { name: /silver/i }).click()
+```
+
+**Red Flags to Scan For:**
+- [ ] Using Shadcn, Radix, or similar component libraries
+- [ ] Tests using element selectors (`select`, `input`, `button`)
+- [ ] Tests timing out despite element visible in screenshots
+- [ ] Error context shows `role="combobox"` or `role="listbox"`
+- [ ] Component library documentation mentions "accessible components"
+
+**Component Library Selector Guide:**
+
+| Component | Native HTML | Shadcn/Radix Renders As | Test Selector |
+|-----------|-------------|-------------------------|---------------|
+| Select | `<select>` | `<button role="combobox">` | `getByRole('combobox')` |
+| Checkbox | `<input type="checkbox">` | `<button role="checkbox">` | `getByRole('checkbox')` |
+| Radio | `<input type="radio">` | `<button role="radio">` | `getByRole('radio')` |
+| Dialog | `<div>` | `<div role="dialog">` | `getByRole('dialog')` |
+| Switch | `<input type="checkbox">` | `<button role="switch">` | `getByRole('switch')` |
+
+**Testing Pattern:**
+```typescript
+// ✅ GOOD - Semantic, accessible, component-agnostic
+await page.getByRole('combobox', { name: /tier/i }).click()
+await page.getByRole('option', { name: /silver/i }).click()
+await page.getByRole('button', { name: /approve/i }).click()
+
+// ❌ BAD - Brittle, implementation-specific
+await page.locator('select[name="tier"]').selectOption('silver')
+await page.locator('button.btn-primary').click()
+await page.locator('#approve-button').click()
+```
+
+**Debugging Checklist:**
+```bash
+# 1. Check component library usage
+grep -r "from '@radix-ui\|from 'shadcn'" components/
+
+# 2. Find tests using element selectors
+grep -r "select\[name=\|input\[name=" e2e/ tests/
+
+# 3. Check error-context.md for actual HTML
+cat test-results/*/error-context.md | grep "role="
+
+# 4. Verify component renders with ARIA roles
+grep -r "role=\"combobox\|role=\"listbox\"" node_modules/@radix-ui/
+```
+
+**Prevention:**
+```typescript
+// Add component testing documentation
+/**
+ * SHADCN UI TESTING GUIDE
+ *
+ * All Shadcn components render with ARIA roles for accessibility.
+ * Use role-based selectors, not element selectors.
+ *
+ * Select Component:
+ * ✅ page.getByRole('combobox', { name: /tier/i })
+ * ❌ page.locator('select[name="tier"]')
+ *
+ * Dialog Component:
+ * ✅ page.getByRole('dialog', { name: /approve/i })
+ * ❌ page.locator('.modal-dialog')
+ *
+ * Button Component:
+ * ✅ page.getByRole('button', { name: /submit/i })
+ * ✅ page.locator('button:has-text("Submit")')  // Also works
+ * ❌ page.locator('#submit-btn')
+ */
+```
+
+**Lessons Learned:**
+1. **Component libraries render ARIA roles, not native elements**
+2. **Use `getByRole()` for better test resilience**
+3. **Check error-context.md for actual HTML structure**
+4. **Semantic selectors are more maintainable than CSS selectors**
+5. **Read component library docs for rendered HTML**
+
+**Time to Fix:** 10 minutes (once error-context.md revealed combobox role)
+
+---
+
+## Updated Investigation Methodology (Nov 2024)
+
+Based on recent production incidents, follow this **exact order** when debugging "data not showing":
+
+### 1. **Backend Logs First** 🚨 CRITICAL
+```bash
+# Check if API requests are reaching backend
+tail -f backend.log | grep "/api/endpoint"
+
+# If NO LOGS → Frontend bug (not calling API correctly)
+# If LOGS → Backend bug (API called but not working)
+```
+
+**This single check saves 50% of debugging time.**
+
+### 2. **Database Verification**
+```sql
+-- Verify data exists
+SELECT COUNT(*) FROM table_name WHERE status = 'pending';
+
+-- If 0 rows → Data problem
+-- If >0 rows → Integration problem
+```
+
+### 3. **API Wrapper Analysis**
+```typescript
+// Read API client implementation
+// Check:
+// - Does it add /api prefix?
+// - Does it unwrap response.data?
+// - What headers does it add?
+// - How does it handle errors?
+```
+
+### 4. **Frontend Response Handling**
+```typescript
+// Add temporary debug logging
+const response = await api.get('/endpoint')
+console.log('[DEBUG] Full response:', response)
+console.log('[DEBUG] response.data:', response.data)
+console.log('[DEBUG] Expected data:', response.items || response.data?.items)
+```
+
+### 5. **Skills Pattern Matching**
+- Check if issue matches known incidents
+- Apply fix templates if pattern matches
+- Document new patterns if not in skill
+
+### 6. **Component/Test Validation**
+```bash
+# If E2E test failing:
+# 1. Check test screenshots
+# 2. Read error-context.md for actual HTML
+# 3. Verify selectors match rendered elements
+# 4. Use role-based selectors for component libraries
+```
+
+**Estimated Debug Time by Following This Order:**
+- Double API prefix: 15 minutes
+- Response access pattern: 10 minutes
+- Component selector: 10 minutes
+- Database types: 20 minutes
+- Null safety: 15 minutes
+
+**Total saved vs. random debugging: 2-3 hours**
