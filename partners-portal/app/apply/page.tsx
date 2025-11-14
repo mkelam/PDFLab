@@ -137,7 +137,8 @@ export default function ApplyPage() {
     setErrorMessage('')
 
     try {
-      const response = await fetch('http://localhost:3006/api/partner-applications/submit', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+      const response = await fetch(`${apiUrl}/api/partner-applications/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
