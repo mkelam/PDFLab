@@ -3,6 +3,10 @@
 /.pnp
 .pnp.js
 
+# partner portal
+/partners-portal/node_modules
+/partners-portal/.next
+
 # testing
 /coverage
 

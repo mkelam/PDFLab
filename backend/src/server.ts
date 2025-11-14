@@ -70,6 +70,12 @@ import auditAdminRoutes from './routes/audit.admin.routes'
 import analyticsRoutes from './routes/analytics.routes'
 import profileRoutes from './routes/profile.routes'
 import testRoutes from './routes/test.routes'
+import partnerRoutes from './routes/partner.routes'
+// TEMPORARILY DISABLED - tsx watch cache issue - uncomment after manual restart
+// import partnerApplicationRoutes from './routes/partnerApplication.routes'
+
+// Import attribution middleware
+import { captureAttribution } from './middleware/attribution.middleware'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
@@ -111,9 +117,12 @@ app.use(helmet())
 // CORS configuration
 const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
   'http://localhost:3000',
+  'http://localhost:3001',  // Partner portal local dev
   'http://localhost:3002',
   'https://pdflab.pro',
-  'http://pdflab.pro'
+  'http://pdflab.pro',
+  'https://partners.pdflab.pro',  // Partner portal production
+  'http://partners.pdflab.pro'
 ]
 
 app.use(
@@ -151,6 +160,9 @@ app.use(cookieParser())
 
 // Guest session initialization (runs for all requests)
 app.use(initializeGuestSession)
+
+// Attribution tracking (captures referral links and UTM parameters)
+app.use(captureAttribution)
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
@@ -210,6 +222,9 @@ app.use('/api', feedbackRoutes)
 app.use('/api/onboarding', onboardingRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/profile', profileRoutes)
+app.use('/api/partners', partnerRoutes) // Influencer attribution tracking
+// TEMPORARILY DISABLED - tsx watch cache issue - uncomment after manual restart
+// app.use('/api/partner-applications', partnerApplicationRoutes) // Partner application system
 app.use('/api/admin', adminRoutes)
 app.use('/api/admin', conversionAdminRoutes)
 app.use('/api/admin/payments', paymentAdminRoutes)
