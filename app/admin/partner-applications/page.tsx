@@ -106,7 +106,9 @@ export default function PartnerApplicationsPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [formData, setFormData] = useState({
     rejection_reason: '',
-    admin_notes: ''
+    admin_notes: '',
+    tier: 'bronze',
+    commission_rate: '30.00'
   })
 
   useEffect(() => {
@@ -118,10 +120,14 @@ export default function PartnerApplicationsPage() {
   const fetchApplications = async () => {
     try {
       setLoading(true)
-      const response = await api.get(`/api/partner-applications?status=${filter}`)
-      setApplications(response.data.applications || [])
+      // FIX: api.get() already adds /api prefix, so don't include it in endpoint
+      const response = await api.get(`/partner-applications?status=${filter}`)
+      // FIX: API wrapper (lib/api.ts) already unwraps response.json()
+      // Backend returns { applications: [...] }, NOT { data: { applications: [...] } }
+      setApplications(response.applications || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
+      setApplications([]) // Ensure empty state on error
     } finally {
       setLoading(false)
     }
@@ -138,18 +144,23 @@ export default function PartnerApplicationsPage() {
 
       switch (action) {
         case 'approve':
-          endpoint = `/api/partner-applications/${selectedApp.id}/approve`
-          body = { admin_notes: formData.admin_notes }
+          // FIX: api.post() already adds /api prefix
+          endpoint = `/partner-applications/${selectedApp.id}/approve`
+          body = {
+            admin_notes: formData.admin_notes,
+            tier: formData.tier,
+            commission_rate: parseFloat(formData.commission_rate)
+          }
           break
         case 'reject':
-          endpoint = `/api/partner-applications/${selectedApp.id}/reject`
+          endpoint = `/partner-applications/${selectedApp.id}/reject`
           body = {
             rejection_reason: formData.rejection_reason,
             admin_notes: formData.admin_notes
           }
           break
         case 'flag':
-          endpoint = `/api/partner-applications/${selectedApp.id}/flag`
+          endpoint = `/partner-applications/${selectedApp.id}/flag`
           body = { admin_notes: formData.admin_notes }
           break
       }
@@ -162,7 +173,7 @@ export default function PartnerApplicationsPage() {
       // Close dialog
       setSelectedApp(null)
       setAction(null)
-      setFormData({ rejection_reason: '', admin_notes: '' })
+      setFormData({ rejection_reason: '', admin_notes: '', tier: 'bronze', commission_rate: '30.00' })
     } catch (error) {
       console.error('Error performing action:', error)
       alert('Failed to perform action. Please try again.')
@@ -401,7 +412,7 @@ export default function PartnerApplicationsPage() {
       <Dialog open={!!selectedApp && !!action} onOpenChange={() => {
         setSelectedApp(null)
         setAction(null)
-        setFormData({ rejection_reason: '', admin_notes: '' })
+        setFormData({ rejection_reason: '', admin_notes: '', tier: 'bronze', commission_rate: '30.00' })
       }}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -487,6 +498,44 @@ export default function PartnerApplicationsPage() {
 
               {/* Action Form */}
               <div className="space-y-4">
+                {action === 'approve' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="tier">Partner Tier</Label>
+                      <Select
+                        name="tier"
+                        value={formData.tier}
+                        onValueChange={(value) => setFormData({ ...formData, tier: value })}
+                      >
+                        <SelectTrigger id="tier">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bronze">Bronze (30% commission)</SelectItem>
+                          <SelectItem value="silver">Silver (35% commission)</SelectItem>
+                          <SelectItem value="gold">Gold (40% commission)</SelectItem>
+                          <SelectItem value="platinum">Platinum (50% commission)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="commission_rate">Commission Rate (%)</Label>
+                      <Input
+                        id="commission_rate"
+                        name="commission_rate"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={formData.commission_rate}
+                        onChange={(e) => setFormData({ ...formData, commission_rate: e.target.value })}
+                        placeholder="30.00"
+                      />
+                    </div>
+                  </>
+                )}
+
                 {action === 'reject' && (
                   <div className="space-y-2">
                     <Label htmlFor="rejection_reason">Rejection Reason (sent to applicant)</Label>
@@ -520,7 +569,7 @@ export default function PartnerApplicationsPage() {
               onClick={() => {
                 setSelectedApp(null)
                 setAction(null)
-                setFormData({ rejection_reason: '', admin_notes: '' })
+                setFormData({ rejection_reason: '', admin_notes: '', tier: 'bronze', commission_rate: '30.00' })
               }}
             >
               Cancel

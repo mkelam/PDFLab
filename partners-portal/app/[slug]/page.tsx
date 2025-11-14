@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Copy, Check, TrendingUp, Users, DollarSign, Zap, Award, ExternalLink, Calendar, Filter, Target, Calculator } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
+import { useRequirePartnerAuth } from '@/contexts/PartnerAuthContext'
 
 interface PartnerDashboardData {
   partner: {
@@ -98,6 +99,7 @@ interface ReferralsData {
 export default function PartnerDashboardPage() {
   const params = useParams()
   const slug = params?.slug as string
+  const { partner: authPartner, loading: authLoading } = useRequirePartnerAuth()
 
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<PartnerDashboardData | null>(null)
@@ -116,14 +118,20 @@ export default function PartnerDashboardPage() {
   const [customFollowerCount, setCustomFollowerCount] = useState<number | null>(null) // null = use actual count
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [slug])
+    // Only fetch data if authenticated and slug matches logged-in partner
+    if (!authLoading && authPartner && authPartner.slug === slug) {
+      fetchDashboardData()
+    } else if (!authLoading && authPartner && authPartner.slug !== slug) {
+      setError('You can only access your own dashboard')
+      setLoading(false)
+    }
+  }, [slug, authLoading, authPartner])
 
   useEffect(() => {
-    if (slug) {
+    if (slug && !authLoading && authPartner && authPartner.slug === slug) {
       fetchReferrals()
     }
-  }, [slug, currentPage, statusFilter])
+  }, [slug, currentPage, statusFilter, authLoading, authPartner])
 
   const fetchDashboardData = async () => {
     try {
@@ -269,17 +277,25 @@ export default function PartnerDashboardPage() {
     }
   }
 
-  if (loading) {
+  // Show loading while checking auth
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <Card className="glass-strong w-full max-w-md">
           <CardContent className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading your dashboard...</p>
+            <p className="text-muted-foreground">
+              {authLoading ? 'Checking authentication...' : 'Loading your dashboard...'}
+            </p>
           </CardContent>
         </Card>
       </div>
     )
+  }
+
+  // If not authenticated, show nothing (will be redirected by useRequirePartnerAuth)
+  if (!authPartner) {
+    return null
   }
 
   if (error || !data) {

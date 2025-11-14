@@ -120,6 +120,11 @@ const register = async (req, res) => {
                 // Don't fail registration if migration fails
             }
         }
+        // Send welcome email (non-blocking)
+        email_service_1.default.sendWelcomeEmail(user.email, user.name || undefined).catch((error) => {
+            console.error('Failed to send welcome email:', error);
+            // Don't fail registration if email fails
+        });
         // Generate tokens
         const accessToken = (0, auth_utils_1.generateAccessToken)({
             userId: user.id,

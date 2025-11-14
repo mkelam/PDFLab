@@ -8,8 +8,8 @@
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS `batch_jobs` (
-  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
-  `user_id` VARCHAR(36) NOT NULL,
+  `id` CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL PRIMARY KEY,
+  `user_id` CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `batch_name` VARCHAR(255) NOT NULL,
   `operation_type` ENUM('convert', 'compress', 'merge') NOT NULL,
   `total_files` INT NOT NULL DEFAULT 0,
@@ -62,7 +62,7 @@ SET @columnExists = (
 );
 
 SET @sql = IF(@columnExists = 0,
-  'ALTER TABLE `conversion_jobs` ADD COLUMN `batch_job_id` VARCHAR(36) NULL AFTER `user_id`',
+  'ALTER TABLE `conversion_jobs` ADD COLUMN `batch_job_id` CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL AFTER `user_id`',
   'SELECT "Column batch_job_id already exists" AS message'
 );
 

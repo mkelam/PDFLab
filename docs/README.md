@@ -1,8 +1,8 @@
 # PDFLab Documentation Index
 
-**Last Updated**: 2025-11-06
-**Project Version**: 1.0.0
-**Status**: Production Ready ✅
+**Last Updated**: 2025-11-12
+**Project Version**: 1.2.0 (Beta Launch)
+**Status**: Production ✅ (Live at https://pdflab.pro)
 
 ---
 
@@ -20,6 +20,8 @@
 ### 🌟 Master Guides (Start Here)
 
 - **[CLAUDE.md](../CLAUDE.md)** - Claude Code project instructions
+- **[COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md](../COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md)** - ⭐ Complete architecture review (11,000+ lines)
+- **[CODEBASE_REVIEW_SUMMARY.md](../CODEBASE_REVIEW_SUMMARY.md)** - ⭐ Executive summary of review
 - **[architecture.md](architecture.md)** - Complete system architecture
 - **[deployment/COMPLETE_DEPLOYMENT_GUIDE.md](deployment/COMPLETE_DEPLOYMENT_GUIDE.md)** - ⭐ Master deployment guide
 - **[deployment/ENVIRONMENT_SETUP.md](deployment/ENVIRONMENT_SETUP.md)** - ⭐ Environment configuration
@@ -72,6 +74,8 @@
 
 ### For Developers
 - [CLAUDE.md](../CLAUDE.md) - Start here for Claude Code guidance
+- [COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md](../COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md) - Complete architecture review
+- [CODEBASE_REVIEW_SUMMARY.md](../CODEBASE_REVIEW_SUMMARY.md) - Review executive summary
 - [FUNCTION_LEVEL_DOCUMENTATION.md](FUNCTION_LEVEL_DOCUMENTATION.md) - Complete function breakdown
 - [GLASSMORPHISM_DESIGN_SYSTEM.md](GLASSMORPHISM_DESIGN_SYSTEM.md) - UI design system
 - [architecture.md](architecture.md) - System design
@@ -125,12 +129,19 @@ docs/
 - ✅ Reduced documentation files by ~40%
 
 ### Project Updates
+- **2025-11-12**: Comprehensive codebase review completed
+- **2025-11-12**: Feedback system implemented
+- **2025-11-10**: Beta user system deployed (v1.2.0)
+- **2025-11-10**: Beta expiration timer added
+- **2025-11-09**: Batch processing feature implemented
+- **2025-11-08**: Sentry monitoring integrated
+- **2025-11-06**: PDF compression feature added
 - **2025-11-06**: Documentation consolidation complete
 - **2025-11-06**: Dual-currency system documented and verified
 - **2025-11-05**: VPS deployment completed
 - **2025-11-04**: Admin panel integration completed
 - **2025-11-03**: Error messaging improvements
-- **2025-10-30**: CloudConvert integration stabilized
+- **2025-10-30**: CloudConvert integration stabilized (enhanced OCR)
 - **2025-10-29**: PayFast payment gateway integrated
 
 ---

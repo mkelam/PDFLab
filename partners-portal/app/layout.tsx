@@ -1,11 +1,8 @@
-import type { Metadata } from "next"
+'use client'
+
 import "./globals.css"
 import PartnerNav from "@/components/PartnerNav"
-
-export const metadata: Metadata = {
-  title: "PDFLab Partners - Influencer Dashboard",
-  description: "Partner portal for PDFLab influencers and affiliates. Track your earnings, referrals, and commission tiers.",
-}
+import { PartnerAuthProvider } from "@/contexts/PartnerAuthContext"
 
 export default function RootLayout({
   children,
@@ -15,10 +12,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <PartnerNav />
-        <main className="relative z-10">
-          {children}
-        </main>
+        <PartnerAuthProvider>
+          <PartnerNav />
+          <main className="relative z-10">
+            {children}
+          </main>
+        </PartnerAuthProvider>
       </body>
     </html>
   )

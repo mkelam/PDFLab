@@ -1,0 +1,173 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile:
+#1 transferring dockerfile: 651B 0.0s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 2.7s
+
+#4 [internal] load .dockerignore
+#4 transferring context:
+#4 transferring context: 750B 0.0s done
+#4 DONE 0.2s
+
+#5 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#5 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.1s done
+#5 DONE 0.1s
+
+#6 [builder 2/6] WORKDIR /app
+#6 CACHED
+
+#7 [internal] load build context
+#7 transferring context: 44.62MB 4.9s
+#7 transferring context: 105.12MB 9.9s
+#7 transferring context: 149.87MB 13.4s done
+#7 DONE 13.6s
+
+#8 [builder 3/6] COPY package*.json ./
+#8 DONE 1.9s
+
+#9 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#9 4.148 npm warn config only Use `--omit=dev` to omit dev dependencies from the install.
+#9 228.9 
+#9 228.9 added 422 packages, and audited 423 packages in 4m
+#9 228.9 
+#9 228.9 56 packages are looking for funding
+#9 228.9   run `npm fund` for details
+#9 229.0 
+#9 229.0 1 critical severity vulnerability
+#9 229.0 
+#9 229.0 To address all issues, run:
+#9 229.0   npm audit fix --force
+#9 229.0 
+#9 229.0 Run `npm audit` for details.
+#9 229.0 npm notice
+#9 229.0 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+#9 229.0 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+#9 229.0 npm notice To update run: npm install -g npm@11.6.2
+#9 229.0 npm notice
+#9 229.4 npm warn using --force Recommended protections disabled.
+#9 DONE 230.8s
+
+#10 [builder 4/6] RUN npm ci
+#10 272.5 
+#10 272.5 added 457 packages, and audited 458 packages in 4m
+#10 272.5 
+#10 272.5 65 packages are looking for funding
+#10 272.5   run `npm fund` for details
+#10 272.6 
+#10 272.6 1 critical severity vulnerability
+#10 272.6 
+#10 272.6 To address all issues, run:
+#10 272.6   npm audit fix --force
+#10 272.6 
+#10 272.6 Run `npm audit` for details.
+#10 272.6 npm notice
+#10 272.6 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+#10 272.6 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+#10 272.6 npm notice To update run: npm install -g npm@11.6.2
+#10 272.6 npm notice
+#10 DONE 273.5s
+
+#11 [builder 5/6] COPY . .
+#11 DONE 2.2s
+
+#12 [builder 6/6] RUN npm run build
+#12 1.490 
+#12 1.490 > pdflab@0.1.0 build
+#12 1.490 > next build
+#12 1.490 
+#12 4.676 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#12 4.677 This information is used to shape Next.js' roadmap and prioritize features.
+#12 4.677 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#12 4.677 https://nextjs.org/telemetry
+#12 4.677 
+#12 5.029   ▲ Next.js 14.2.16
+#12 5.030 
+#12 5.490    Creating an optimized production build ...
+#12 53.94  ✓ Compiled successfully
+#12 53.95    Skipping validation of types
+#12 53.95    Skipping linting
+#12 54.47    Collecting page data ...
+#12 57.80    Generating static pages (0/28) ...
+#12 58.88    Generating static pages (7/28) 
+#12 59.25    Generating static pages (14/28) 
+#12 59.52    Generating static pages (21/28) 
+#12 59.61  ✓ Generating static pages (28/28)
+#12 60.82    Finalizing page optimization ...
+#12 60.82    Collecting build traces ...
+#12 107.2 
+#12 107.2 Route (app)                              Size     First Load JS
+#12 107.2 ┌ ○ /                                    16.7 kB         153 kB
+#12 107.2 ├ ○ /_not-found                          876 B          88.1 kB
+#12 107.2 ├ ○ /admin                               6.3 kB          112 kB
+#12 107.2 ├ ○ /admin/analytics                     4.65 kB         110 kB
+#12 107.2 ├ ○ /admin/audit-logs                    6.32 kB         112 kB
+#12 107.2 ├ ○ /admin/conversions                   7.34 kB         113 kB
+#12 107.2 ├ ○ /admin/payments                      7.15 kB         113 kB
+#12 107.2 ├ ○ /admin/payments/transactions         7.02 kB         113 kB
+#12 107.2 ├ ○ /admin/system                        4.74 kB         110 kB
+#12 107.2 ├ ○ /admin/users                         10.3 kB         116 kB
+#12 107.2 ├ ƒ /admin/users/[id]                    21.5 kB         137 kB
+#12 107.2 ├ ○ /batch-demo                          4.14 kB         123 kB
+#12 107.2 ├ ○ /dashboard                           5.54 kB         111 kB
+#12 107.2 ├ ○ /features                            4.07 kB         109 kB
+#12 107.2 ├ ○ /forgot-password                     5.37 kB         108 kB
+#12 107.2 ├ ○ /get-started                         9.89 kB         115 kB
+#12 107.2 ├ ○ /login                               2.25 kB         109 kB
+#12 107.2 ├ ○ /payment                             5.76 kB         108 kB
+#12 107.2 ├ ○ /payment/cancel                      2.85 kB         105 kB
+#12 107.2 ├ ○ /payment/success                     4.57 kB         107 kB
+#12 107.2 ├ ○ /pricing                             4.54 kB         109 kB
+#12 107.2 ├ ○ /privacy                             183 B          94.2 kB
+#12 107.2 ├ ○ /reset-password                      6.17 kB         108 kB
+#12 107.2 ├ ○ /security                            183 B          94.2 kB
+#12 107.2 ├ ○ /signup                              3.57 kB         111 kB
+#12 107.2 ├ ○ /terms                               183 B          94.2 kB
+#12 107.2 └ ○ /verify-email                        4.73 kB         107 kB
+#12 107.2 + First Load JS shared by all            87.2 kB
+#12 107.2   ├ chunks/2117-26d60029e272ef5d.js      31.6 kB
+#12 107.2   ├ chunks/fd9d1056-f6b114259b0a635c.js  53.6 kB
+#12 107.2   └ other shared chunks (total)          1.96 kB
+#12 107.2 
+#12 107.2 
+#12 107.2 ○  (Static)   prerendered as static content
+#12 107.2 ƒ  (Dynamic)  server-rendered on demand
+#12 107.2 
+#12 DONE 107.7s
+
+#13 [stage-1 5/7] COPY --from=builder /app/.next ./.next
+#13 DONE 2.4s
+
+#14 [stage-1 6/7] COPY --from=builder /app/public ./public
+#14 DONE 0.6s
+
+#15 [stage-1 7/7] COPY --from=builder /app/next.config.mjs ./
+#15 DONE 0.5s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 23.1s done
+#16 exporting manifest sha256:9ad9e5afc1078bd503687ea233cb2217dcb64e3c5ab86e15f8492cc533229969
+#16 exporting manifest sha256:9ad9e5afc1078bd503687ea233cb2217dcb64e3c5ab86e15f8492cc533229969 1.3s done
+#16 exporting config sha256:eab60a41c3bc542384321452d9b25a4321ac865b2dd2af430641f6626e568757
+#16 exporting config sha256:eab60a41c3bc542384321452d9b25a4321ac865b2dd2af430641f6626e568757 0.1s done
+#16 exporting attestation manifest sha256:ebe71b98f7806a88e5b7436722d57d94f13ef497d5046e553f802b83a3436084
+#16 exporting attestation manifest sha256:ebe71b98f7806a88e5b7436722d57d94f13ef497d5046e553f802b83a3436084 0.5s done
+#16 exporting manifest list sha256:8eae78dbcc83b00f48e0b9c0be3544daae5086f7367449d1f44ccb3e62755ae0
+#16 exporting manifest list sha256:8eae78dbcc83b00f48e0b9c0be3544daae5086f7367449d1f44ccb3e62755ae0 0.2s done
+#16 naming to docker.io/mkelam/pdflab-frontend:v1.1.2-ux
+#16 naming to docker.io/mkelam/pdflab-frontend:v1.1.2-ux 0.0s done
+#16 unpacking to docker.io/mkelam/pdflab-frontend:v1.1.2-ux
+#16 unpacking to docker.io/mkelam/pdflab-frontend:v1.1.2-ux 32.7s done
+#16 DONE 58.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/v9mk08lc5jsodr0nhn27dzlcf

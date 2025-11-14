@@ -15,6 +15,9 @@ export declare const PERMISSIONS: {
     readonly 'system.view': readonly [UserRole.ADMIN, UserRole.SUPER_ADMIN];
     readonly 'system.configure': readonly [UserRole.SUPER_ADMIN];
     readonly 'audit.view': readonly [UserRole.ADMIN, UserRole.SUPER_ADMIN];
+    readonly 'feedback.view': readonly [UserRole.SUPPORT, UserRole.ADMIN, UserRole.SUPER_ADMIN];
+    readonly 'feedback.manage': readonly [UserRole.SUPPORT, UserRole.ADMIN, UserRole.SUPER_ADMIN];
+    readonly 'feedback.delete': readonly [UserRole.ADMIN, UserRole.SUPER_ADMIN];
 };
 /**
  * Middleware to require any admin role (support, finance, admin, or super_admin)

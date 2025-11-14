@@ -281,6 +281,125 @@ The PDFLab Team
   }
 
   /**
+   * Send welcome email (without verification)
+   */
+  async sendWelcomeEmail(email: string, userName?: string): Promise<boolean> {
+    const html = this.getWelcomeEmailTemplate(userName)
+    const text = `
+Welcome to PDFLab${userName ? `, ${userName}` : ''}!
+
+Thank you for joining PDFLab - the professional PDF conversion platform.
+
+You now have access to:
+- Convert PDFs to DOCX, PPTX, XLSX, PNG
+- Compress PDFs to reduce file size
+- Merge multiple PDFs into one
+- Batch processing for multiple files
+- Fast, secure cloud processing
+
+Get started by logging in to your dashboard:
+${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/dashboard
+
+Need help? Visit our support page:
+${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support
+
+Best regards,
+The PDFLab Team
+    `.trim()
+
+    return await this.sendEmail({
+      to: email,
+      subject: 'Welcome to PDFLab!',
+      html,
+      text,
+    })
+  }
+
+  /**
+   * Send payment receipt email
+   */
+  async sendPaymentReceiptEmail(
+    email: string,
+    paymentDetails: {
+      plan: string
+      amount: string
+      currency: string
+      transactionId: string
+      billingDate: string
+      nextBillingDate: string
+    }
+  ): Promise<boolean> {
+    const html = this.getPaymentReceiptTemplate(paymentDetails)
+    const text = `
+Payment Receipt - PDFLab
+
+Thank you for your payment!
+
+Plan: ${paymentDetails.plan}
+Amount: ${paymentDetails.currency} ${paymentDetails.amount}
+Transaction ID: ${paymentDetails.transactionId}
+Billing Date: ${paymentDetails.billingDate}
+Next Billing Date: ${paymentDetails.nextBillingDate}
+
+Your subscription is now active. You can view your subscription details in your dashboard:
+${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/dashboard
+
+Questions? Contact us:
+${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support
+
+Best regards,
+The PDFLab Team
+    `.trim()
+
+    return await this.sendEmail({
+      to: email,
+      subject: `Payment Receipt - ${paymentDetails.plan} Plan`,
+      html,
+      text,
+    })
+  }
+
+  /**
+   * Send subscription cancellation email
+   */
+  async sendSubscriptionCancelledEmail(
+    email: string,
+    cancellationDetails: {
+      plan: string
+      cancellationDate: string
+      accessUntil: string
+    }
+  ): Promise<boolean> {
+    const html = this.getSubscriptionCancelledTemplate(cancellationDetails)
+    const text = `
+Subscription Cancelled - PDFLab
+
+Your ${cancellationDetails.plan} subscription has been cancelled.
+
+Cancellation Date: ${cancellationDetails.cancellationDate}
+Access Until: ${cancellationDetails.accessUntil}
+
+You will continue to have access to your plan benefits until ${cancellationDetails.accessUntil}.
+
+Changed your mind? You can reactivate your subscription anytime from your dashboard:
+${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/dashboard
+
+We're sad to see you go! If you have feedback on how we can improve, please let us know:
+${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support
+
+Best regards,
+The PDFLab Team
+    `.trim()
+
+    return await this.sendEmail({
+      to: email,
+      subject: 'Subscription Cancelled - PDFLab',
+      html,
+      text,
+    })
+  }
+
+  /**
    * Get email verification HTML template
    */
   private getVerificationEmailTemplate(verificationUrl: string): string {
@@ -420,6 +539,457 @@ The PDFLab Team
 
       <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee;">
         If you didn't create this account, you can safely ignore this email.
+      </p>
+    </div>
+    <div class="footer">
+      <p><strong>PDFLab</strong> - Professional PDF Conversion Platform</p>
+      <p>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}">Visit Website</a> •
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support">Support</a>
+      </p>
+      <p>© ${new Date().getFullYear()} PDFLab. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  /**
+   * Get welcome email HTML template
+   */
+  private getWelcomeEmailTemplate(userName?: string): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to PDFLab</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f7;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 30px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .header p {
+      margin: 10px 0 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 40px 30px;
+      color: #333333;
+    }
+    .content h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    .content p {
+      margin: 0 0 20px;
+      font-size: 16px;
+      color: #666666;
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 20px 0;
+      transition: transform 0.2s;
+    }
+    .features {
+      background-color: #f8f9fa;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .features ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .features li {
+      margin: 8px 0;
+      color: #555555;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 30px;
+      text-align: center;
+      color: #999999;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎉 Welcome to PDFLab!</h1>
+      <p>Your account is ready</p>
+    </div>
+    <div class="content">
+      <h2>Hi${userName ? ` ${userName}` : ''}!</h2>
+      <p>Thank you for joining PDFLab - the professional PDF conversion platform trusted by thousands of users worldwide.</p>
+
+      <div class="features">
+        <p><strong>You now have access to:</strong></p>
+        <ul>
+          <li>📄 Convert PDFs to DOCX, PPTX, XLSX, PNG</li>
+          <li>🗜️ Compress PDFs to reduce file size</li>
+          <li>🔀 Merge multiple PDFs into one</li>
+          <li>⚡ Batch processing for multiple files</li>
+          <li>🔒 Fast, secure cloud processing</li>
+        </ul>
+      </div>
+
+      <center>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/dashboard" class="button">Go to Dashboard</a>
+      </center>
+
+      <p style="margin-top: 30px;">Need help getting started? Check out our <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support" style="color: #667eea;">support page</a> or reply to this email.</p>
+    </div>
+    <div class="footer">
+      <p><strong>PDFLab</strong> - Professional PDF Conversion Platform</p>
+      <p>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}">Visit Website</a> •
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support">Support</a>
+      </p>
+      <p>© ${new Date().getFullYear()} PDFLab. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  /**
+   * Get payment receipt HTML template
+   */
+  private getPaymentReceiptTemplate(paymentDetails: {
+    plan: string
+    amount: string
+    currency: string
+    transactionId: string
+    billingDate: string
+    nextBillingDate: string
+  }): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Receipt</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f7;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      padding: 40px 30px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .header p {
+      margin: 10px 0 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 40px 30px;
+      color: #333333;
+    }
+    .content h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    .content p {
+      margin: 0 0 20px;
+      font-size: 16px;
+      color: #666666;
+    }
+    .receipt-details {
+      background-color: #f8f9fa;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border-left: 4px solid #10b981;
+    }
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .receipt-row:last-child {
+      border-bottom: none;
+      font-weight: 600;
+      font-size: 18px;
+      padding-top: 12px;
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 20px 0;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 30px;
+      text-align: center;
+      color: #999999;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✅ Payment Successful</h1>
+      <p>Thank you for your payment</p>
+    </div>
+    <div class="content">
+      <h2>Payment Receipt</h2>
+      <p>Your payment has been processed successfully. Here are your transaction details:</p>
+
+      <div class="receipt-details">
+        <div class="receipt-row">
+          <span>Plan:</span>
+          <span><strong>${paymentDetails.plan}</strong></span>
+        </div>
+        <div class="receipt-row">
+          <span>Transaction ID:</span>
+          <span style="font-family: monospace; font-size: 14px;">${paymentDetails.transactionId}</span>
+        </div>
+        <div class="receipt-row">
+          <span>Billing Date:</span>
+          <span>${paymentDetails.billingDate}</span>
+        </div>
+        <div class="receipt-row">
+          <span>Next Billing Date:</span>
+          <span>${paymentDetails.nextBillingDate}</span>
+        </div>
+        <div class="receipt-row">
+          <span>Amount Paid:</span>
+          <span>${paymentDetails.currency} ${paymentDetails.amount}</span>
+        </div>
+      </div>
+
+      <p>Your subscription is now active! You can view your subscription details and manage your account in your dashboard.</p>
+
+      <center>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/dashboard" class="button">View Dashboard</a>
+      </center>
+
+      <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee; font-size: 14px;">
+        Questions about your payment? Contact us at <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support" style="color: #667eea;">support</a>.
+      </p>
+    </div>
+    <div class="footer">
+      <p><strong>PDFLab</strong> - Professional PDF Conversion Platform</p>
+      <p>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}">Visit Website</a> •
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support">Support</a>
+      </p>
+      <p>© ${new Date().getFullYear()} PDFLab. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  /**
+   * Get subscription cancelled HTML template
+   */
+  private getSubscriptionCancelledTemplate(cancellationDetails: {
+    plan: string
+    cancellationDate: string
+    accessUntil: string
+  }): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Cancelled</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f7;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 30px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .header p {
+      margin: 10px 0 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 40px 30px;
+      color: #333333;
+    }
+    .content h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    .content p {
+      margin: 0 0 20px;
+      font-size: 16px;
+      color: #666666;
+    }
+    .info-box {
+      background-color: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .info-box p {
+      margin: 0;
+      font-size: 14px;
+      color: #555555;
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 20px 0;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 30px;
+      text-align: center;
+      color: #999999;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Subscription Cancelled</h1>
+      <p>We're sad to see you go</p>
+    </div>
+    <div class="content">
+      <h2>Your subscription has been cancelled</h2>
+      <p>Your <strong>${cancellationDetails.plan}</strong> subscription has been successfully cancelled.</p>
+
+      <div class="info-box">
+        <p><strong>Cancellation Date:</strong> ${cancellationDetails.cancellationDate}</p>
+        <p><strong>Access Until:</strong> ${cancellationDetails.accessUntil}</p>
+      </div>
+
+      <p>You will continue to have access to all ${cancellationDetails.plan} features until <strong>${cancellationDetails.accessUntil}</strong>. After that, your account will be downgraded to the Free plan.</p>
+
+      <p>Changed your mind? You can reactivate your subscription anytime from your dashboard.</p>
+
+      <center>
+        <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/dashboard" class="button">Go to Dashboard</a>
+      </center>
+
+      <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee;">
+        We'd love to hear your feedback! If there's anything we could have done better, please <a href="${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/support" style="color: #667eea;">let us know</a>.
       </p>
     </div>
     <div class="footer">

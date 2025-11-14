@@ -1,0 +1,1476 @@
+==========================================
+[0;34mPDFLab Onboarding System Deployment[0m
+[0;34mVersion: v1.3.0-onboarding[0m
+==========================================
+
+[1;33m[1/8] Building Backend Docker Image...[0m
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.18kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 2.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 487B 0.0s done
+#4 DONE 0.1s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/7] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#6 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 4.82kB 0.0s done
+#5 DONE 0.1s
+
+#7 [builder 6/7] COPY src ./src
+#7 CACHED
+
+#8 [builder 2/7] WORKDIR /app
+#8 CACHED
+
+#9 [stage-1 4/7] COPY package*.json ./
+#9 CACHED
+
+#10 [stage-1 5/7] RUN npm ci --omit=dev --ignore-scripts &&     npm rebuild bcrypt &&     npm cache clean --force
+#10 CACHED
+
+#11 [builder 3/7] COPY package*.json ./
+#11 CACHED
+
+#12 [builder 5/7] RUN npm ci --ignore-scripts
+#12 CACHED
+
+#13 [stage-1 6/7] COPY --from=builder /app/dist ./dist
+#13 CACHED
+
+#14 [stage-1 3/7] RUN apk add --no-cache python3 make g++
+#14 CACHED
+
+#15 [builder 7/7] RUN npm run build
+#15 CACHED
+
+#16 [builder 4/7] COPY tsconfig.json ./
+#16 CACHED
+
+#17 [stage-1 7/7] RUN mkdir -p storage/uploads storage/outputs logs
+#17 CACHED
+
+#18 exporting to image
+#18 exporting layers 0.0s done
+#18 exporting manifest sha256:e587b4a5aff2fe0d36587786e2d851d8b217b1eddddf0e445b6a2d017e6f13fd 0.0s done
+#18 exporting config sha256:eb3f06dba49c0d25772dd5c1846496c18b22f7301e8d15965c9e69091ccb71f9 0.0s done
+#18 exporting attestation manifest sha256:b97ff560ed7968ed572d4abff71a23a90686241cc63ffd0c80e2d58d1ca71a5c 0.1s done
+#18 exporting manifest list sha256:af88530392ce8b49e9f49f8af183771b28bcc8b2e287a6e31454409eb519dfeb
+#18 exporting manifest list sha256:af88530392ce8b49e9f49f8af183771b28bcc8b2e287a6e31454409eb519dfeb 0.1s done
+#18 naming to docker.io/mkelam/pdflab-backend:v1.3.0-onboarding 0.0s done
+#18 unpacking to docker.io/mkelam/pdflab-backend:v1.3.0-onboarding
+#18 unpacking to docker.io/mkelam/pdflab-backend:v1.3.0-onboarding 0.0s done
+#18 naming to docker.io/mkelam/pdflab-backend:latest 0.0s done
+#18 unpacking to docker.io/mkelam/pdflab-backend:latest 0.0s done
+#18 DONE 0.6s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/kofh9ubmdh4tjsnduy4dp7uph
+[0;32m✓ Backend image built successfully[0m
+[1;33m[2/8] Building Frontend Docker Image...[0m
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 651B 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 750B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#5 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 317.09kB 0.2s done
+#4 DONE 0.3s
+
+#6 [builder 2/6] WORKDIR /app
+#6 CACHED
+
+#7 [builder 3/6] COPY package*.json ./
+#7 DONE 0.2s
+
+#8 [builder 4/6] RUN npm ci
+#8 ...
+
+#9 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#9 1.218 npm warn config only Use `--omit=dev` to omit dev dependencies from the install.
+#9 ...
+
+#8 [builder 4/6] RUN npm ci
+#8 23.49 npm warn deprecated popper.js@1.16.1: You can find the new Popper v2 at @popperjs/core, this package is dedicated to the legacy v1
+#8 ...
+
+#9 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#9 25.01 npm warn deprecated popper.js@1.16.1: You can find the new Popper v2 at @popperjs/core, this package is dedicated to the legacy v1
+#9 ...
+
+#8 [builder 4/6] RUN npm ci
+#8 70.87 
+#8 70.87 added 473 packages, and audited 474 packages in 1m
+#8 70.87 
+#8 70.87 67 packages are looking for funding
+#8 70.87   run `npm fund` for details
+#8 71.02 
+#8 71.02 1 critical severity vulnerability
+#8 71.02 
+#8 71.02 To address all issues, run:
+#8 71.02   npm audit fix --force
+#8 71.02 
+#8 71.02 Run `npm audit` for details.
+#8 71.02 npm notice
+#8 71.02 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+#8 71.02 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+#8 71.02 npm notice To update run: npm install -g npm@11.6.2
+#8 71.02 npm notice
+#8 DONE 72.4s
+
+#9 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#9 71.16 
+#9 71.16 added 438 packages, and audited 439 packages in 1m
+#9 71.16 
+#9 71.16 58 packages are looking for funding
+#9 71.16   run `npm fund` for details
+#9 71.34 
+#9 71.34 1 critical severity vulnerability
+#9 71.34 
+#9 71.34 To address all issues, run:
+#9 71.34   npm audit fix --force
+#9 71.34 
+#9 71.34 Run `npm audit` for details.
+#9 71.34 npm notice
+#9 71.34 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+#9 71.34 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+#9 71.34 npm notice To update run: npm install -g npm@11.6.2
+#9 71.34 npm notice
+#9 72.15 npm warn using --force Recommended protections disabled.
+#9 DONE 74.4s
+
+#10 [builder 5/6] COPY . .
+#10 DONE 4.6s
+
+#11 [builder 6/6] RUN npm run build
+#11 1.664 
+#11 1.664 > pdflab@0.1.0 build
+#11 1.664 > next build
+#11 1.664 
+#11 5.006 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#11 5.008 This information is used to shape Next.js' roadmap and prioritize features.
+#11 5.008 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#11 5.008 https://nextjs.org/telemetry
+#11 5.009 
+#11 5.223   ▲ Next.js 14.2.16
+#11 5.224 
+#11 5.440    Creating an optimized production build ...
+#11 53.45  ✓ Compiled successfully
+#11 53.45    Skipping validation of types
+#11 53.45    Skipping linting
+#11 54.16    Collecting page data ...
+#11 57.28    Generating static pages (0/32) ...
+#11 58.20    Generating static pages (8/32) 
+#11 58.46    Generating static pages (16/32) 
+#11 58.76    Generating static pages (24/32) 
+#11 58.84  ✓ Generating static pages (32/32)
+#11 59.68    Finalizing page optimization ...
+#11 59.68    Collecting build traces ...
+#11 105.9 
+#11 105.9 Route (app)                              Size     First Load JS
+#11 105.9 ┌ ○ /                                    47 kB           185 kB
+#11 105.9 ├ ○ /_not-found                          876 B          88.1 kB
+#11 105.9 ├ ○ /admin                               6.51 kB         112 kB
+#11 105.9 ├ ○ /admin/analytics                     4.87 kB         111 kB
+#11 105.9 ├ ○ /admin/audit-logs                    6.54 kB         112 kB
+#11 105.9 ├ ○ /admin/beta                          6.74 kB         121 kB
+#11 105.9 ├ ○ /admin/beta-users                    2.57 kB         117 kB
+#11 105.9 ├ ○ /admin/conversions                   7.55 kB         113 kB
+#11 105.9 ├ ○ /admin/feedback                      7.28 kB         113 kB
+#11 105.9 ├ ○ /admin/payments                      7.36 kB         113 kB
+#11 105.9 ├ ○ /admin/payments/transactions         7.24 kB         113 kB
+#11 105.9 ├ ○ /admin/system                        4.95 kB         111 kB
+#11 105.9 ├ ○ /admin/users                         2.98 kB         118 kB
+#11 105.9 ├ ƒ /admin/users/[id]                    22.9 kB         137 kB
+#11 105.9 ├ ○ /batch-demo                          6.6 kB          124 kB
+#11 105.9 ├ ○ /beta                                7.5 kB          121 kB
+#11 105.9 ├ ○ /dashboard                           12.1 kB         133 kB
+#11 105.9 ├ ○ /features                            4.33 kB         110 kB
+#11 105.9 ├ ○ /forgot-password                     5.37 kB         108 kB
+#11 105.9 ├ ○ /get-started                         9.47 kB         115 kB
+#11 105.9 ├ ○ /login                               2.25 kB         109 kB
+#11 105.9 ├ ○ /payment                             5.97 kB         108 kB
+#11 105.9 ├ ○ /payment/cancel                      2.86 kB         105 kB
+#11 105.9 ├ ○ /payment/success                     4.77 kB         107 kB
+#11 105.9 ├ ○ /pricing                             4.54 kB         110 kB
+#11 105.9 ├ ○ /privacy                             183 B          94.2 kB
+#11 105.9 ├ ○ /reset-password                      6.17 kB         108 kB
+#11 105.9 ├ ○ /security                            183 B          94.2 kB
+#11 105.9 ├ ○ /signup                              3.57 kB         111 kB
+#11 105.9 ├ ○ /terms                               183 B          94.2 kB
+#11 105.9 └ ○ /verify-email                        4.73 kB         107 kB
+#11 105.9 + First Load JS shared by all            87.2 kB
+#11 105.9   ├ chunks/2117-04435a4e4d331f70.js      31.6 kB
+#11 105.9   ├ chunks/fd9d1056-f6b114259b0a635c.js  53.6 kB
+#11 105.9   └ other shared chunks (total)          1.96 kB
+#11 105.9 
+#11 105.9 
+#11 105.9 ○  (Static)   prerendered as static content
+#11 105.9 ƒ  (Dynamic)  server-rendered on demand
+#11 105.9 
+#11 DONE 106.6s
+
+#12 [stage-1 5/7] COPY --from=builder /app/.next ./.next
+#12 DONE 4.0s
+
+#13 [stage-1 6/7] COPY --from=builder /app/public ./public
+#13 DONE 0.6s
+
+#14 [stage-1 7/7] COPY --from=builder /app/next.config.mjs ./
+#14 DONE 0.5s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 76.2s done
+#15 exporting manifest sha256:8cb9c351eca7f3a99dd0f9869bb34de7d2781b451dd4634caa9df53f5ee61a00 0.1s done
+#15 exporting config sha256:599ec6f495d87a15ec1c9b6415e055ccbf5bd648a0140949d7cc0031b9fad842
+#15 exporting config sha256:599ec6f495d87a15ec1c9b6415e055ccbf5bd648a0140949d7cc0031b9fad842 0.1s done
+#15 exporting attestation manifest sha256:f9172c403d1a0b38f64431a9fc92f73888c9cc2283c51122da2782d63e7c7f59
+#15 exporting attestation manifest sha256:f9172c403d1a0b38f64431a9fc92f73888c9cc2283c51122da2782d63e7c7f59 0.3s done
+#15 exporting manifest list sha256:bca71e8a16fb7880dc5a49cae4aa805ea8cd4f76f6f173dc82aad00e6727f046
+#15 exporting manifest list sha256:bca71e8a16fb7880dc5a49cae4aa805ea8cd4f76f6f173dc82aad00e6727f046 0.1s done
+#15 naming to docker.io/mkelam/pdflab-frontend:v1.3.0-onboarding 0.0s done
+#15 unpacking to docker.io/mkelam/pdflab-frontend:v1.3.0-onboarding
+#15 unpacking to docker.io/mkelam/pdflab-frontend:v1.3.0-onboarding 34.8s done
+#15 naming to docker.io/mkelam/pdflab-frontend:latest 0.0s done
+#15 unpacking to docker.io/mkelam/pdflab-frontend:latest
+#15 unpacking to docker.io/mkelam/pdflab-frontend:latest 0.1s done
+#15 DONE 112.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/dmll3wy7aponn60so901gdxoa
+[0;32m✓ Frontend image built successfully[0m
+[1;33m[3/8] Pushing images to Docker Hub...[0m
+The push refers to repository [docker.io/mkelam/pdflab-backend]
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+33d7d6a05373: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+2d35ebdb57d9: Layer already exists
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Layer already exists
+f9f1e8e476f5: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Waiting
+e695f00f9a25: Waiting
+f9f1e8e476f5: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+e695f00f9a25: Layer already exists
+f9f1e8e476f5: Layer already exists
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+33d7d6a05373: Waiting
+dd88c8e14262: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+33d7d6a05373: Layer already exists
+dd88c8e14262: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+da04d522c98f: Layer already exists
+60e45a9660cf: Layer already exists
+e74e4ed823e9: Layer already exists
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+dd88c8e14262: Waiting
+dd88c8e14262: Waiting
+97c353b28a7d: Waiting
+55e1616960e7: Waiting
+55e1616960e7: Waiting
+97c353b28a7d: Pushed
+55e1616960e7: Pushed
+dd88c8e14262: Pushed
+v1.3.0-onboarding: digest: sha256:af88530392ce8b49e9f49f8af183771b28bcc8b2e287a6e31454409eb519dfeb size: 856
+The push refers to repository [docker.io/mkelam/pdflab-backend]
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Layer already exists
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Layer already exists
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+2d35ebdb57d9: Layer already exists
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Waiting
+98daa7235ba1: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Waiting
+33d7d6a05373: Waiting
+97c353b28a7d: Waiting
+e695f00f9a25: Waiting
+33d7d6a05373: Waiting
+97c353b28a7d: Already exists
+e695f00f9a25: Waiting
+55e1616960e7: Waiting
+f9f1e8e476f5: Layer already exists
+98daa7235ba1: Waiting
+da04d522c98f: Waiting
+dd88c8e14262: Layer already exists
+da04d522c98f: Layer already exists
+33d7d6a05373: Layer already exists
+e695f00f9a25: Layer already exists
+55e1616960e7: Layer already exists
+98daa7235ba1: Layer already exists
+latest: digest: sha256:af88530392ce8b49e9f49f8af183771b28bcc8b2e287a6e31454409eb519dfeb size: 856
+The push refers to repository [docker.io/mkelam/pdflab-frontend]
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+e74e4ed823e9: Layer already exists
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+da04d522c98f: Layer already exists
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+60e45a9660cf: Waiting
+2d35ebdb57d9: Waiting
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+60e45a9660cf: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+2d35ebdb57d9: Layer already exists
+98daa7235ba1: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+60e45a9660cf: Layer already exists
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+98daa7235ba1: Layer already exists
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+5e293b8a459a: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+61ea25b14484: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+318cfe37b6df: Waiting
+bf6b725009f4: Pushed
+4a09cdfe783b: Pushed
+318cfe37b6df: Pushed
+dc5b1f7b1d5b: Pushed
+5e293b8a459a: Pushed
+61ea25b14484: Pushed
+v1.3.0-onboarding: digest: sha256:bca71e8a16fb7880dc5a49cae4aa805ea8cd4f76f6f173dc82aad00e6727f046 size: 856
+The push refers to repository [docker.io/mkelam/pdflab-frontend]
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Waiting
+5e293b8a459a: Waiting
+2d35ebdb57d9: Waiting
+60e45a9660cf: Layer already exists
+5e293b8a459a: Layer already exists
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+2d35ebdb57d9: Layer already exists
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+da04d522c98f: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+98daa7235ba1: Waiting
+e74e4ed823e9: Waiting
+318cfe37b6df: Waiting
+dc5b1f7b1d5b: Waiting
+4a09cdfe783b: Waiting
+bf6b725009f4: Waiting
+61ea25b14484: Waiting
+da04d522c98f: Waiting
+318cfe37b6df: Layer already exists
+dc5b1f7b1d5b: Layer already exists
+4a09cdfe783b: Already exists
+bf6b725009f4: Layer already exists
+61ea25b14484: Layer already exists
+da04d522c98f: Layer already exists
+98daa7235ba1: Layer already exists
+e74e4ed823e9: Layer already exists
+latest: digest: sha256:bca71e8a16fb7880dc5a49cae4aa805ea8cd4f76f6f173dc82aad00e6727f046 size: 856
+[0;32m✓ Images pushed to Docker Hub[0m
+[1;33m[4/8] Connecting to VPS and pulling images...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 24.04.3 LTS (GNU/Linux 6.8.0-87-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Thu Nov 13 13:47:37 UTC 2025
+
+  System load:  0.23               Processes:             132
+  Usage of /:   26.5% of 95.82GB   Users logged in:       0
+  Memory usage: 58%                IPv4 address for eth0: 141.136.44.168
+  Swap usage:   0%                 IPv6 address for eth0: 2a02:4780:c:85ab::1
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+10 updates can be applied immediately.
+3 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+Pulling latest images...
+latest: Pulling from mkelam/pdflab-backend
+2d35ebdb57d9: Already exists
+60e45a9660cf: Already exists
+e74e4ed823e9: Already exists
+da04d522c98f: Already exists
+98daa7235ba1: Already exists
+33d7d6a05373: Already exists
+e695f00f9a25: Already exists
+f9f1e8e476f5: Already exists
+dd88c8e14262: Pulling fs layer
+55e1616960e7: Pulling fs layer
+dd88c8e14262: Verifying Checksum
+dd88c8e14262: Download complete
+55e1616960e7: Verifying Checksum
+55e1616960e7: Download complete
+dd88c8e14262: Pull complete
+55e1616960e7: Pull complete
+Digest: sha256:af88530392ce8b49e9f49f8af183771b28bcc8b2e287a6e31454409eb519dfeb
+Status: Downloaded newer image for mkelam/pdflab-backend:latest
+docker.io/mkelam/pdflab-backend:latest
+latest: Pulling from mkelam/pdflab-frontend
+2d35ebdb57d9: Already exists
+60e45a9660cf: Already exists
+e74e4ed823e9: Already exists
+da04d522c98f: Already exists
+98daa7235ba1: Already exists
+318cfe37b6df: Pulling fs layer
+61ea25b14484: Pulling fs layer
+5e293b8a459a: Pulling fs layer
+dc5b1f7b1d5b: Pulling fs layer
+bf6b725009f4: Pulling fs layer
+dc5b1f7b1d5b: Waiting
+bf6b725009f4: Waiting
+318cfe37b6df: Verifying Checksum
+318cfe37b6df: Download complete
+318cfe37b6df: Pull complete
+5e293b8a459a: Verifying Checksum
+5e293b8a459a: Download complete
+dc5b1f7b1d5b: Verifying Checksum
+dc5b1f7b1d5b: Download complete
+bf6b725009f4: Verifying Checksum
+bf6b725009f4: Download complete
+61ea25b14484: Verifying Checksum
+61ea25b14484: Download complete
+61ea25b14484: Pull complete
+5e293b8a459a: Pull complete
+dc5b1f7b1d5b: Pull complete
+bf6b725009f4: Pull complete
+Digest: sha256:bca71e8a16fb7880dc5a49cae4aa805ea8cd4f76f6f173dc82aad00e6727f046
+Status: Downloaded newer image for mkelam/pdflab-frontend:latest
+docker.io/mkelam/pdflab-frontend:latest
+✓ Images pulled
+[0;32m✓ Images pulled on VPS[0m
+[1;33m[5/8] Running database migration (005_onboarding_system.sql)...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 24.04.3 LTS (GNU/Linux 6.8.0-87-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Thu Nov 13 13:48:46 UTC 2025
+
+  System load:  1.2                Processes:             132
+  Usage of /:   27.3% of 95.82GB   Users logged in:       0
+  Memory usage: 59%                IPv4 address for eth0: 141.136.44.168
+  Swap usage:   0%                 IPv6 address for eth0: 2a02:4780:c:85ab::1
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+10 updates can be applied immediately.
+3 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+Running onboarding migration...
+Migration may have already run
+-bash: line 3: /tmp/005_onboarding_system.sql: No such file or directory
+✓ Migration executed
+[0;32m✓ Database migration complete[0m
+[1;33m[6/8] Copying migration file to VPS...[0m
+scp: dest open "/var/pdflab/app/migrations/": Failure
+scp: failed to upload file backend/src/migrations/005_onboarding_system.sql to /var/pdflab/app/migrations/

@@ -70,8 +70,13 @@ const initializeConversionWorker = () => {
             // 3. Call CloudConvert service
             console.log(`[Conversion Worker] Starting CloudConvert for job ${job_id}`);
             let result;
+            // Check if this is a compression job
+            if (conversion_type === 'pdf_compress' && input_file) {
+                console.log(`[Conversion Worker] Compressing PDF file with level: ${options?.compression_level || 'recommended'}`);
+                result = await cloudconvert_service_1.cloudConvertService.compressPDF(input_file, outputFile, options?.compression_level || 'recommended');
+            }
             // Check if this is a merge job (multiple input files)
-            if (job.data.input_files && job.data.input_files.length > 0) {
+            else if (job.data.input_files && job.data.input_files.length > 0) {
                 console.log(`[Conversion Worker] Merging ${job.data.input_files.length} PDF files`);
                 result = await cloudconvert_service_1.cloudConvertService.mergePDFs(job.data.input_files, outputFile);
             }

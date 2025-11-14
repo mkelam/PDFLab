@@ -7,11 +7,21 @@ import { useAuth } from '@/contexts/AuthContext'
  * Redirects to login if not authenticated
  * Optionally checks for specific roles
  */
-export function useRequireAuth(allowedRoles?: string[]) {
+export function useRequireAuth(options?: string[] | { requiredRole?: string }) {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
+
+  // Support both old API (array) and new API (object with requiredRole)
+  const allowedRoles = Array.isArray(options)
+    ? options
+    : options?.requiredRole
+      ? [options.requiredRole, 'super_admin'] // Always allow super_admin
+      : undefined
 
   useEffect(() => {
+    // Wait for auth to load before redirecting
+    if (isLoading) return
+
     // Not authenticated - redirect to login
     if (!user) {
       router.push('/login?redirect=/admin')
@@ -26,7 +36,7 @@ export function useRequireAuth(allowedRoles?: string[]) {
         return
       }
     }
-  }, [user, router, allowedRoles])
+  }, [user, isLoading, router, allowedRoles])
 
-  return { user }
+  return { user, loading: isLoading }
 }

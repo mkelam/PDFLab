@@ -38,30 +38,38 @@ class CloudConvertService {
                 input_format: inputFormat,
                 output_format: outputFormat
             };
-            // Format-specific options with enhanced OCR
+            // Format-specific options with enhanced OCR for maximum text editability
             if (outputFormat === 'pptx') {
                 taskConfig.pages = conversionOptions.pages || 'all';
-                taskConfig.layout_preserving = true;
-                // Enhanced OCR configuration
-                taskConfig.ocr = true; // Always enable OCR
-                taskConfig.ocr_lang = 'eng'; // English language (can be made configurable)
-                taskConfig.ocr_mode = 'auto'; // Auto-detect if OCR is needed
-                // Disable watermark/footer additions
+                // CRITICAL: Enable OCR to extract text from PDFs (makes text editable)
+                taskConfig.ocr = true; // Extract text from images/scanned PDFs
+                taskConfig.ocr_lang = 'eng'; // English language detection
+                taskConfig.ocr_mode = 'force'; // Force OCR even if PDF has embedded text (ensures editability)
+                // Layout and formatting preservation
+                taskConfig.layout_preserving = true; // Maintain original layout
+                taskConfig.extract_text = true; // Extract embedded text from PDF
+                taskConfig.image_quality = 'high'; // High quality for better text recognition
+                // Disable watermarks
                 taskConfig.watermark = false;
                 taskConfig.no_watermark = true;
             }
             else if (outputFormat === 'docx') {
-                // Enhanced OCR configuration for DOCX
-                taskConfig.ocr = true;
-                taskConfig.ocr_lang = 'eng';
-                taskConfig.ocr_mode = 'auto';
+                // Enhanced OCR configuration for DOCX - Focus on editable text
                 taskConfig.pages = conversionOptions.pages || 'all';
+                taskConfig.ocr = true; // Extract text from images/scanned PDFs
+                taskConfig.ocr_lang = 'eng'; // English language detection
+                taskConfig.ocr_mode = 'force'; // Force OCR for maximum text extraction
+                taskConfig.extract_text = true; // Extract embedded text from PDF
+                taskConfig.image_quality = 'high'; // High quality for better text recognition
+                taskConfig.layout_preserving = true; // Maintain formatting where possible
             }
             else if (outputFormat === 'xlsx') {
-                // Enhanced OCR configuration for XLSX
-                taskConfig.ocr = true;
-                taskConfig.ocr_lang = 'eng';
-                taskConfig.auto_detect_tables = true;
+                // Enhanced OCR configuration for XLSX - Focus on tables
+                taskConfig.ocr = true; // Extract text from images/scanned PDFs
+                taskConfig.ocr_lang = 'eng'; // English language detection
+                taskConfig.ocr_mode = 'force'; // Force OCR for maximum text extraction
+                taskConfig.auto_detect_tables = true; // Automatically detect table structures
+                taskConfig.extract_text = true; // Extract embedded text
             }
             else if (outputFormat === 'png' || outputFormat === 'jpg') {
                 taskConfig.pages = conversionOptions.pages || 'all';
@@ -306,6 +314,124 @@ class CloudConvertService {
             return {
                 success: false,
                 error: error.message || 'Unknown error during PDF merge'
+            };
+        }
+    }
+    /**
+     * Map user-friendly compression levels to CloudConvert API profiles
+     * @param level User-friendly compression level
+     * @returns CloudConvert API profile value
+     */
+    mapCompressionLevel(level) {
+        const mapping = {
+            'good': 'print', // Best quality, moderate compression (~20-30% reduction)
+            'recommended': 'web', // Balanced quality & file size (~40-60% reduction)
+            'extreme': 'max' // Maximum compression, lower quality (~60-80% reduction)
+        };
+        return mapping[level];
+    }
+    /**
+     * Compress PDF file to reduce file size
+     *
+     * Compression Levels:
+     * - 'good': Best quality, moderate compression (~20-30% reduction) - Uses CloudConvert 'print' profile
+     * - 'recommended': Balanced quality & file size (~40-60% reduction) - Uses CloudConvert 'web' profile
+     * - 'extreme': Maximum compression, lower quality (~60-80% reduction) - Uses CloudConvert 'max' profile
+     */
+    async compressPDF(inputFilePath, outputFilePath, compressionLevel = 'recommended') {
+        try {
+            // Validate input file
+            if (!fs_1.default.existsSync(inputFilePath)) {
+                throw new Error(`Input file not found: ${inputFilePath}`);
+            }
+            // Get original file size
+            const originalSize = fs_1.default.statSync(inputFilePath).size;
+            // Ensure output directory exists
+            const outputDir = path_1.default.dirname(outputFilePath);
+            if (!fs_1.default.existsSync(outputDir)) {
+                fs_1.default.mkdirSync(outputDir, { recursive: true });
+            }
+            // Map user-friendly compression level to CloudConvert profile
+            const cloudConvertProfile = this.mapCompressionLevel(compressionLevel);
+            // Create CloudConvert job with optimize task
+            let job = await cloudConvertClient.jobs.create({
+                tasks: {
+                    'upload-file': {
+                        operation: 'import/upload'
+                    },
+                    'optimize-pdf': {
+                        operation: 'optimize',
+                        input: 'upload-file',
+                        input_format: 'pdf',
+                        output_format: 'pdf',
+                        profile: cloudConvertProfile // CloudConvert API profile: 'print', 'web', or 'max'
+                    },
+                    'export-file': {
+                        operation: 'export/url',
+                        input: 'optimize-pdf'
+                    }
+                }
+            });
+            console.log(`CloudConvert compression job created: ${job.id}`);
+            // Upload the input file
+            const uploadTask = job.tasks.find(task => task.name === 'upload-file');
+            if (!uploadTask) {
+                throw new Error('Upload task not found in job');
+            }
+            const inputStream = fs_1.default.createReadStream(inputFilePath);
+            await cloudConvertClient.tasks.upload(uploadTask, inputStream);
+            console.log(`File uploaded to CloudConvert for compression: ${inputFilePath}`);
+            // Wait for job completion
+            job = await cloudConvertClient.jobs.wait(job.id);
+            console.log(`CloudConvert compression job completed: ${job.id}`);
+            // Download the compressed file
+            const exportTask = job.tasks.find(task => task.name === 'export-file');
+            if (!exportTask || !exportTask.result?.files?.[0]) {
+                throw new Error('Export task or result not found');
+            }
+            const file = exportTask.result.files[0];
+            const fileUrl = file.url;
+            if (!fileUrl) {
+                throw new Error('File URL not found in export result');
+            }
+            // Download compressed file
+            await new Promise((resolve, reject) => {
+                const protocol = fileUrl.startsWith('https:') ? https_1.default : http_1.default;
+                const writeStream = fs_1.default.createWriteStream(outputFilePath);
+                protocol.get(fileUrl, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`Download failed with status ${response.statusCode}`));
+                        return;
+                    }
+                    response.pipe(writeStream);
+                    writeStream.on('finish', () => {
+                        writeStream.close();
+                        resolve();
+                    });
+                    writeStream.on('error', (err) => {
+                        fs_1.default.unlink(outputFilePath, () => { });
+                        reject(err);
+                    });
+                }).on('error', reject);
+            });
+            console.log(`Compressed PDF downloaded: ${outputFilePath}`);
+            // Calculate compression stats
+            const compressedSize = fs_1.default.statSync(outputFilePath).size;
+            const compressionRatio = Math.round((1 - compressedSize / originalSize) * 100);
+            return {
+                success: true,
+                outputPath: outputFilePath,
+                jobId: job.id,
+                originalSize,
+                compressedSize,
+                compressionRatio
+            };
+        }
+        catch (error) {
+            console.error('CloudConvert compression error:', error);
+            return {
+                success: false,
+                error: error.message || 'Unknown error during PDF compression'
             };
         }
     }

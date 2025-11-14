@@ -27,5 +27,6 @@ export declare const requirePlan: (...requiredPlans: string[]) => (req: Request,
  * Optional auth - doesn't fail if no token, just doesn't set user
  */
 export declare const optionalAuth: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const requireAuth: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 export declare const optionalAuthMiddleware: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=auth.middleware.d.ts.map

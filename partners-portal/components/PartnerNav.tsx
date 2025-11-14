@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, TrendingUp, Home, LogOut } from 'lucide-react'
+import { Menu, X, TrendingUp, Home, LogOut, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { usePartnerAuth } from '@/contexts/PartnerAuthContext'
 
 export default function PartnerNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { partner, logout } = usePartnerAuth()
 
   return (
     <nav className="glass-nav sticky top-0 z-50 backdrop-blur-sm">
@@ -30,12 +32,22 @@ export default function PartnerNav() {
               <Home className="w-4 h-4" />
               Home
             </Link>
-            <Link
-              href="/apply"
-              className="text-foreground hover:text-primary transition-colors font-semibold"
-            >
-              Apply Now
-            </Link>
+            {!partner && (
+              <Link
+                href="/apply"
+                className="text-foreground hover:text-primary transition-colors font-semibold"
+              >
+                Apply Now
+              </Link>
+            )}
+            {partner && (
+              <Link
+                href={`/${partner.slug}`}
+                className="text-foreground hover:text-primary transition-colors font-semibold"
+              >
+                Dashboard
+              </Link>
+            )}
             <Link
               href="https://pdflab.pro"
               target="_blank"
@@ -50,6 +62,28 @@ export default function PartnerNav() {
             >
               Pricing
             </Link>
+            {partner ? (
+              <Button
+                onClick={logout}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Partner Login
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -71,13 +105,24 @@ export default function PartnerNav() {
             >
               Home
             </Link>
-            <Link
-              href="/apply"
-              className="block text-foreground hover:text-primary transition-colors font-semibold"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Apply Now
-            </Link>
+            {!partner && (
+              <Link
+                href="/apply"
+                className="block text-foreground hover:text-primary transition-colors font-semibold"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Apply Now
+              </Link>
+            )}
+            {partner && (
+              <Link
+                href={`/${partner.slug}`}
+                className="block text-foreground hover:text-primary transition-colors font-semibold"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+            )}
             <Link
               href="https://pdflab.pro"
               target="_blank"
@@ -94,6 +139,31 @@ export default function PartnerNav() {
             >
               Pricing
             </Link>
+            {partner ? (
+              <Button
+                onClick={() => {
+                  logout()
+                  setMobileMenuOpen(false)
+                }}
+                variant="outline"
+                size="sm"
+                className="w-full flex items-center gap-2 justify-center"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            ) : (
+              <Link href="/login" className="block" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full flex items-center gap-2 justify-center"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Partner Login
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </div>

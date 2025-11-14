@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import PartnerApplication from '../models/PartnerApplication'
 import { Partner } from '../models/Partner'
 import User from '../models/User'
-import { sendEmail } from '../services/email.service'
+import emailService from '../services/email.service'
 import { generateSlug, generateReferralCode } from '../utils/partner.utils'
 
 /**
@@ -196,7 +196,7 @@ export const submitApplication = async (req: Request, res: Response) => {
 
     // Send email notification
     if (autoReject.reject) {
-      await sendEmail({
+      await emailService.sendEmail({
         to: email,
         subject: 'PDFLab Partner Application - Update',
         html: `
@@ -216,7 +216,7 @@ export const submitApplication = async (req: Request, res: Response) => {
     }
 
     // Successful submission
-    await sendEmail({
+    await emailService.sendEmail({
       to: email,
       subject: 'PDFLab Partner Application Received 🎉',
       html: `
@@ -351,7 +351,7 @@ export const approveApplication = async (req: Request, res: Response) => {
     await application.save()
 
     // Send approval email with welcome kit
-    await sendEmail({
+    await emailService.sendEmail({
       to: application.email,
       subject: 'Welcome to PDFLab Partners! 🎉',
       html: `
@@ -439,7 +439,7 @@ export const rejectApplication = async (req: Request, res: Response) => {
     await application.save()
 
     // Send rejection email (polite version)
-    await sendEmail({
+    await emailService.sendEmail({
       to: application.email,
       subject: 'PDFLab Partner Application - Update',
       html: `

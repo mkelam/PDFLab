@@ -36,13 +36,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// IMPORTANT: Sentry must be imported FIRST, before any other imports
+const Sentry = __importStar(require("@sentry/node"));
+const dotenv_1 = __importDefault(require("dotenv"));
+// Load environment variables FIRST (needed for Sentry DSN)
+dotenv_1.default.config();
+// Initialize Sentry (only if DSN is configured)
+if (process.env.SENTRY_DSN) {
+    Sentry.init({
+        dsn: process.env.SENTRY_DSN,
+        tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+        environment: process.env.NODE_ENV || 'development',
+        beforeSend(event) {
+            // Remove sensitive data
+            if (event.user) {
+                delete event.user.email;
+                delete event.user.ip_address;
+            }
+            if (event.request?.headers) {
+                delete event.request.headers.authorization;
+                delete event.request.headers.cookie;
+            }
+            // Don't send in development unless SENTRY_DEV=true
+            if (process.env.NODE_ENV === 'development' && !process.env.SENTRY_DEV) {
+                return null;
+            }
+            return event;
+        },
+    });
+    console.log('✓ Sentry error tracking initialized');
+}
+else {
+    console.log('⚠ Sentry DSN not configured - error tracking disabled');
+}
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const compression_1 = __importDefault(require("compression"));
 const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const ejs_1 = __importDefault(require("ejs"));
 const database_1 = require("./config/database");
@@ -55,17 +87,30 @@ require("./models/SystemHealthLog");
 // Import routes
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const conversion_routes_1 = __importDefault(require("./routes/conversion.routes"));
+const batch_routes_1 = __importDefault(require("./routes/batch.routes"));
 const payfast_routes_1 = __importDefault(require("./routes/payfast.routes"));
+const beta_routes_1 = __importDefault(require("./routes/beta.routes"));
+const feedback_routes_1 = __importDefault(require("./routes/feedback.routes"));
+const onboarding_routes_1 = __importDefault(require("./routes/onboarding.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const conversion_admin_routes_1 = __importDefault(require("./routes/conversion.admin.routes"));
 const payment_admin_routes_1 = __importDefault(require("./routes/payment.admin.routes"));
 const system_admin_routes_1 = __importDefault(require("./routes/system.admin.routes"));
 const analytics_admin_routes_1 = __importDefault(require("./routes/analytics.admin.routes"));
 const audit_admin_routes_1 = __importDefault(require("./routes/audit.admin.routes"));
-// Load environment variables
-dotenv_1.default.config();
+const analytics_routes_1 = __importDefault(require("./routes/analytics.routes"));
+const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
+const test_routes_1 = __importDefault(require("./routes/test.routes"));
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3001');
+// Trust proxy (required for rate limiting behind Nginx)
+app.set('trust proxy', true);
+// Sentry middleware (only if DSN is configured)
+// Note: Modern @sentry/node doesn't require explicit middleware
+// Sentry.init() automatically instruments Express
+if (process.env.SENTRY_DSN) {
+    console.log('✓ Sentry Express instrumentation active');
+}
 // =====================
 // View Engine Setup
 // =====================
@@ -87,17 +132,20 @@ app.use((0, helmet_1.default)());
 // CORS configuration
 const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
     'http://localhost:3000',
-    'http://localhost:3002'
+    'http://localhost:3002',
+    'https://pdflab.pro',
+    'http://pdflab.pro'
 ];
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin)
             return callback(null, true);
-        if (corsOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+        if (corsOrigins.includes(origin)) {
             callback(null, true);
         }
         else {
+            console.warn(`[CORS] Blocked request from origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -163,7 +211,13 @@ app.get('/health', async (req, res) => {
 });
 // API routes
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/batch', batch_routes_1.default);
 app.use('/api/payfast', payfast_routes_1.default);
+app.use('/api/beta', beta_routes_1.default);
+app.use('/api', feedback_routes_1.default);
+app.use('/api/onboarding', onboarding_routes_1.default);
+app.use('/api/analytics', analytics_routes_1.default);
+app.use('/api/profile', profile_routes_1.default);
 app.use('/api/admin', admin_routes_1.default);
 app.use('/api/admin', conversion_admin_routes_1.default);
 app.use('/api/admin/payments', payment_admin_routes_1.default);
@@ -171,6 +225,11 @@ app.use('/api/admin/system', system_admin_routes_1.default);
 app.use('/api/admin/analytics', analytics_admin_routes_1.default);
 app.use('/api/admin/audit-logs', audit_admin_routes_1.default);
 app.use('/api', conversion_routes_1.default);
+// Test routes (only in development/staging - NOT production)
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/api', test_routes_1.default);
+    console.log('✓ Sentry test routes enabled (development/staging only)');
+}
 // Root route
 app.get('/', async (req, res) => {
     const html = await renderWithLayout('home', {
@@ -207,6 +266,8 @@ app.use((req, res) => {
         ]
     });
 });
+// Sentry error handling is automatic with Sentry.init()
+// Modern @sentry/node automatically captures unhandled errors
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);

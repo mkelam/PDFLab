@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.optionalAuthMiddleware = exports.optionalAuth = exports.requirePlan = exports.checkConversionQuota = exports.authMiddleware = void 0;
+exports.optionalAuthMiddleware = exports.requireAuth = exports.optionalAuth = exports.requirePlan = exports.checkConversionQuota = exports.authMiddleware = void 0;
 const auth_utils_1 = require("../utils/auth.utils");
 const models_1 = require("../models");
 /**
@@ -178,6 +178,7 @@ const optionalAuth = async (req, res, next) => {
     }
 };
 exports.optionalAuth = optionalAuth;
-// Alias for better naming
+// Aliases for better naming
+exports.requireAuth = exports.authMiddleware;
 exports.optionalAuthMiddleware = exports.optionalAuth;
 //# sourceMappingURL=auth.middleware.js.map

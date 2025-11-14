@@ -1,0 +1,313 @@
+==========================================
+[0;34mPDFLab Onboarding System Deployment[0m
+[0;34mVersion: v1.3.0-onboarding[0m
+==========================================
+
+[1;33m[1/8] Building Backend Docker Image...[0m
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 30B 0.0s
+#1 transferring dockerfile: 1.18kB 0.2s done
+#1 DONE 0.3s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 3.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 487B 0.0s done
+#4 DONE 0.1s
+
+#5 [builder 1/7] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#5 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.1s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 169.15kB 0.2s done
+#6 DONE 0.3s
+
+#7 [builder 2/7] WORKDIR /app
+#7 CACHED
+
+#8 [builder 3/7] COPY package*.json ./
+#8 CACHED
+
+#9 [builder 4/7] COPY tsconfig.json ./
+#9 CACHED
+
+#10 [builder 5/7] RUN npm ci --ignore-scripts
+#10 CACHED
+
+#11 [builder 6/7] COPY src ./src
+#11 DONE 0.8s
+
+#12 [builder 7/7] RUN npm run build
+#12 6.195 
+#12 6.195 > pdflab-backend@1.0.0 build
+#12 6.195 > tsc || true
+#12 6.195 
+#12 45.24 src/controllers/analytics.controller.ts(9,38): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/analytics.controller.ts(73,30): error TS2352: Conversion of type 'number' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+#12 45.24 src/controllers/analytics.controller.ts(141,37): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/analytics.controller.ts(215,32): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/profile.controller.ts(9,27): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/profile.controller.ts(52,30): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/profile.controller.ts(94,9): error TS2322: Type 'null' is not assignable to type 'Date | undefined'.
+#12 45.24 src/controllers/profile.controller.ts(132,31): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/profile.controller.ts(184,30): error TS7030: Not all code paths return a value.
+#12 45.24 src/controllers/profile.controller.ts(230,32): error TS7030: Not all code paths return a value.
+#12 45.24 src/routes/test.routes.ts(176,30): error TS2339: Property 'startTransaction' does not exist on type 'typeof import("/app/node_modules/@sentry/node/build/types/index")'.
+#12 45.24 src/routes/test.routes.ts(185,28): error TS2339: Property 'setSpan' does not exist on type 'Scope'.
+#12 DONE 45.7s
+
+#13 [stage-1 3/7] RUN apk add --no-cache python3 make g++
+#13 CACHED
+
+#14 [stage-1 4/7] COPY package*.json ./
+#14 CACHED
+
+#15 [stage-1 5/7] RUN npm ci --omit=dev --ignore-scripts &&     npm rebuild bcrypt &&     npm cache clean --force
+#15 CACHED
+
+#16 [stage-1 6/7] COPY --from=builder /app/dist ./dist
+#16 DONE 1.0s
+
+#17 [stage-1 7/7] RUN mkdir -p storage/uploads storage/outputs logs
+#17 DONE 1.4s
+
+#18 exporting to image
+#18 exporting layers
+#18 exporting layers 1.0s done
+#18 exporting manifest sha256:e587b4a5aff2fe0d36587786e2d851d8b217b1eddddf0e445b6a2d017e6f13fd 0.1s done
+#18 exporting config sha256:eb3f06dba49c0d25772dd5c1846496c18b22f7301e8d15965c9e69091ccb71f9 0.1s done
+#18 exporting attestation manifest sha256:42f3dcf3a5ec224d38b55acc3188371244631af6aba702451d08661876d1f7b7
+#18 exporting attestation manifest sha256:42f3dcf3a5ec224d38b55acc3188371244631af6aba702451d08661876d1f7b7 0.2s done
+#18 exporting manifest list sha256:2ed9fa368e70c200824df0fc05e891b159ec3a37c1370342bb030d7be228cb63
+#18 exporting manifest list sha256:2ed9fa368e70c200824df0fc05e891b159ec3a37c1370342bb030d7be228cb63 0.1s done
+#18 naming to docker.io/mkelam/pdflab-backend:v1.3.0-onboarding 0.0s done
+#18 unpacking to docker.io/mkelam/pdflab-backend:v1.3.0-onboarding
+#18 unpacking to docker.io/mkelam/pdflab-backend:v1.3.0-onboarding 0.4s done
+#18 naming to docker.io/mkelam/pdflab-backend:latest done
+#18 unpacking to docker.io/mkelam/pdflab-backend:latest 0.0s done
+#18 DONE 2.2s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/4zcgjk4qs2jccr4ddn2fwbsqc
+[0;32m✓ Backend image built successfully[0m
+[1;33m[2/8] Building Frontend Docker Image...[0m
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 651B 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 1.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 750B 0.0s done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#5 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.1s done
+#5 DONE 0.2s
+
+#4 [internal] load build context
+#4 transferring context: 400.38kB 0.2s done
+#4 DONE 0.3s
+
+#6 [builder 2/6] WORKDIR /app
+#6 CACHED
+
+#7 [builder 3/6] COPY package*.json ./
+#7 DONE 0.2s
+
+#8 [builder 4/6] RUN npm ci
+#8 ...
+
+#9 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#9 1.182 npm warn config only Use `--omit=dev` to omit dev dependencies from the install.
+#9 40.92 npm warn deprecated popper.js@1.16.1: You can find the new Popper v2 at @popperjs/core, this package is dedicated to the legacy v1
+#9 ...
+
+#8 [builder 4/6] RUN npm ci
+#8 47.05 npm warn deprecated popper.js@1.16.1: You can find the new Popper v2 at @popperjs/core, this package is dedicated to the legacy v1
+#8 91.17 
+#8 91.17 added 473 packages, and audited 474 packages in 2m
+#8 91.17 
+#8 91.17 67 packages are looking for funding
+#8 91.17   run `npm fund` for details
+#8 91.33 
+#8 91.33 1 critical severity vulnerability
+#8 91.33 
+#8 91.33 To address all issues, run:
+#8 91.33   npm audit fix --force
+#8 91.33 
+#8 91.33 Run `npm audit` for details.
+#8 91.34 npm notice
+#8 91.34 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+#8 91.34 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+#8 91.34 npm notice To update run: npm install -g npm@11.6.2
+#8 91.34 npm notice
+#8 DONE 92.5s
+
+#9 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#9 92.60 
+#9 92.60 added 438 packages, and audited 439 packages in 2m
+#9 92.60 
+#9 92.60 58 packages are looking for funding
+#9 92.60   run `npm fund` for details
+#9 92.72 
+#9 92.72 1 critical severity vulnerability
+#9 92.72 
+#9 92.72 To address all issues, run:
+#9 92.72   npm audit fix --force
+#9 92.72 
+#9 92.72 Run `npm audit` for details.
+#9 92.72 npm notice
+#9 92.72 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+#9 92.72 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+#9 92.72 npm notice To update run: npm install -g npm@11.6.2
+#9 92.72 npm notice
+#9 93.50 npm warn using --force Recommended protections disabled.
+#9 DONE 95.9s
+
+#10 [builder 5/6] COPY . .
+#10 DONE 13.5s
+
+#11 [builder 6/6] RUN npm run build
+#11 3.409 
+#11 3.409 > pdflab@0.1.0 build
+#11 3.409 > next build
+#11 3.409 
+#11 5.781 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#11 5.784 This information is used to shape Next.js' roadmap and prioritize features.
+#11 5.784 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#11 5.784 https://nextjs.org/telemetry
+#11 5.784 
+#11 6.066   ▲ Next.js 14.2.16
+#11 6.068 
+#11 6.425    Creating an optimized production build ...
+#11 29.96 Failed to compile.
+#11 29.96 
+#11 29.96 ./components/onboarding/QuickStartWizard.tsx
+#11 29.96 Module not found: Can't resolve '@/components/ui/dialog'
+#11 29.96 
+#11 29.96 https://nextjs.org/docs/messages/module-not-found
+#11 29.96 
+#11 29.96 Import trace for requested module:
+#11 29.96 ./app/dashboard/page.tsx
+#11 29.96 
+#11 30.16 
+#11 30.16 > Build failed because of webpack errors
+#11 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+------
+ > [builder 6/6] RUN npm run build:
+29.96 ./components/onboarding/QuickStartWizard.tsx
+29.96 Module not found: Can't resolve '@/components/ui/dialog'
+29.96 
+29.96 https://nextjs.org/docs/messages/module-not-found
+29.96 
+29.96 Import trace for requested module:
+29.96 ./app/dashboard/page.tsx
+29.96 
+30.16 
+30.16 > Build failed because of webpack errors
+------
+Dockerfile:15
+--------------------
+  13 |     
+  14 |     # Build Next.js application
+  15 | >>> RUN npm run build
+  16 |     
+  17 |     # Production image
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+6844 v0.29.1-desktop.1 C:\Program Files\Docker\cli-plugins\docker-buildx.exe buildx build -t mkelam/pdflab-frontend:v1.3.0-onboarding -t mkelam/pdflab-frontend:latest .
+github.com/docker/buildx/commands.runBuildWithOptions
+	github.com/docker/buildx/commands/build.go:461
+github.com/docker/buildx/commands.runBuild
+	github.com/docker/buildx/commands/build.go:381
+github.com/docker/buildx/commands.buildCmd.func1
+	github.com/docker/buildx/commands/build.go:497
+github.com/docker/cli/cli-plugins/plugin.RunPlugin.func1.1.2
+	github.com/docker/cli@v28.4.0+incompatible/cli-plugins/plugin/plugin.go:65
+github.com/spf13/cobra.(*Command).execute
+	github.com/spf13/cobra@v1.10.1/command.go:1015
+github.com/spf13/cobra.(*Command).ExecuteC
+	github.com/spf13/cobra@v1.10.1/command.go:1148
+github.com/spf13/cobra.(*Command).Execute
+	github.com/spf13/cobra@v1.10.1/command.go:1071
+github.com/docker/cli/cli-plugins/plugin.RunPlugin
+	github.com/docker/cli@v28.4.0+incompatible/cli-plugins/plugin/plugin.go:80
+main.runPlugin
+	github.com/docker/buildx/cmd/buildx/main.go:65
+main.run
+	github.com/docker/buildx/cmd/buildx/main.go:79
+main.main
+	github.com/docker/buildx/cmd/buildx/main.go:89
+runtime.main
+	runtime/proc.go:283
+runtime.goexit
+	runtime/asm_amd64.s:1700
+
+145  /usr/local/bin/dockerd --config-file /run/config/docker/daemon.json --containerd /run/containerd/containerd.sock --pidfile /run/desktop/docker.pid --swarm-default-advertise-addr=192.168.65.3 --allow-direct-routing --log-format json --host-gateway-ip 192.168.65.254
+github.com/moby/buildkit/executor/runcexecutor.exitError
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/executor/runcexecutor/executor.go:391
+github.com/moby/buildkit/executor/runcexecutor.(*runcExecutor).Run
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/executor/runcexecutor/executor.go:339
+github.com/moby/buildkit/solver/llbsolver/ops.(*ExecOp).Exec
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/solver/llbsolver/ops/exec.go:497
+github.com/moby/buildkit/solver.(*sharedOp).Exec.func2
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/solver/jobs.go:1122
+github.com/moby/buildkit/util/flightcontrol.(*call[...]).run
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/util/flightcontrol/flightcontrol.go:122
+sync.(*Once).doSlow
+	/usr/local/go/src/sync/once.go:78
+sync.(*Once).Do
+	/usr/local/go/src/sync/once.go:69
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1700
+
+6844 v0.29.1-desktop.1 C:\Program Files\Docker\cli-plugins\docker-buildx.exe buildx build -t mkelam/pdflab-frontend:v1.3.0-onboarding -t mkelam/pdflab-frontend:latest .
+google.golang.org/grpc.(*ClientConn).Invoke
+	google.golang.org/grpc@v1.72.2/call.go:35
+github.com/moby/buildkit/api/services/control.(*controlClient).Solve
+	github.com/moby/buildkit@v0.25.0/api/services/control/control_grpc.pb.go:88
+github.com/moby/buildkit/client.(*Client).solve.func2
+	github.com/moby/buildkit@v0.25.0/client/solve.go:278
+golang.org/x/sync/errgroup.(*Group).Go.func1
+	golang.org/x/sync@v0.16.0/errgroup/errgroup.go:93
+runtime.goexit
+	runtime/asm_amd64.s:1700
+
+145  /usr/local/bin/dockerd --config-file /run/config/docker/daemon.json --containerd /run/containerd/containerd.sock --pidfile /run/desktop/docker.pid --swarm-default-advertise-addr=192.168.65.3 --allow-direct-routing --log-format json --host-gateway-ip 192.168.65.254
+github.com/moby/buildkit/solver.(*edge).execOp
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/solver/edge.go:963
+github.com/moby/buildkit/solver/internal/pipe.NewWithFunction[...].func2
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/solver/internal/pipe/pipe.go:78
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1700
+
+6844 v0.29.1-desktop.1 C:\Program Files\Docker\cli-plugins\docker-buildx.exe buildx build -t mkelam/pdflab-frontend:v1.3.0-onboarding -t mkelam/pdflab-frontend:latest .
+github.com/moby/buildkit/client.(*Client).solve.func2
+	github.com/moby/buildkit@v0.25.0/client/solve.go:295
+golang.org/x/sync/errgroup.(*Group).Go.func1
+	golang.org/x/sync@v0.16.0/errgroup/errgroup.go:93
+
+145  /usr/local/bin/dockerd --config-file /run/config/docker/daemon.json --containerd /run/containerd/containerd.sock --pidfile /run/desktop/docker.pid --swarm-default-advertise-addr=192.168.65.3 --allow-direct-routing --log-format json --host-gateway-ip 192.168.65.254
+github.com/moby/buildkit/solver/llbsolver/ops.(*ExecOp).Exec
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/solver/llbsolver/ops/exec.go:518
+github.com/moby/buildkit/solver.(*sharedOp).Exec.func2
+	/root/build-deb/engine/vendor/github.com/moby/buildkit/solver/jobs.go:1122
+
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/i7s5ueq05x2n279g5q3vdc2sb

@@ -36,10 +36,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStats = exports.exportUsersToCSV = exports.bulkQuotaReset = exports.getUserActivity = exports.getUserConversions = exports.deleteUser = exports.impersonateUser = exports.createUser = exports.verifyUserEmail = exports.resendVerificationEmail = exports.resetUserPassword = exports.resetUserQuota = exports.updateUserPlan = exports.updateUser = exports.getUserById = exports.getAllUsers = void 0;
+exports.syncUserQuotaEndpoint = exports.fixQuotas = exports.getQuotaStatus = exports.getStats = exports.exportUsersToCSV = exports.bulkQuotaReset = exports.getUserActivity = exports.getUserConversions = exports.deleteUser = exports.impersonateUser = exports.createUser = exports.verifyUserEmail = exports.resendVerificationEmail = exports.resetUserPassword = exports.resetUserQuota = exports.updateUserPlan = exports.updateUser = exports.getUserById = exports.getBetaUsers = exports.getAllUsers = void 0;
 const User_1 = require("../models/User");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const sequelize_1 = require("sequelize");
+const quota_utils_1 = require("../utils/quota.utils");
 /**
  * GET /api/admin/users
  * Get all users with search, filtering, and pagination
@@ -97,6 +98,55 @@ const getAllUsers = async (req, res) => {
     }
 };
 exports.getAllUsers = getAllUsers;
+/**
+ * GET /api/admin/beta-users
+ * Get all beta users (users with is_beta_user = true)
+ * Query params: search, page, limit, sortBy, sortOrder
+ */
+const getBetaUsers = async (req, res) => {
+    try {
+        const { search = '', page = '1', limit = '25', sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const offset = (pageNum - 1) * limitNum;
+        // Build where clause - only beta users
+        const where = { is_beta_user: true };
+        // Search by email or name
+        if (search) {
+            where[sequelize_1.Op.or] = [
+                { email: { [sequelize_1.Op.like]: `%${search}%` } },
+                { name: { [sequelize_1.Op.like]: `%${search}%` } }
+            ];
+        }
+        // Get beta users with pagination
+        const { count, rows: users } = await User_1.User.findAndCountAll({
+            where,
+            attributes: { exclude: ['password_hash'] },
+            order: [[sortBy, sortOrder]],
+            limit: limitNum,
+            offset
+        });
+        const totalPages = Math.ceil(count / limitNum);
+        res.json({
+            success: true,
+            users,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                total: count,
+                totalPages
+            }
+        });
+    }
+    catch (error) {
+        console.error('Get beta users error:', error);
+        res.status(500).json({
+            error: 'Failed to fetch beta users',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+exports.getBetaUsers = getBetaUsers;
 /**
  * GET /api/admin/users/:id
  * Get user details by ID
@@ -845,4 +895,110 @@ const getStats = async (req, res) => {
     }
 };
 exports.getStats = getStats;
+/**
+ * GET /api/admin/quota-status
+ * Get quota status for all users (shows who needs fixing)
+ */
+const getQuotaStatus = async (req, res) => {
+    try {
+        const users = await User_1.User.findAll();
+        const status = users.map(user => {
+            const info = (0, quota_utils_1.getQuotaInfo)(user);
+            return {
+                id: user.id,
+                email: user.email,
+                plan: user.plan,
+                conversions_used: info.conversions_used,
+                conversions_limit: info.conversions_limit,
+                conversions_remaining: info.conversions_remaining,
+                expected_limit: info.expected_limit,
+                is_synced: info.is_synced,
+                needs_fix: !info.is_synced
+            };
+        });
+        const needsFix = status.filter(s => s.needs_fix).length;
+        res.json({
+            success: true,
+            total_users: users.length,
+            users_needing_fix: needsFix,
+            users: status
+        });
+    }
+    catch (error) {
+        console.error('Get quota status error:', error);
+        res.status(500).json({
+            error: 'Failed to get quota status',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+exports.getQuotaStatus = getQuotaStatus;
+/**
+ * POST /api/admin/fix-quotas
+ * Fix quota limits for ALL users based on their plans
+ */
+const fixQuotas = async (req, res) => {
+    try {
+        console.log('🔧 Admin triggered quota fix for all users');
+        const result = await (0, quota_utils_1.fixAllUserQuotas)();
+        res.json({
+            success: true,
+            message: `Fixed ${result.fixed} out of ${result.total} users`,
+            fixed: result.fixed,
+            total: result.total,
+            unchanged: result.total - result.fixed
+        });
+    }
+    catch (error) {
+        console.error('Fix quotas error:', error);
+        res.status(500).json({
+            error: 'Failed to fix quotas',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+exports.fixQuotas = fixQuotas;
+/**
+ * POST /api/admin/users/:id/sync-quota
+ * Sync quota for a specific user
+ */
+const syncUserQuotaEndpoint = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User_1.User.findByPk(id);
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+        const beforeInfo = (0, quota_utils_1.getQuotaInfo)(user);
+        await (0, quota_utils_1.syncUserQuota)(user);
+        const afterInfo = (0, quota_utils_1.getQuotaInfo)(user);
+        res.json({
+            success: true,
+            message: `Quota synced for user ${user.email}`,
+            user: {
+                email: user.email,
+                plan: user.plan
+            },
+            before: {
+                conversions_limit: beforeInfo.conversions_limit,
+                expected_limit: beforeInfo.expected_limit,
+                is_synced: beforeInfo.is_synced
+            },
+            after: {
+                conversions_limit: afterInfo.conversions_limit,
+                expected_limit: afterInfo.expected_limit,
+                is_synced: afterInfo.is_synced
+            }
+        });
+    }
+    catch (error) {
+        console.error('Sync user quota error:', error);
+        res.status(500).json({
+            error: 'Failed to sync quota',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+exports.syncUserQuotaEndpoint = syncUserQuotaEndpoint;
 //# sourceMappingURL=admin.controller.js.map

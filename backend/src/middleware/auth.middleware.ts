@@ -212,5 +212,6 @@ export const optionalAuth = async (
   }
 }
 
-// Alias for better naming
+// Aliases for better naming
+export const requireAuth = authMiddleware
 export const optionalAuthMiddleware = optionalAuth

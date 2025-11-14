@@ -16,6 +16,12 @@ export type { OnboardingStatus } from './OnboardingProgress'
 export { default as OnboardingTemplate } from './OnboardingTemplate'
 export type { TemplateFormat } from './OnboardingTemplate'
 
+// Influencer Attribution & Partner System
+export { Partner, PartnerPlatform, CommissionTier, PartnerStatus } from './Partner'
+export { PromoCode, DiscountType } from './PromoCode'
+export { UserAttribution, AttributionMethod } from './UserAttribution'
+export { default as PartnerApplication } from './PartnerApplication'
+
 // Set up model associations
 import { User } from './User'
 import { Subscription } from './subscription.model'
@@ -26,6 +32,9 @@ import { PasswordHistory } from './PasswordHistory'
 import Feedback from './Feedback'
 import OnboardingProgress from './OnboardingProgress'
 import OnboardingTemplate from './OnboardingTemplate'
+import { Partner } from './Partner'
+import { PromoCode } from './PromoCode'
+import { UserAttribution } from './UserAttribution'
 
 // User <-> Subscription (one-to-many)
 User.hasMany(Subscription, {

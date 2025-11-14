@@ -9,8 +9,10 @@ var ConversionType;
     ConversionType["PDF_TO_PPTX"] = "pdf_to_pptx";
     ConversionType["PDF_TO_DOCX"] = "pdf_to_docx";
     ConversionType["PDF_TO_XLSX"] = "pdf_to_xlsx";
+    ConversionType["PDF_TO_PNG"] = "pdf_to_png";
     ConversionType["PDF_TO_IMAGES"] = "pdf_to_images";
     ConversionType["PDF_MERGE"] = "pdf_merge";
+    ConversionType["PDF_COMPRESS"] = "pdf_compress";
 })(ConversionType || (exports.ConversionType = ConversionType = {}));
 var JobStatus;
 (function (JobStatus) {
@@ -39,9 +41,13 @@ class ConversionJob extends sequelize_1.Model {
                 return 'docx';
             case ConversionType.PDF_TO_XLSX:
                 return 'xlsx';
+            case ConversionType.PDF_TO_PNG:
+                return 'png';
             case ConversionType.PDF_TO_IMAGES:
                 return 'zip';
             case ConversionType.PDF_MERGE:
+                return 'pdf';
+            case ConversionType.PDF_COMPRESS:
                 return 'pdf';
             default:
                 return 'bin';

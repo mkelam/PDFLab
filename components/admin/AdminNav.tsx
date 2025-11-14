@@ -13,6 +13,9 @@ import {
   BarChart3,
   Shield,
   Sparkles,
+  MessageSquare,
+  UsersRound,
+  UserPlus,
   LogOut
 } from 'lucide-react'
 
@@ -48,8 +51,11 @@ export function AdminNav() {
   const navItems = [
     { href: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { href: '/admin/users', icon: <Users size={20} />, label: 'Users' },
+    { href: '/admin/partners', icon: <UsersRound size={20} />, label: 'Partners' },
+    { href: '/admin/partner-applications', icon: <UserPlus size={20} />, label: 'Partner Applications' },
     { href: '/admin/beta-users', icon: <Sparkles size={20} />, label: 'Beta Users' },
     { href: '/admin/beta', icon: <Sparkles size={20} />, label: 'Beta Applications' },
+    { href: '/admin/feedback', icon: <MessageSquare size={20} />, label: 'Feedback' },
     { href: '/admin/conversions', icon: <FileText size={20} />, label: 'Conversions' },
     { href: '/admin/payments', icon: <CreditCard size={20} />, label: 'Payments' },
     { href: '/admin/system', icon: <Activity size={20} />, label: 'System Health' },

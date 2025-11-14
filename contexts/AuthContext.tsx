@@ -14,6 +14,11 @@ interface User {
   conversions_used: number;
   conversions_limit: number;
   created_at: string;
+  is_beta_user?: boolean;
+  beta_expires_at?: string;
+  onboarding_completed?: boolean;
+  onboarding_completed_at?: string;
+  onboarding_skipped?: boolean;
 }
 
 interface LoginCredentials {
@@ -46,6 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('authToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+
       if (token) {
         try {
           // Verify token and get user data
@@ -59,13 +66,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = await response.json();
             // Python backend returns user data directly, not wrapped in data.user
             setUser(data);
+          } else if (response.status === 401 && refreshToken) {
+            // Token expired, try to refresh
+            console.log('⚠️ Access token expired, attempting refresh...');
+            try {
+              const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh_token: refreshToken })
+              });
+
+              if (refreshResponse.ok) {
+                const refreshData = await refreshResponse.json();
+                // Store new tokens
+                localStorage.setItem('authToken', refreshData.token);
+                localStorage.setItem('refreshToken', refreshData.refresh_token);
+
+                // Fetch profile with new token
+                const newProfileResponse = await fetch(`${API_URL}/api/auth/profile`, {
+                  headers: {
+                    'Authorization': `Bearer ${refreshData.token}`
+                  }
+                });
+
+                if (newProfileResponse.ok) {
+                  const profileData = await newProfileResponse.json();
+                  setUser(profileData);
+                  console.log('✅ Session restored with refreshed token');
+                }
+              } else {
+                // Refresh failed, clear tokens
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('refreshToken');
+              }
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('refreshToken');
+            }
           } else {
             // Token invalid, clear it
             localStorage.removeItem('authToken');
+            localStorage.removeItem('refreshToken');
           }
         } catch (error) {
           console.error('Auth check failed:', error);
           localStorage.removeItem('authToken');
+          localStorage.removeItem('refreshToken');
         }
       }
       setIsLoading(false);
@@ -91,9 +140,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.detail || data.error || data.message || 'Login failed');
       }
 
-      // Store access token (Python backend returns access_token, not token)
+      // Store access token and refresh token
       const token = data.access_token || data.token;
+      const refreshToken = data.refresh_token;
       localStorage.setItem('authToken', token);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
 
       // Fetch user profile after successful login
       const profileResponse = await fetch(`${API_URL}/api/auth/profile`, {
@@ -119,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     setUser(null);
   };
 
@@ -151,8 +205,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Auto-login after successful signup
       // Backend returns token and user data
       const token = data.token || data.access_token;
+      const refreshToken = data.refresh_token;
       if (token) {
         localStorage.setItem('authToken', token);
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
 
         // Set user data from signup response
         if (data.user) {

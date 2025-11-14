@@ -71,8 +71,7 @@ import analyticsRoutes from './routes/analytics.routes'
 import profileRoutes from './routes/profile.routes'
 import testRoutes from './routes/test.routes'
 import partnerRoutes from './routes/partner.routes'
-// TEMPORARILY DISABLED - tsx watch cache issue - uncomment after manual restart
-// import partnerApplicationRoutes from './routes/partnerApplication.routes'
+import partnerApplicationRoutes from './routes/partnerApplication.routes'
 
 // Import attribution middleware
 import { captureAttribution } from './middleware/attribution.middleware'
@@ -223,8 +222,7 @@ app.use('/api/onboarding', onboardingRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/partners', partnerRoutes) // Influencer attribution tracking
-// TEMPORARILY DISABLED - tsx watch cache issue - uncomment after manual restart
-// app.use('/api/partner-applications', partnerApplicationRoutes) // Partner application system
+app.use('/api/partner-applications', partnerApplicationRoutes) // Partner application system
 app.use('/api/admin', adminRoutes)
 app.use('/api/admin', conversionAdminRoutes)
 app.use('/api/admin/payments', paymentAdminRoutes)

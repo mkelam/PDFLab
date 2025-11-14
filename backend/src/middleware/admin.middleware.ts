@@ -15,7 +15,10 @@ export const PERMISSIONS = {
   'payments.manage': [UserRole.FINANCE, UserRole.SUPER_ADMIN],
   'system.view': [UserRole.ADMIN, UserRole.SUPER_ADMIN],
   'system.configure': [UserRole.SUPER_ADMIN],
-  'audit.view': [UserRole.ADMIN, UserRole.SUPER_ADMIN]
+  'audit.view': [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+  'feedback.view': [UserRole.SUPPORT, UserRole.ADMIN, UserRole.SUPER_ADMIN],
+  'feedback.manage': [UserRole.SUPPORT, UserRole.ADMIN, UserRole.SUPER_ADMIN],
+  'feedback.delete': [UserRole.ADMIN, UserRole.SUPER_ADMIN]
 } as const
 
 /**

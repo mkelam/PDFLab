@@ -22,7 +22,13 @@ exports.apiLimiter = (0, express_rate_limit_1.default)({
         retryAfter: '15 minutes'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    // Fix trust proxy warning by using a keyGenerator
+    keyGenerator: (req) => {
+        // In production behind nginx, use X-Forwarded-For
+        // In development, use socket IP
+        return req.ip || req.socket?.remoteAddress || 'unknown';
+    }
     // TODO: Add Redis store in production
     // store: new RedisStore({
     //   client: redisClient,
@@ -76,7 +82,11 @@ exports.authLimiter = (0, express_rate_limit_1.default)({
         message: 'Too many failed login attempts. Please try again in 15 minutes.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    // Fix trust proxy warning by using a keyGenerator
+    keyGenerator: (req) => {
+        return req.ip || req.socket?.remoteAddress || 'unknown';
+    }
     // TODO: Add Redis store in production
 });
 /**

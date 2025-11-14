@@ -1,9 +1,17 @@
 export { User, UserPlan, UserRole, SubscriptionStatus } from './User';
 export { ConversionJob, ConversionType, JobStatus } from './ConversionJob';
+export { BatchJob, BatchOperationType, BatchStatus } from './BatchJob';
 export { UsageLog } from './UsageLog';
 export { AdminAuditLog, AuditLogSeverity } from './AdminAuditLog';
 export { SystemHealthLog, HealthStatus } from './SystemHealthLog';
 export { Subscription, PlanType } from './subscription.model';
 export { PaymentLog, PaymentStatus, PaymentType } from './payment-log.model';
 export { PasswordHistory } from './PasswordHistory';
+export { BetaApplication } from './BetaApplication';
+export { default as Feedback } from './Feedback';
+export type { FeedbackType, FeedbackStatus } from './Feedback';
+export { default as OnboardingProgress } from './OnboardingProgress';
+export type { OnboardingStatus } from './OnboardingProgress';
+export { default as OnboardingTemplate } from './OnboardingTemplate';
+export type { TemplateFormat } from './OnboardingTemplate';
 //# sourceMappingURL=index.d.ts.map

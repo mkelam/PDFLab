@@ -41,7 +41,8 @@ const testConnection = async () => {
 exports.testConnection = testConnection;
 const syncDatabase = async (force = false) => {
     try {
-        await exports.sequelize.sync({ force, alter: !force });
+        // Skip alter to avoid "too many keys" error - use migrations instead
+        await exports.sequelize.sync({ force, alter: false });
         console.log('✓ Database synchronized successfully');
     }
     catch (error) {

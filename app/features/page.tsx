@@ -3,18 +3,18 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
-  Upload,
-  Zap,
-  Shield,
-  CheckCircle,
-  Clock,
-  Database,
-  Wifi,
-  Download,
+  FileType,
+  Presentation,
+  FileSpreadsheet,
+  ImageIcon,
+  Minimize2,
   Merge,
-  BarChart3,
+  Shield,
+  Zap,
+  Layers,
+  ScanText,
+  CreditCard,
   ArrowLeft,
 } from "lucide-react"
 import { Navigation } from "@/components/Navigation"
@@ -36,205 +36,218 @@ export default function FeaturesPage() {
           </div>
 
           <div className="text-center mb-16">
-            <h1 className="font-bold text-4xl md:text-5xl mb-6 leading-tight">Powerful PDF Features</h1>
+            <h1 className="font-bold text-4xl md:text-5xl mb-6 leading-tight">Transform Your PDFs in Seconds</h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Comprehensive PDF processing capabilities designed for speed, security, and reliability.
+              Professional document conversion, compression, and merging - no software installation required.
             </p>
           </div>
 
-          {/* Core PDF Features - Production Ready */}
-          <div className="mb-16">
-            <div className="flex items-center mb-8">
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 mr-3">Production Ready</Badge>
-              <h2 className="text-2xl font-bold">Core PDF Features</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 mb-12">
-              <Card className="glass">
+          {/* PDF Conversion */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Convert to Any Format You Need</h2>
+            <div className="grid md:grid-cols-4 gap-6">
+              <Card className="glass hover:scale-105 transition-transform">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Upload className="w-5 h-5 text-primary mr-2" />
-                    PDF→PowerPoint Conversion
+                  <CardTitle className="flex items-center text-lg">
+                    <Presentation className="w-5 h-5 text-primary mr-2" />
+                    PowerPoint
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <Upload className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">File Upload</p>
-                      <p className="text-sm text-muted-foreground">25MB limit with PDF validation</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Zap className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">LibreOffice Engine</p>
-                      <p className="text-sm text-muted-foreground">Headless conversion to PPTX format</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Clock className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Speed Target</p>
-                      <p className="text-sm text-muted-foreground">&lt;5 second processing</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Database className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Queue System</p>
-                      <p className="text-sm text-muted-foreground">Bull + Redis for background processing</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Wifi className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Real-time Progress</p>
-                      <p className="text-sm text-muted-foreground">WebSocket updates with glassmorphic UI</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Download className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Secure Download</p>
-                      <p className="text-sm text-muted-foreground">Cloudflare R2 storage with temporary URLs</p>
-                    </div>
-                  </div>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Turn PDFs into editable presentations. Perfect for repurposing reports and proposals.</p>
                 </CardContent>
               </Card>
 
-              <Card className="glass">
+              <Card className="glass hover:scale-105 transition-transform">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Shield className="w-5 h-5 text-primary mr-2" />
-                    PDF Validation & Security
+                  <CardTitle className="flex items-center text-lg">
+                    <FileType className="w-5 h-5 text-primary mr-2" />
+                    Word
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">File Type Validation</p>
-                      <p className="text-sm text-muted-foreground">Only accepts .pdf files</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Size Limits</p>
-                      <p className="text-sm text-muted-foreground">100MB configurable limit (25MB for conversions)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Format Verification</p>
-                      <p className="text-sm text-muted-foreground">MIME type checking</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Security Scanning</p>
-                      <p className="text-sm text-muted-foreground">PDF integrity validation</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Error Handling</p>
-                      <p className="text-sm text-muted-foreground">Comprehensive error messages</p>
-                    </div>
-                  </div>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Edit PDF content as Word documents. Make changes without starting from scratch.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <FileSpreadsheet className="w-5 h-5 text-primary mr-2" />
+                    Excel
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Extract tables into spreadsheets. Analyze data without manual retyping.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <ImageIcon className="w-5 h-5 text-primary mr-2" />
+                    Images
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Save PDF pages as JPG images. Share visuals on social media or presentations.</p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* PDF Features - Backend Ready, UI Integration Needed */}
-          <div className="mb-16">
-            <div className="flex items-center mb-8">
-              <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 mr-3">Backend Ready</Badge>
-              <h2 className="text-2xl font-bold">Advanced PDF Features</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card className="glass">
+          {/* Advanced Features */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">More Ways to Work Smarter</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="glass hover:scale-105 transition-transform">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Merge className="w-5 h-5 text-primary mr-2" />
-                    PDF Merge
+                  <CardTitle className="flex items-center text-lg">
+                    <Minimize2 className="w-5 h-5 text-primary mr-2" />
+                    Compress PDFs
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <Upload className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Multi-file Upload</p>
-                      <p className="text-sm text-muted-foreground">Up to 10 PDFs at once</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Zap className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">pdf-lib Integration</p>
-                      <p className="text-sm text-muted-foreground">Fast in-memory merging</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Clock className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Speed Target</p>
-                      <p className="text-sm text-muted-foreground">&lt;2 second processing</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Upload className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Page Preservation</p>
-                      <p className="text-sm text-muted-foreground">Maintains all pages from source files</p>
-                    </div>
-                  </div>
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mt-4">
-                    <p className="text-sm text-yellow-400">
-                      ⚠️ Frontend upload UI needs connection to /api/convert/merge
-                    </p>
-                  </div>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">Shrink file sizes for email attachments or faster sharing. Reduce by up to 60% while keeping quality.</p>
                 </CardContent>
               </Card>
 
-              <Card className="glass">
+              <Card className="glass hover:scale-105 transition-transform">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="w-5 h-5 text-primary mr-2" />
-                    PDF Processing Workflow
+                  <CardTitle className="flex items-center text-lg">
+                    <Merge className="w-5 h-5 text-primary mr-2" />
+                    Merge PDFs
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <Database className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Job Tracking</p>
-                      <p className="text-sm text-muted-foreground">Unique job IDs with status endpoints</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Wifi className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Progress Monitoring</p>
-                      <p className="text-sm text-muted-foreground">Real-time progress updates (10% → 100%)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <BarChart3 className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Performance Metrics</p>
-                      <p className="text-sm text-muted-foreground">Speed comparison vs Adobe (45s baseline)</p>
-                    </div>
-                  </div>
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mt-4">
-                    <p className="text-sm text-yellow-400">⚠️ Frontend needs WebSocket integration for live updates</p>
-                  </div>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">Combine contracts, invoices, or reports into one organized document. Upload up to 10 files at once.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <Layers className="w-5 h-5 text-primary mr-2" />
+                    Batch Process
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">Convert dozens of files at once. Track progress in real-time and download when ready.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Why Choose PDFLab */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Why Teams Choose PDFLab</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <ScanText className="w-5 h-5 text-primary mr-2" />
+                    Scanned PDFs? No Problem
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Extract text from scanned documents and images. Turn old paper files into editable digital content.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <Shield className="w-5 h-5 text-primary mr-2" />
+                    Your Files Stay Private
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Files are automatically deleted after processing. Enterprise-grade security keeps your documents safe.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <Zap className="w-5 h-5 text-primary mr-2" />
+                    Lightning Fast Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Most conversions complete in under 30 seconds. No waiting, no downloads - just results.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 text-center">Simple, Transparent Pricing</h2>
+            <p className="text-center text-muted-foreground mb-8">Choose the plan that fits your needs. Upgrade or downgrade anytime.</p>
+            <div className="grid md:grid-cols-4 gap-6">
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="text-lg">Free</CardTitle>
+                  <p className="text-3xl font-bold">$0</p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">Try it out</p>
+                  <ul className="text-sm space-y-2">
+                    <li>✓ 3 files per month</li>
+                    <li>✓ All formats</li>
+                    <li>✓ 10MB file size</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="text-lg">Starter</CardTitle>
+                  <p className="text-3xl font-bold">$9.99<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">For individuals</p>
+                  <ul className="text-sm space-y-2">
+                    <li>✓ 100 files per month</li>
+                    <li>✓ All formats</li>
+                    <li>✓ 25MB file size</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform border-primary">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center">
+                    Pro
+                    <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded">Popular</span>
+                  </CardTitle>
+                  <p className="text-3xl font-bold">$29.99<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">For professionals</p>
+                  <ul className="text-sm space-y-2">
+                    <li>✓ Unlimited files</li>
+                    <li>✓ All formats</li>
+                    <li>✓ 100MB file size</li>
+                    <li>✓ Priority support</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="glass hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle className="text-lg">Enterprise</CardTitle>
+                  <p className="text-3xl font-bold">$99.99<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">For teams</p>
+                  <ul className="text-sm space-y-2">
+                    <li>✓ Unlimited files</li>
+                    <li>✓ All formats</li>
+                    <li>✓ 500MB file size</li>
+                    <li>✓ API access</li>
+                    <li>✓ Dedicated support</li>
+                  </ul>
                 </CardContent>
               </Card>
             </div>
@@ -244,19 +257,19 @@ export default function FeaturesPage() {
           <div className="text-center">
             <Card className="glass max-w-2xl mx-auto">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-4">Ready to Experience These Features?</h3>
+                <h3 className="text-2xl font-bold mb-4">Start Processing PDFs Today</h3>
                 <p className="text-muted-foreground mb-6">
-                  Join thousands of users who trust PDF Lab Pro for their document processing needs.
+                  No credit card required for Free plan. Upgrade anytime.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/signup">
+                  <Link href="/">
                     <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Get Started Free
+                      Try Free Now
                     </Button>
                   </Link>
                   <Link href="/pricing">
                     <Button variant="outline" size="lg">
-                      View Pricing
+                      Compare Plans
                     </Button>
                   </Link>
                 </div>
@@ -268,7 +281,7 @@ export default function FeaturesPage() {
 
       <footer className="border-t border-border/30 py-6 px-6">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="text-sm text-muted-foreground">© 2024 PDF Lab Pro. All rights reserved.</div>
+          <div className="text-sm text-muted-foreground">© 2025 PDFLab. All rights reserved.</div>
         </div>
       </footer>
     </div>

@@ -6,8 +6,8 @@ dotenv.config()
 
 const SALT_ROUNDS = 12
 const JWT_SECRET = process.env['JWT_SECRET'] || 'your-secret-key-change-this-in-production'
-const JWT_EXPIRATION: string | number = process.env['JWT_EXPIRATION'] || '7d'
-const JWT_REFRESH_EXPIRATION: string | number = process.env['JWT_REFRESH_EXPIRATION'] || '30d'
+const JWT_EXPIRATION: string | number = process.env['JWT_EXPIRATION'] || '15m' // Short-lived access token (15 minutes)
+const JWT_REFRESH_EXPIRATION: string | number = process.env['JWT_REFRESH_EXPIRATION'] || '30d' // Long-lived refresh token (30 days)
 
 export interface JWTPayload {
   userId: string

@@ -19,6 +19,8 @@ router.use(admin_middleware_1.requireAdmin);
 router.use(audit_middleware_1.auditLogMiddleware);
 // Get all users (support, admin, super_admin can view)
 router.get('/users', (0, admin_middleware_1.requirePermission)('users.view'), admin_controller_1.getAllUsers);
+// Get beta users only (support, admin, super_admin can view)
+router.get('/beta-users', (0, admin_middleware_1.requirePermission)('users.view'), admin_controller_1.getBetaUsers);
 // Export users to CSV (respects filters)
 router.get('/users/export', (0, admin_middleware_1.requirePermission)('users.view'), admin_controller_1.exportUsersToCSV);
 // Bulk quota reset (admin and super_admin only)
@@ -49,5 +51,12 @@ router.get('/users/:id/conversions', (0, admin_middleware_1.requirePermission)('
 router.get('/users/:id/activity', (0, admin_middleware_1.requirePermission)('users.view'), admin_controller_1.getUserActivity);
 // Delete user (super_admin only)
 router.delete('/users/:id', (0, admin_middleware_1.requirePermission)('users.delete'), admin_controller_1.deleteUser);
+// Quota Management Routes (admin and super_admin only)
+// Get quota status for all users (shows who needs fixing)
+router.get('/quota-status', (0, admin_middleware_1.requirePermission)('users.view'), admin_controller_1.getQuotaStatus);
+// Fix ALL user quotas based on their plans
+router.post('/fix-quotas', (0, admin_middleware_1.requirePermission)('users.edit'), admin_controller_1.fixQuotas);
+// Sync quota for a specific user
+router.post('/users/:id/sync-quota', (0, admin_middleware_1.requirePermission)('users.edit'), admin_controller_1.syncUserQuotaEndpoint);
 exports.default = router;
 //# sourceMappingURL=admin.routes.js.map

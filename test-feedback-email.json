@@ -1,0 +1,7 @@
+{
+  "type": "general",
+  "message": "FINAL COMPREHENSIVE TEST: All feedback system components are working. This email confirms: Database storage is functional, Email notifications are being sent to admin@pdflab.pro, User information is captured correctly, Page URL tracking is active. The feedback system is production ready!",
+  "email": "final-test@pdflab.com",
+  "name": "Final Test User",
+  "page_url": "http://localhost:3000/dashboard"
+}

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import path from 'path'
 import ejs from 'ejs'
 import payfastService from '../services/payfast.service'
+import emailService from '../services/email.service'
 import { User, SubscriptionStatus as UserSubscriptionStatus, UserPlan } from '../models/User'
 import { Subscription, SubscriptionStatus, PlanType } from '../models/subscription.model'
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
@@ -328,6 +329,22 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       await updateUserPlan(user, planId as UserPlan, true) // true = reset usage on new subscription
 
       console.log(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`)
+
+      // Send payment receipt email (non-blocking)
+      if (subscription) {
+        const planName = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]?.name || planId
+        emailService.sendPaymentReceiptEmail(user.email, {
+          plan: planName,
+          amount: amount_gross,
+          currency: 'USD',
+          transactionId: m_payment_id,
+          billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
+        }).catch((error) => {
+          console.error('Failed to send payment receipt email:', error)
+          // Don't fail webhook if email fails
+        })
+      }
     }
 
     // Send 200 OK response to PayFast
@@ -443,6 +460,17 @@ export const cancelSubscription = async (req: Request, res: Response): Promise<v
     // Update user status
     user.subscription_status = UserSubscriptionStatus.CANCELED
     await user.save()
+
+    // Send cancellation email (non-blocking)
+    const planName = PRICING_PLANS[subscription.plan as keyof typeof PRICING_PLANS]?.name || subscription.plan
+    emailService.sendSubscriptionCancelledEmail(user.email, {
+      plan: planName,
+      cancellationDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      accessUntil: subscription.ended_at?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
+    }).catch((error) => {
+      console.error('Failed to send cancellation email:', error)
+      // Don't fail cancellation if email fails
+    })
 
     res.json({
       success: true,

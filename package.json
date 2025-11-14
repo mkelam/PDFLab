@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e": "npx playwright test -c tests/e2e/playwright.config.ts",
+    "test:e2e:ui": "npx playwright test -c tests/e2e/playwright.config.ts --ui",
+    "test:e2e:report": "npx playwright show-report"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.2",
@@ -46,15 +46,20 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
     "axios": "^1.13.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "mysql2": "^3.15.3",
     "playwright": "^1.56.1",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

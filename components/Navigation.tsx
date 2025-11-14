@@ -30,6 +30,11 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
+            <Link href="/features">
+              <Button variant="ghost" size="sm" className="text-sm">
+                Features
+              </Button>
+            </Link>
             <Link href="/pricing">
               <Button variant="ghost" size="sm" className="text-sm">
                 Pricing

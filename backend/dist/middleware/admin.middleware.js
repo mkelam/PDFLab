@@ -16,7 +16,10 @@ exports.PERMISSIONS = {
     'payments.manage': [models_1.UserRole.FINANCE, models_1.UserRole.SUPER_ADMIN],
     'system.view': [models_1.UserRole.ADMIN, models_1.UserRole.SUPER_ADMIN],
     'system.configure': [models_1.UserRole.SUPER_ADMIN],
-    'audit.view': [models_1.UserRole.ADMIN, models_1.UserRole.SUPER_ADMIN]
+    'audit.view': [models_1.UserRole.ADMIN, models_1.UserRole.SUPER_ADMIN],
+    'feedback.view': [models_1.UserRole.SUPPORT, models_1.UserRole.ADMIN, models_1.UserRole.SUPER_ADMIN],
+    'feedback.manage': [models_1.UserRole.SUPPORT, models_1.UserRole.ADMIN, models_1.UserRole.SUPER_ADMIN],
+    'feedback.delete': [models_1.UserRole.ADMIN, models_1.UserRole.SUPER_ADMIN]
 };
 /**
  * Middleware to require any admin role (support, finance, admin, or super_admin)

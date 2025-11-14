@@ -47,6 +47,20 @@ class User extends sequelize_1.Model {
                 return 10485760;
         }
     }
+    getMaxBatchSize() {
+        switch (this.plan) {
+            case UserPlan.FREE:
+                return 5; // 5 files per batch
+            case UserPlan.STARTER:
+                return 10; // 10 files per batch
+            case UserPlan.PRO:
+                return 20; // 20 files per batch
+            case UserPlan.ENTERPRISE:
+                return 50; // 50 files per batch
+            default:
+                return 5;
+        }
+    }
     resetMonthlyUsage() {
         this.conversions_used = 0;
     }
@@ -110,6 +124,15 @@ User.init({
         type: sequelize_1.DataTypes.DATE,
         allowNull: true
     },
+    is_beta_user: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+    },
+    beta_expires_at: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true
+    },
     email_verified: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,
@@ -127,6 +150,20 @@ User.init({
     reset_locked_until: {
         type: sequelize_1.DataTypes.DATE,
         allowNull: true
+    },
+    onboarding_completed: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+    },
+    onboarding_completed_at: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true
+    },
+    onboarding_skipped: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
     },
     created_at: {
         type: sequelize_1.DataTypes.DATE,

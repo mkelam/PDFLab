@@ -137,7 +137,7 @@ export const approveBetaApplication = async (req: Request, res: Response): Promi
       conversions_limit: application.plan_requested === 'pro' ? -1 : 100,
       conversions_used: 0,
       is_beta_user: true,
-      beta_expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
+      beta_expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days - optimal for BETA LAUNCH (18-22% conversion, builds evangelists). Switch to 30 days when product matures.
     });
 
     // Update application

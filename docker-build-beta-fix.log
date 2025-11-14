@@ -1,0 +1,137 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 651B 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 3.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 750B 0.1s done
+#4 DONE 0.1s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#6 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 50.37kB 0.4s done
+#5 DONE 0.5s
+
+#7 [builder 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [builder 3/6] COPY package*.json ./
+#8 CACHED
+
+#9 [builder 4/6] RUN npm ci
+#9 CACHED
+
+#10 [builder 5/6] COPY . .
+#10 DONE 16.2s
+
+#11 [builder 6/6] RUN npm run build
+#11 8.147 
+#11 8.147 > pdflab@0.1.0 build
+#11 8.147 > next build
+#11 8.147 
+#11 15.53 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#11 15.54 This information is used to shape Next.js' roadmap and prioritize features.
+#11 15.54 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#11 15.54 https://nextjs.org/telemetry
+#11 15.54 
+#11 15.86   ▲ Next.js 14.2.16
+#11 15.86 
+#11 16.42    Creating an optimized production build ...
+#11 81.68  ✓ Compiled successfully
+#11 81.68    Skipping validation of types
+#11 81.68    Skipping linting
+#11 82.23    Collecting page data ...
+#11 85.34    Generating static pages (0/30) ...
+#11 86.37    Generating static pages (7/30) 
+#11 86.68    Generating static pages (14/30) 
+#11 86.94    Generating static pages (22/30) 
+#11 87.03  ✓ Generating static pages (30/30)
+#11 87.79    Finalizing page optimization ...
+#11 87.79    Collecting build traces ...
+#11 129.9 
+#11 129.9 Route (app)                              Size     First Load JS
+#11 129.9 ┌ ○ /                                    17.2 kB         153 kB
+#11 129.9 ├ ○ /_not-found                          876 B          88.1 kB
+#11 129.9 ├ ○ /admin                               6.3 kB          112 kB
+#11 129.9 ├ ○ /admin/analytics                     4.65 kB         110 kB
+#11 129.9 ├ ○ /admin/audit-logs                    6.32 kB         112 kB
+#11 129.9 ├ ○ /admin/beta                          5.09 kB         111 kB
+#11 129.9 ├ ○ /admin/conversions                   7.34 kB         113 kB
+#11 129.9 ├ ○ /admin/payments                      7.15 kB         113 kB
+#11 129.9 ├ ○ /admin/payments/transactions         7.02 kB         113 kB
+#11 129.9 ├ ○ /admin/system                        4.74 kB         110 kB
+#11 129.9 ├ ○ /admin/users                         10.3 kB         116 kB
+#11 129.9 ├ ƒ /admin/users/[id]                    21.5 kB         137 kB
+#11 129.9 ├ ○ /batch-demo                          4.29 kB         123 kB
+#11 129.9 ├ ○ /beta                                8.18 kB         120 kB
+#11 129.9 ├ ○ /dashboard                           5.54 kB         111 kB
+#11 129.9 ├ ○ /features                            4.33 kB         109 kB
+#11 129.9 ├ ○ /forgot-password                     5.37 kB         108 kB
+#11 129.9 ├ ○ /get-started                         6.58 kB         115 kB
+#11 129.9 ├ ○ /login                               2.25 kB         109 kB
+#11 129.9 ├ ○ /payment                             5.76 kB         108 kB
+#11 129.9 ├ ○ /payment/cancel                      2.85 kB         105 kB
+#11 129.9 ├ ○ /payment/success                     4.56 kB         107 kB
+#11 129.9 ├ ○ /pricing                             4.53 kB         110 kB
+#11 129.9 ├ ○ /privacy                             183 B          94.2 kB
+#11 129.9 ├ ○ /reset-password                      6.17 kB         108 kB
+#11 129.9 ├ ○ /security                            183 B          94.2 kB
+#11 129.9 ├ ○ /signup                              3.57 kB         111 kB
+#11 129.9 ├ ○ /terms                               183 B          94.2 kB
+#11 129.9 └ ○ /verify-email                        4.73 kB         107 kB
+#11 129.9 + First Load JS shared by all            87.2 kB
+#11 129.9   ├ chunks/2117-26d60029e272ef5d.js      31.6 kB
+#11 129.9   ├ chunks/fd9d1056-f6b114259b0a635c.js  53.6 kB
+#11 129.9   └ other shared chunks (total)          1.96 kB
+#11 129.9 
+#11 129.9 
+#11 129.9 ○  (Static)   prerendered as static content
+#11 129.9 ƒ  (Dynamic)  server-rendered on demand
+#11 129.9 
+#11 DONE 130.3s
+
+#12 [stage-1 4/7] RUN npm ci --only=production && npm cache clean --force
+#12 CACHED
+
+#13 [stage-1 5/7] COPY --from=builder /app/.next ./.next
+#13 DONE 2.2s
+
+#14 [stage-1 6/7] COPY --from=builder /app/public ./public
+#14 DONE 0.5s
+
+#15 [stage-1 7/7] COPY --from=builder /app/next.config.mjs ./
+#15 DONE 0.4s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 7.1s done
+#16 exporting manifest sha256:200148bca9d3596e1a961819d99bb092cfc83c47e39665f9dd7530d72386d7e4
+#16 exporting manifest sha256:200148bca9d3596e1a961819d99bb092cfc83c47e39665f9dd7530d72386d7e4 0.2s done
+#16 exporting config sha256:48f611e7167526de157c17bf022b8f8ee1b75b486a9a2b3b2b5e17360d59079f
+#16 exporting config sha256:48f611e7167526de157c17bf022b8f8ee1b75b486a9a2b3b2b5e17360d59079f 0.1s done
+#16 exporting attestation manifest sha256:34975e87ae77ce8502477feaea738dd6860fd6945dda4ceec1a578ebaa02c3c6
+#16 exporting attestation manifest sha256:34975e87ae77ce8502477feaea738dd6860fd6945dda4ceec1a578ebaa02c3c6 0.1s done
+#16 exporting manifest list sha256:45e67effec3a8701ae5fe495b3949e407c33f01255eedfa06eb8603ba2d9ddc5
+#16 exporting manifest list sha256:45e67effec3a8701ae5fe495b3949e407c33f01255eedfa06eb8603ba2d9ddc5 0.1s done
+#16 naming to docker.io/mkelam/pdflab-frontend:v1.2.0-beta 0.0s done
+#16 unpacking to docker.io/mkelam/pdflab-frontend:v1.2.0-beta
+#16 unpacking to docker.io/mkelam/pdflab-frontend:v1.2.0-beta 3.3s done
+#16 DONE 11.2s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/eds8m988zceo2w0ck015cf0xr

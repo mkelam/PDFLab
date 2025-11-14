@@ -1,0 +1,82 @@
+{
+  "total": 11,
+  "failures": [
+    {
+      "file": "auth.spec.ts",
+      "suite": "Authentication",
+      "test": "should display login page",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Login/\u001b[39m\nReceived string:  \u001b[31m\"PDF Lab Pro - Premium Document Processing\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"PDF Lab Pro - Premium Document Processing\"\u001b[22m\n"
+    },
+    {
+      "file": "auth.spec.ts",
+      "suite": "Authentication",
+      "test": "should login with valid credentials",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Dashboard|Profile|Logout/i')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Dashboard|Profile|Logout/i')\u001b[22m\n"
+    },
+    {
+      "file": "auth.spec.ts",
+      "suite": "Authentication",
+      "test": "should navigate to signup page",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/signup/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3000/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3000/login\"\u001b[22m\n"
+    },
+    {
+      "file": "auth.spec.ts",
+      "suite": "Authentication",
+      "test": "should persist session after page reload",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/Dashboard|Profile|Logout/i')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/Dashboard|Profile|Logout/i')\u001b[22m\n"
+    },
+    {
+      "file": "batch-processing.spec.ts",
+      "suite": "Batch Processing",
+      "test": "should toggle between single and batch mode",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Batch Processing')\nExpected pattern: \u001b[32m/active|selected|bg-primary/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Batch Processing')\u001b[22m\n\u001b[2m    9 × locator resolved to <span>Batch Processing</span>\u001b[22m\n\u001b[2m      - unexpected value \"\"\u001b[22m\n"
+    },
+    {
+      "file": "batch-processing.spec.ts",
+      "suite": "Batch Processing",
+      "test": "should show file count in batch mode",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/3 files?|3/10/')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/3 files?|3/10/')\u001b[22m\n"
+    },
+    {
+      "file": "conversion.spec.ts",
+      "suite": "PDF Conversion",
+      "test": "should display conversion interface",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Convert')\nExpected: visible\nError: strict mode violation: locator('text=Convert') resolved to 8 elements:\n    1) <h1 class=\"font-bold text-3xl md:text-4xl mb-3 leading-tight\">Convert PDFs to Office Files in Seconds</h1> aka getByRole('heading', { name: 'Convert PDFs to Office Files' })\n    2) <span>Convert</span> aka getByTestId('convert-mode-button')\n    3) <p class=\"text-sm text-muted-foreground leading-relaxed\">Converting PDFs to editable documents used to tak…</p> aka getByText('Converting PDFs to editable').first()\n    4) <p class=\"text-sm text-muted-foreground leading-relaxed\">The OCR accuracy is amazing - even scanned docume…</p> aka getByText('The OCR accuracy is amazing').first()\n    5) <p class=\"text-sm text-muted-foreground leading-relaxed\">Converting PDFs to PowerPoint used to take foreve…</p> aka getByText('Converting PDFs to PowerPoint').first()\n    6) <p class=\"text-sm text-muted-foreground leading-relaxed\">Converting PDFs to editable documents used to tak…</p> aka getByText('Converting PDFs to editable').nth(1)\n    7) <p class=\"text-sm text-muted-foreground leading-relaxed\">The OCR accuracy is amazing - even scanned docume…</p> aka getByText('The OCR accuracy is amazing').nth(1)\n    8) <p class=\"text-sm text-muted-foreground leading-relaxed\">Converting PDFs to PowerPoint used to take foreve…</p> aka getByText('Converting PDFs to PowerPoint').nth(1)\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Convert')\u001b[22m\n"
+    },
+    {
+      "file": "conversion.spec.ts",
+      "suite": "PDF Conversion",
+      "test": "should switch between conversion modes",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/compression level|good|recommended/i')\nExpected: visible\nError: strict mode violation: locator('text=/compression level|good|recommended/i') resolved to 3 elements:\n    1) <h4 class=\"text-primary/90 text-xs font-semibold mb-2\">3. Compression Level</h4> aka getByRole('heading', { name: 'Compression Level' })\n    2) <span class=\"text-xs font-semibold capitalize\">good</span> aka getByTestId('compression-level-good')\n    3) <span class=\"text-xs font-semibold capitalize\">recommended</span> aka getByTestId('compression-level-recommended')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/compression level|good|recommended/i')\u001b[22m\n"
+    },
+    {
+      "file": "conversion.spec.ts",
+      "suite": "PDF Conversion",
+      "test": "should show batch processing toggle for pro users",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/batch|single/i')\nExpected: visible\nError: strict mode violation: locator('text=/batch|single/i') resolved to 2 elements:\n    1) <button class=\"↵                      flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200↵                      bg-primary text-white shadow-sm↵                    \">Single File</button> aka getByRole('button', { name: 'Single File' })\n    2) <span>Batch Processing</span> aka getByRole('button', { name: 'Batch Processing Pro' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/batch|single/i')\u001b[22m\n"
+    },
+    {
+      "file": "conversion.spec.ts",
+      "suite": "PDF Conversion",
+      "test": "should validate file type",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=/invalid|only PDF|not supported/i')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=/invalid|only PDF|not supported/i')\u001b[22m\n"
+    },
+    {
+      "file": "partner-e2e-flow.spec.ts",
+      "suite": "Partner Application E2E Flow",
+      "test": "Step 2: Admin logs in and views applications",
+      "project": "chromium",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=\"testpartner1763145114286@example.com\"').first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=\"testpartner1763145114286@example.com\"').first()\u001b[22m\n"
+    }
+  ]
+}

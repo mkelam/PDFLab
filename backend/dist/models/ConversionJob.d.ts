@@ -3,8 +3,10 @@ export declare enum ConversionType {
     PDF_TO_PPTX = "pdf_to_pptx",
     PDF_TO_DOCX = "pdf_to_docx",
     PDF_TO_XLSX = "pdf_to_xlsx",
+    PDF_TO_PNG = "pdf_to_png",
     PDF_TO_IMAGES = "pdf_to_images",
-    PDF_MERGE = "pdf_merge"
+    PDF_MERGE = "pdf_merge",
+    PDF_COMPRESS = "pdf_compress"
 }
 export declare enum JobStatus {
     PENDING = "pending",
@@ -32,7 +34,7 @@ interface ConversionJobAttributes {
     updated_at: Date;
     expires_at: Date;
 }
-interface ConversionJobCreationAttributes extends Optional<ConversionJobAttributes, 'id' | 'created_at' | 'updated_at' | 'progress' | 'status'> {
+interface ConversionJobCreationAttributes extends Optional<ConversionJobAttributes, 'id' | 'created_at' | 'updated_at' | 'progress' | 'status' | 'expires_at'> {
 }
 export declare class ConversionJob extends Model<ConversionJobAttributes, ConversionJobCreationAttributes> implements ConversionJobAttributes {
     id: string;

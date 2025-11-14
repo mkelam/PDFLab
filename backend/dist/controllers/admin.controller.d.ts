@@ -6,6 +6,12 @@ import { Request, Response } from 'express';
  */
 export declare const getAllUsers: (req: Request, res: Response) => Promise<void>;
 /**
+ * GET /api/admin/beta-users
+ * Get all beta users (users with is_beta_user = true)
+ * Query params: search, page, limit, sortBy, sortOrder
+ */
+export declare const getBetaUsers: (req: Request, res: Response) => Promise<void>;
+/**
  * GET /api/admin/users/:id
  * Get user details by ID
  */
@@ -80,4 +86,19 @@ export declare const exportUsersToCSV: (req: Request, res: Response) => Promise<
  * Get platform statistics
  */
 export declare const getStats: (req: Request, res: Response) => Promise<void>;
+/**
+ * GET /api/admin/quota-status
+ * Get quota status for all users (shows who needs fixing)
+ */
+export declare const getQuotaStatus: (req: Request, res: Response) => Promise<void>;
+/**
+ * POST /api/admin/fix-quotas
+ * Fix quota limits for ALL users based on their plans
+ */
+export declare const fixQuotas: (req: Request, res: Response) => Promise<void>;
+/**
+ * POST /api/admin/users/:id/sync-quota
+ * Sync quota for a specific user
+ */
+export declare const syncUserQuotaEndpoint: (req: Request, res: Response) => Promise<void>;
 //# sourceMappingURL=admin.controller.d.ts.map

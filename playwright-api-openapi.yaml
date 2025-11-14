@@ -1,0 +1,399 @@
+openapi: 3.0.0
+info:
+  title: Playwright Test Execution API
+  description: API for autonomous Playwright test execution via BMAD CustomGPT
+  version: 1.0.0
+  contact:
+    name: PDFLab Engineering
+    url: https://pdflab.pro
+
+servers:
+  - url: http://localhost:3007
+    description: Local development server
+
+paths:
+  /api/playwright/run:
+    post:
+      summary: Execute Playwright tests
+      description: Run Playwright tests with optional filters and configurations
+      operationId: runPlaywrightTests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                testFile:
+                  type: string
+                  description: Specific test file to run (e.g., "e2e/partner-e2e-flow.spec.ts")
+                  example: "e2e/partner-e2e-flow.spec.ts"
+                project:
+                  type: string
+                  description: Browser project to run (chromium, firefox, webkit)
+                  enum: [chromium, firefox, webkit]
+                  example: "chromium"
+                grep:
+                  type: string
+                  description: Filter tests by title pattern
+                  example: "Partner submits application"
+                workers:
+                  type: integer
+                  description: Number of parallel workers
+                  minimum: 1
+                  maximum: 10
+                  example: 1
+                reporter:
+                  type: string
+                  description: Playwright reporter to use
+                  example: "json,line"
+      responses:
+        '200':
+          description: Tests started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Playwright tests started"
+                  jobId:
+                    type: string
+                    example: "1699564800123"
+                  command:
+                    type: string
+                    example: "npx playwright test e2e/partner-e2e-flow.spec.ts --project=chromium"
+                  statusUrl:
+                    type: string
+                    example: "/api/playwright/status"
+                  resultsUrl:
+                    type: string
+                    example: "/api/playwright/results"
+        '400':
+          description: Invalid request parameters
+
+  /api/playwright/status:
+    get:
+      summary: Get test execution status
+      description: Check current status of Playwright test execution
+      operationId: getPlaywrightStatus
+      responses:
+        '200':
+          description: Current test status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [idle, running, completed, error]
+                    example: "running"
+                  jobId:
+                    type: string
+                    example: "1699564800123"
+                  startTime:
+                    type: string
+                    format: date-time
+                    example: "2025-11-14T10:30:00.000Z"
+                  endTime:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    example: "2025-11-14T10:32:45.000Z"
+                  command:
+                    type: string
+                    example: "npx playwright test e2e/partner-e2e-flow.spec.ts"
+
+  /api/playwright/results:
+    get:
+      summary: Get detailed test results
+      description: Retrieve comprehensive test results with analysis and recommendations
+      operationId: getPlaywrightResults
+      responses:
+        '200':
+          description: Detailed test results with analysis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    example: "1699564800123"
+                  status:
+                    type: string
+                    enum: [idle, running, completed, error]
+                    example: "completed"
+                  startTime:
+                    type: string
+                    format: date-time
+                  endTime:
+                    type: string
+                    format: date-time
+                  duration:
+                    type: integer
+                    description: Test execution duration in milliseconds
+                    example: 165000
+                  results:
+                    type: object
+                    properties:
+                      summary:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                            example: 7
+                          passed:
+                            type: integer
+                            example: 4
+                          failed:
+                            type: integer
+                            example: 3
+                          skipped:
+                            type: integer
+                            example: 0
+                  analysis:
+                    type: object
+                    properties:
+                      insights:
+                        type: array
+                        items:
+                          type: string
+                        example: ["Pass rate: 57.1% (4/7)", "3 test(s) failed"]
+                      recommendations:
+                        type: array
+                        items:
+                          type: string
+                        example: ["Review error screenshots in test-results/ folder", "Use BMAD Dev agent to fix failing tests"]
+                  screenshots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test:
+                          type: string
+                        file:
+                          type: string
+                  errorContexts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test:
+                          type: string
+                        preview:
+                          type: string
+                  stdout:
+                    type: string
+                    description: Raw standard output from Playwright
+                  stderr:
+                    type: string
+                    description: Raw standard error from Playwright
+                  error:
+                    type: string
+                    nullable: true
+                    description: Error message if execution failed
+        '202':
+          description: Tests are still running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tests are still running"
+                  jobId:
+                    type: string
+                  startTime:
+                    type: string
+                    format: date-time
+        '404':
+          description: No tests have been run yet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No tests have been run yet"
+                  message:
+                    type: string
+                    example: "Use POST /api/playwright/run to execute tests"
+
+  /api/playwright/generate-tests:
+    post:
+      summary: Save BMAD-generated test code
+      description: Save test code generated by BMAD Dev agent to file system
+      operationId: generatePlaywrightTests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - testCode
+                - fileName
+              properties:
+                testCode:
+                  type: string
+                  description: Complete test file content (TypeScript)
+                  example: "import { test, expect } from '@playwright/test';\n\ntest('example', async ({ page }) => {\n  await page.goto('/');\n});"
+                fileName:
+                  type: string
+                  description: File name (will be saved in e2e/ directory)
+                  example: "user-onboarding.spec.ts"
+                overwrite:
+                  type: boolean
+                  description: Overwrite existing file if it exists
+                  default: false
+      responses:
+        '200':
+          description: Test file created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Test file created successfully"
+                  path:
+                    type: string
+                    example: "C:\\Users\\Mac\\OneDrive\\Desktop\\Projects\\PDFLab\\e2e\\user-onboarding.spec.ts"
+                  fileName:
+                    type: string
+                    example: "user-onboarding.spec.ts"
+        '400':
+          description: Missing required fields
+        '409':
+          description: File already exists (set overwrite to true)
+
+  /api/playwright/list-tests:
+    get:
+      summary: List all test files
+      description: Get list of all test files in e2e directory
+      operationId: listPlaywrightTests
+      responses:
+        '200':
+          description: List of test files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  directory:
+                    type: string
+                    example: "C:\\Users\\Mac\\OneDrive\\Desktop\\Projects\\PDFLab\\e2e"
+                  testFiles:
+                    type: array
+                    items:
+                      type: string
+                    example: ["partner-e2e-flow.spec.ts", "user-onboarding.spec.ts"]
+                  count:
+                    type: integer
+                    example: 2
+
+  /api/playwright/screenshot/{test}/{file}:
+    get:
+      summary: Get specific screenshot
+      description: Retrieve screenshot file from failed test
+      operationId: getPlaywrightScreenshot
+      parameters:
+        - name: test
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Test name (directory in test-results)
+          example: "partner-e2e-flow-Partner-Application-Flow-Partner-submits-application-chromium"
+        - name: file
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Screenshot file name
+          example: "error-context.png"
+      responses:
+        '200':
+          description: Screenshot image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Screenshot not found
+
+  /api/playwright/error-context/{test}:
+    get:
+      summary: Get error context for test
+      description: Retrieve detailed error context markdown for failed test
+      operationId: getPlaywrightErrorContext
+      parameters:
+        - name: test
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Test name (directory in test-results)
+          example: "partner-e2e-flow-Partner-Application-Flow-Partner-submits-application-chromium"
+      responses:
+        '200':
+          description: Error context content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  test:
+                    type: string
+                    example: "partner-e2e-flow-Partner-Application-Flow-Partner-submits-application-chromium"
+                  content:
+                    type: string
+                    description: Markdown content with page snapshot and error details
+        '404':
+          description: Error context not found
+
+  /health:
+    get:
+      summary: Health check
+      description: Check if API server is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "Playwright API Server"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas: {}
+
+tags:
+  - name: Execution
+    description: Test execution operations
+  - name: Results
+    description: Test results and analysis
+  - name: Files
+    description: Test file management
+  - name: Health
+    description: Server health checks
