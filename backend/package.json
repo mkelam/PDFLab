@@ -11,7 +11,7 @@
     "build": "tsc || true",
     "build:clean": "rimraf dist && npm run build",
     "build:production": "npm run build",
-    "start": "node dist/server.ts",
+    "start": "node dist/server.js",
     "worker": "node dist/worker.js",
     "migrate": "node dist/scripts/migrate.js",
     "seed": "node dist/scripts/seed.js",

@@ -43,7 +43,7 @@ services:
     volumes:
       - pdflab-storage:/app/storage
       - pdflab-logs:/app/logs
-    command: ["npm", "start"]
+    command: ["node", "dist/server.js"]
 
   frontend:
     image: mkelam/pdflab-frontend:latest
