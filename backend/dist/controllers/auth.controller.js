@@ -38,15 +38,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetPassword = exports.forgotPassword = exports.refreshToken = exports.getProfile = exports.login = exports.register = void 0;
 const models_1 = require("../models");
+const UserAttribution_1 = require("../models/UserAttribution");
 const auth_utils_1 = require("../utils/auth.utils");
 const email_service_1 = __importDefault(require("../services/email.service"));
 const guest_session_service_1 = __importDefault(require("../services/guest-session.service"));
+const attribution_middleware_1 = require("../middleware/attribution.middleware");
 /**
  * Register a new user
  */
 const register = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, name, promo_code } = req.body;
         // Validation
         if (!email || !password) {
             res.status(400).json({
@@ -91,6 +93,77 @@ const register = async (req, res) => {
             created_at: new Date(),
             updated_at: new Date()
         });
+        // ===================================
+        // ATTRIBUTION TRACKING
+        // ===================================
+        // Capture attribution data to identify which influencer brought this user
+        let attributionMethod;
+        let partnerId;
+        let promoCodeId;
+        let referralUrl;
+        let utmSource;
+        let utmMedium;
+        let utmCampaign;
+        // 1. Check for promo code (highest priority)
+        if (promo_code) {
+            const promoCodeRecord = await models_1.PromoCode.findOne({
+                where: { code: promo_code.toUpperCase(), is_active: true },
+                include: [{ model: models_1.Partner, as: 'partner' }]
+            });
+            if (promoCodeRecord && promoCodeRecord.isValid()) {
+                partnerId = promoCodeRecord.partner_id;
+                promoCodeId = promoCodeRecord.id;
+                attributionMethod = UserAttribution_1.AttributionMethod.PROMO_CODE;
+                // Increment promo code usage
+                await promoCodeRecord.incrementUse();
+                console.log(`[Attribution] User ${user.email} signed up with promo code ${promo_code}`);
+            }
+            else {
+                console.warn(`[Attribution] Invalid or expired promo code: ${promo_code}`);
+            }
+        }
+        // 2. Check for referral link attribution (from middleware)
+        if (!partnerId) {
+            const attributionData = (0, attribution_middleware_1.getAttributionData)(req);
+            if (attributionData && attributionData.partner_id) {
+                partnerId = attributionData.partner_id;
+                referralUrl = attributionData.referral_url;
+                utmSource = attributionData.utm_source;
+                utmMedium = attributionData.utm_medium;
+                utmCampaign = attributionData.utm_campaign;
+                attributionMethod = UserAttribution_1.AttributionMethod.REFERRAL_LINK;
+                console.log(`[Attribution] User ${user.email} signed up via referral link from partner ${partnerId}`);
+            }
+        }
+        // 3. Create attribution record
+        if (partnerId && attributionMethod) {
+            await models_1.UserAttribution.create({
+                user_id: user.id,
+                partner_id: partnerId,
+                promo_code_id: promoCodeId,
+                attribution_method: attributionMethod,
+                referral_url: referralUrl,
+                utm_source: utmSource,
+                utm_medium: utmMedium,
+                utm_campaign: utmCampaign,
+                converted_to_paid: false,
+                first_payment_amount: 0,
+                commission_due: 0,
+                commission_paid: false,
+                created_at: new Date()
+            });
+            console.log(`[Attribution] Created attribution record for user ${user.email} → partner ${partnerId}`);
+        }
+        else {
+            // Organic signup (no partner attribution)
+            await models_1.UserAttribution.create({
+                user_id: user.id,
+                partner_id: null,
+                attribution_method: UserAttribution_1.AttributionMethod.MANUAL,
+                created_at: new Date()
+            });
+            console.log(`[Attribution] User ${user.email} is an organic signup (no partner)`);
+        }
         // Migrate guest session if exists
         const guestSessionId = req.cookies?.guest_session_id;
         let migratedJobs = 0;

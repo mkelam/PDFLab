@@ -2,7 +2,6 @@ import { Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import PartnerApplication from '../models/PartnerApplication'
 import { Partner } from '../models/Partner'
-import User from '../models/User'
 import emailService from '../services/email.service'
 import { generateSlug, generateReferralCode } from '../utils/partner.utils'
 
@@ -96,17 +95,17 @@ function shouldAutoReject(application: any, score: number): { reject: boolean; r
     return { reject: true, reason: 'Minimum audience size of 1,000 required' }
   }
 
-  // Response too short (spam filter)
-  if (application.why_pdflab.length < 50) {
+  // Response too short (spam filter) - only check if provided
+  if (application.why_pdflab && application.why_pdflab.length < 50) {
     return {
       reject: true,
       reason: 'Application requires more detailed explanation (minimum 50 characters)'
     }
   }
 
-  // No spam keywords
+  // No spam keywords - only check if fields are provided
   const spamKeywords = ['make money', 'quick cash', 'easy money', 'get rich']
-  const text = (application.why_pdflab + ' ' + application.content_idea).toLowerCase()
+  const text = ((application.why_pdflab || '') + ' ' + (application.content_idea || '')).toLowerCase()
   if (spamKeywords.some(spam => text.includes(spam))) {
     return { reject: true, reason: 'Application does not meet quality standards' }
   }
@@ -136,8 +135,8 @@ export const submitApplication = async (req: Request, res: Response) => {
       previous_affiliates
     } = req.body
 
-    // Validation
-    if (!email || !full_name || !primary_platform || !audience_size || !audience_niche || !platform_url || !why_pdflab || !content_idea) {
+    // Validation - only require core fields
+    if (!email || !full_name || !primary_platform || !audience_size || !audience_niche || !platform_url) {
       return res.status(400).json({ error: 'Missing required fields' })
     }
 
@@ -164,21 +163,30 @@ export const submitApplication = async (req: Request, res: Response) => {
       }
     }
 
+    // Sanitize optional fields - convert empty strings to null for ENUM columns
+    const sanitizedEstimatedConversions = estimated_conversions && estimated_conversions.trim() !== ''
+      ? estimated_conversions
+      : null
+
+    const sanitizedPreviousAffiliates = previous_affiliates && previous_affiliates.trim() !== ''
+      ? previous_affiliates
+      : null
+
     // Calculate application score
     const applicationData = {
       email,
       full_name,
-      brand_name,
-      country,
+      brand_name: brand_name || null,
+      country: country || null,
       primary_platform,
       audience_size,
       audience_niche,
       platform_url,
-      why_pdflab,
+      why_pdflab: why_pdflab || null,
       promotion_methods: Array.isArray(promotion_methods) ? promotion_methods : [promotion_methods],
-      content_idea,
-      estimated_conversions,
-      previous_affiliates
+      content_idea: content_idea || null,
+      estimated_conversions: sanitizedEstimatedConversions,
+      previous_affiliates: sanitizedPreviousAffiliates
     }
 
     const score = calculateApplicationScore(applicationData)
@@ -317,6 +325,19 @@ export const approveApplication = async (req: Request, res: Response) => {
     const slug = await generateSlug(application.full_name)
     const referralCode = await generateReferralCode(application.full_name)
 
+    // Map application platform to partner platform ENUM
+    const platformMapping: Record<string, string> = {
+      youtube: 'youtube',
+      twitter: 'twitter',
+      linkedin: 'linkedin',
+      instagram: 'instagram',
+      tiktok: 'tiktok',
+      blog: 'other',
+      newsletter: 'other',
+      podcast: 'other'
+    }
+    const mappedPlatform = platformMapping[application.primary_platform] || 'other'
+
     // Create partner account
     const partner = await Partner.create({
       id: uuidv4(),
@@ -326,7 +347,7 @@ export const approveApplication = async (req: Request, res: Response) => {
       slug,
       referral_code: referralCode,
       brand_name: application.brand_name,
-      platform: application.primary_platform as any,
+      platform: mappedPlatform as any,
       website: application.platform_url,
       status: 'active' as any,
       activated_at: new Date(),

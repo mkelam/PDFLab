@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OnboardingTemplate = exports.OnboardingProgress = exports.Feedback = exports.BetaApplication = exports.PasswordHistory = exports.PaymentType = exports.PaymentStatus = exports.PaymentLog = exports.PlanType = exports.Subscription = exports.HealthStatus = exports.SystemHealthLog = exports.AuditLogSeverity = exports.AdminAuditLog = exports.UsageLog = exports.BatchStatus = exports.BatchOperationType = exports.BatchJob = exports.JobStatus = exports.ConversionType = exports.ConversionJob = exports.SubscriptionStatus = exports.UserRole = exports.UserPlan = exports.User = void 0;
+exports.PartnerApplication = exports.AttributionMethod = exports.UserAttribution = exports.DiscountType = exports.PromoCode = exports.PartnerStatus = exports.CommissionTier = exports.PartnerPlatform = exports.Partner = exports.OnboardingTemplate = exports.OnboardingProgress = exports.Feedback = exports.BetaApplication = exports.PasswordHistory = exports.PaymentType = exports.PaymentStatus = exports.PaymentLog = exports.PlanType = exports.Subscription = exports.HealthStatus = exports.SystemHealthLog = exports.AuditLogSeverity = exports.AdminAuditLog = exports.UsageLog = exports.BatchStatus = exports.BatchOperationType = exports.BatchJob = exports.JobStatus = exports.ConversionType = exports.ConversionJob = exports.SubscriptionStatus = exports.UserRole = exports.UserPlan = exports.User = void 0;
 // Central export for all models
 var User_1 = require("./User");
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return User_1.User; } });
@@ -43,6 +43,20 @@ var OnboardingProgress_1 = require("./OnboardingProgress");
 Object.defineProperty(exports, "OnboardingProgress", { enumerable: true, get: function () { return __importDefault(OnboardingProgress_1).default; } });
 var OnboardingTemplate_1 = require("./OnboardingTemplate");
 Object.defineProperty(exports, "OnboardingTemplate", { enumerable: true, get: function () { return __importDefault(OnboardingTemplate_1).default; } });
+// Influencer Attribution & Partner System
+var Partner_1 = require("./Partner");
+Object.defineProperty(exports, "Partner", { enumerable: true, get: function () { return Partner_1.Partner; } });
+Object.defineProperty(exports, "PartnerPlatform", { enumerable: true, get: function () { return Partner_1.PartnerPlatform; } });
+Object.defineProperty(exports, "CommissionTier", { enumerable: true, get: function () { return Partner_1.CommissionTier; } });
+Object.defineProperty(exports, "PartnerStatus", { enumerable: true, get: function () { return Partner_1.PartnerStatus; } });
+var PromoCode_1 = require("./PromoCode");
+Object.defineProperty(exports, "PromoCode", { enumerable: true, get: function () { return PromoCode_1.PromoCode; } });
+Object.defineProperty(exports, "DiscountType", { enumerable: true, get: function () { return PromoCode_1.DiscountType; } });
+var UserAttribution_1 = require("./UserAttribution");
+Object.defineProperty(exports, "UserAttribution", { enumerable: true, get: function () { return UserAttribution_1.UserAttribution; } });
+Object.defineProperty(exports, "AttributionMethod", { enumerable: true, get: function () { return UserAttribution_1.AttributionMethod; } });
+var PartnerApplication_1 = require("./PartnerApplication");
+Object.defineProperty(exports, "PartnerApplication", { enumerable: true, get: function () { return __importDefault(PartnerApplication_1).default; } });
 // Set up model associations
 const User_2 = require("./User");
 const subscription_model_2 = require("./subscription.model");

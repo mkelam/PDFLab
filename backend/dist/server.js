@@ -101,6 +101,10 @@ const audit_admin_routes_1 = __importDefault(require("./routes/audit.admin.route
 const analytics_routes_1 = __importDefault(require("./routes/analytics.routes"));
 const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
 const test_routes_1 = __importDefault(require("./routes/test.routes"));
+const partner_routes_1 = __importDefault(require("./routes/partner.routes"));
+const partnerApplication_routes_1 = __importDefault(require("./routes/partnerApplication.routes"));
+// Import attribution middleware
+const attribution_middleware_1 = require("./middleware/attribution.middleware");
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3001');
 // Trust proxy (required for rate limiting behind Nginx)
@@ -132,9 +136,12 @@ app.use((0, helmet_1.default)());
 // CORS configuration
 const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
     'http://localhost:3000',
+    'http://localhost:3001', // Partner portal local dev
     'http://localhost:3002',
     'https://pdflab.pro',
-    'http://pdflab.pro'
+    'http://pdflab.pro',
+    'https://partners.pdflab.pro', // Partner portal production
+    'http://partners.pdflab.pro'
 ];
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
@@ -165,6 +172,8 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 app.use((0, cookie_parser_1.default)());
 // Guest session initialization (runs for all requests)
 app.use(guest_middleware_1.initializeGuestSession);
+// Attribution tracking (captures referral links and UTM parameters)
+app.use(attribution_middleware_1.captureAttribution);
 // Logging
 if (process.env.NODE_ENV === 'development') {
     app.use((0, morgan_1.default)('dev'));
@@ -218,6 +227,8 @@ app.use('/api', feedback_routes_1.default);
 app.use('/api/onboarding', onboarding_routes_1.default);
 app.use('/api/analytics', analytics_routes_1.default);
 app.use('/api/profile', profile_routes_1.default);
+app.use('/api/partners', partner_routes_1.default); // Influencer attribution tracking
+app.use('/api/partner-applications', partnerApplication_routes_1.default); // Partner application system
 app.use('/api/admin', admin_routes_1.default);
 app.use('/api/admin', conversion_admin_routes_1.default);
 app.use('/api/admin/payments', payment_admin_routes_1.default);

@@ -15,9 +15,9 @@ interface PartnerApplicationAttributes {
   platform_url: string
 
   // Application content
-  why_pdflab: string
+  why_pdflab?: string
   promotion_methods: string[]
-  content_idea: string
+  content_idea?: string
   estimated_conversions?: '1_10' | '10_50' | '50_100' | '100_plus'
   previous_affiliates?: string
 
@@ -105,14 +105,12 @@ PartnerApplication.init(
     },
     platform_url: {
       type: DataTypes.STRING(500),
-      allowNull: false,
-      validate: {
-        isUrl: true
-      }
+      allowNull: false
+      // No URL validation - accepts usernames, handles, or URLs
     },
     why_pdflab: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true  // Optional field
     },
     promotion_methods: {
       type: DataTypes.JSON,
@@ -121,7 +119,7 @@ PartnerApplication.init(
     },
     content_idea: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true  // Optional field
     },
     estimated_conversions: {
       type: DataTypes.ENUM('1_10', '10_50', '50_100', '100_plus'),

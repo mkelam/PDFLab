@@ -1,0 +1,75 @@
+
+> pdflab@0.1.0 test:e2e
+> npx playwright test -c tests/e2e/playwright.config.ts --project=chromium partner-e2e-flow.spec.ts:43 --trace on
+
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e\partner-e2e-flow.spec.ts:43:7 › Partner Application E2E Flow › Step 1: Partner submits application
+[1A[2K[chromium] › e2e\partner-e2e-flow.spec.ts:43:7 › Partner Application E2E Flow › Step 1: Partner submits application
+🧪 Starting Partner E2E Test
+
+[1A[2K📧 Test Partner Email: testpartner1763149785341@example.com
+
+[1A[2K
+📝 Step 1: Submitting partner application...
+
+[1A[2K
+✅ Partner E2E Test Complete
+
+[1A[2K📸 Screenshots saved to test-results/
+
+[1A[2K📧 Test Partner: testpartner1763149785341@example.com
+
+[1A[2K🔑 Partner Slug: sarah-johnson
+
+[1A[2K
+🧹 Cleaning up test data...
+
+[1A[2K   Would delete application: testpartner1763149785341@example.com
+
+[1A[2K   Would delete partner: undefined
+
+[1A[2K✅ Cleanup complete (skipped for now)
+
+[1A[2K  1) [chromium] › e2e\partner-e2e-flow.spec.ts:43:7 › Partner Application E2E Flow › Step 1: Partner submits application 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByPlaceholder(/content idea/i)[22m
+
+
+       99 |     await page.getByLabel('Email Newsletter').check({ timeout: 10000 })
+      100 |
+    > 101 |     await page.getByPlaceholder(/content idea/i).fill(testPartner.contentIdea)
+          |                                                  ^
+      102 |
+      103 |     // Take screenshot after Step 2 filled
+      104 |     await page.screenshot({ path: 'test-results/partner-application-step2.png', fullPage: true })
+        at timeout (c:\Users\Mac\OneDrive\Desktop\Projects\PDFLab\e2e\partner-e2e-flow.spec.ts:101:50)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\partner-e2e-flow-Partner-A-5a039-Partner-submits-application-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\partner-e2e-flow-Partner-A-5a039-Partner-submits-application-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\partner-e2e-flow-Partner-A-5a039-Partner-submits-application-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\partner-e2e-flow-Partner-A-5a039-Partner-submits-application-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\partner-e2e-flow-Partner-A-5a039-Partner-submits-application-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    [chromium] › e2e\partner-e2e-flow.spec.ts:43:7 › Partner Application E2E Flow › Step 1: Partner submits application 
+
+[36m  Serving HTML report at http://localhost:59523. Press Ctrl+C to quit.[39m
