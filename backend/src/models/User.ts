@@ -45,12 +45,14 @@ interface UserAttributes {
   onboarding_completed: boolean
   onboarding_completed_at?: Date
   onboarding_skipped: boolean
+  google_id?: string
+  linkedin_id?: string
   created_at: Date
   updated_at: Date
   last_login?: Date
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at' | 'google_id' | 'linkedin_id'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string
@@ -74,6 +76,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public onboarding_completed!: boolean
   public onboarding_completed_at?: Date
   public onboarding_skipped!: boolean
+  public google_id?: string
+  public linkedin_id?: string
   public readonly created_at!: Date
   public readonly updated_at!: Date
   public last_login?: Date
@@ -220,6 +224,14 @@ User.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
+    },
+    google_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    linkedin_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
     created_at: {
       type: DataTypes.DATE,

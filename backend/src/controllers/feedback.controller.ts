@@ -3,6 +3,7 @@ import { Op } from 'sequelize'
 import Feedback, { FeedbackType, FeedbackStatus } from '../models/Feedback'
 import { User } from '../models'
 import emailService from '../services/email.service'
+import { sanitizeText, sanitizeRichText } from '../utils/sanitize.utils'
 
 /**
  * POST /api/feedback
@@ -50,13 +51,18 @@ export const submitFeedback = async (req: Request, res: Response): Promise<void>
       }
     }
 
+    // Sanitize inputs to prevent XSS
+    const sanitizedMessage = sanitizeRichText(message.trim())
+    const sanitizedName = name ? sanitizeText(name) : null
+    const sanitizedEmail = email ? sanitizeText(email) : null
+
     // Create feedback
     const feedback = await Feedback.create({
       user_id: userId,
-      user_email: email || null,
-      user_name: name || null,
+      user_email: sanitizedEmail,
+      user_name: sanitizedName,
       type: (type as FeedbackType) || 'general',
-      message: message.trim(),
+      message: sanitizedMessage,
       page_url: page_url || null,
       user_agent: userAgent,
       screenshot_url: screenshot_url || null,
@@ -86,7 +92,7 @@ export const submitFeedback = async (req: Request, res: Response): Promise<void>
 
     res.status(201).json({
       success: true,
-      message: 'Feedback submitted successfully',
+      message: 'Feedback received successfully',
       feedback: {
         id: feedback.id,
         type: feedback.type,
@@ -349,8 +355,11 @@ export const replyToFeedback = async (req: Request, res: Response): Promise<void
       return
     }
 
+    // Sanitize admin reply to prevent XSS
+    const sanitizedReply = sanitizeRichText(reply.trim())
+
     // Update feedback with reply
-    feedback.admin_reply = reply.trim()
+    feedback.admin_reply = sanitizedReply
     feedback.admin_id = adminId
     feedback.status = 'resolved' as FeedbackStatus
     feedback.resolved_at = new Date()

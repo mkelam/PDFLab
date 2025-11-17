@@ -6,7 +6,11 @@ import {
   getErrorLogs,
   testConversion,
   clearCache,
-  cleanupStorage
+  cleanupStorage,
+  getApplicationFlowHealth,
+  getBusinessMetrics,
+  getEnvironmentConfig,
+  getRecentErrors
 } from '../controllers/system.admin.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { requireAdmin, requirePermission, requireRole } from '../middleware/admin.middleware'
@@ -29,6 +33,18 @@ router.use(requireAdmin)
 
 // Get overall system health (all admin roles can view)
 router.get('/health', requirePermission('users.view'), getSystemHealth)
+
+// Get application flow health (end-to-end pipeline)
+router.get('/flow-health', requirePermission('users.view'), getApplicationFlowHealth)
+
+// Get business metrics
+router.get('/business-metrics', requirePermission('users.view'), getBusinessMetrics)
+
+// Get environment configuration validation
+router.get('/environment-config', requirePermission('users.view'), getEnvironmentConfig)
+
+// Get recent error stream
+router.get('/recent-errors', requirePermission('users.view'), getRecentErrors)
 
 // Get CloudConvert API health
 router.get('/cloudconvert', requirePermission('users.view'), getCloudConvertHealth)

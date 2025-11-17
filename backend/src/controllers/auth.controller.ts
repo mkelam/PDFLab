@@ -10,6 +10,7 @@ import {
   isValidEmail,
   isValidPassword
 } from '../utils/auth.utils'
+import { sanitizeText } from '../utils/sanitize.utils'
 import emailService from '../services/email.service'
 import GuestSessionService from '../services/guest-session.service'
 import { getAttributionData } from '../middleware/attribution.middleware'
@@ -39,7 +40,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (!isValidPassword(password)) {
-      res.status(422).json({
+      res.status(400).json({
         error: 'Weak password',
         message: 'Password must be at least 8 characters long and contain letters and numbers'
       })
@@ -59,11 +60,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Hash password
     const password_hash = await hashPassword(password)
 
+    // Sanitize user inputs to prevent XSS
+    const sanitizedName = name ? sanitizeText(name) : undefined
+
     // Create user
     const user = await User.create({
       email,
       password_hash,
-      name: name || undefined,
+      name: sanitizedName,
       plan: UserPlan.FREE,
       conversions_used: 0,
       conversions_limit: parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
@@ -142,7 +146,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       // Organic signup (no partner attribution)
       await UserAttribution.create({
         user_id: user.id,
-        partner_id: null,
+        partner_id: undefined,
         attribution_method: AttributionMethod.MANUAL,
         created_at: new Date()
       })
@@ -222,7 +226,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         conversions_limit: user.conversions_limit
       },
       token: accessToken,
-      refresh_token: refreshToken,
+      refreshToken: refreshToken,
       migrated_jobs: migratedJobs
     })
   } catch (error) {
@@ -300,7 +304,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         last_login: user.last_login
       },
       token: accessToken,
-      refresh_token: refreshToken
+      refreshToken: refreshToken
     })
   } catch (error) {
     console.error('Login error:', error)
@@ -349,9 +353,11 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
  */
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { refresh_token } = req.body
+    // Accept both refreshToken (camelCase) and refresh_token (snake_case) for backwards compatibility
+    const { refresh_token, refreshToken: refreshTokenCamel } = req.body
+    const token = refreshTokenCamel || refresh_token
 
-    if (!refresh_token) {
+    if (!token) {
       res.status(400).json({
         error: 'Missing refresh token',
         message: 'Refresh token is required'
@@ -361,7 +367,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
     // Verify refresh token (using same verifyToken function)
     const { verifyToken } = await import('../utils/auth.utils')
-    const decoded = verifyToken(refresh_token)
+    const decoded = verifyToken(token)
 
     if (!decoded) {
       res.status(401).json({
@@ -396,7 +402,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
     res.status(200).json({
       token: newAccessToken,
-      refresh_token: newRefreshToken
+      refreshToken: newRefreshToken
     })
   } catch (error) {
     console.error('Refresh token error:', error)
