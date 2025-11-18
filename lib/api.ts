@@ -144,7 +144,7 @@ async function refreshAccessToken(): Promise<string | null> {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refresh_token: refreshToken })
+      body: JSON.stringify({ refreshToken: refreshToken })
     })
 
     if (!response.ok) {
@@ -156,7 +156,7 @@ async function refreshAccessToken(): Promise<string | null> {
     const data = await response.json()
 
     // Store new tokens
-    setAuthTokens(data.token, data.refresh_token)
+    setAuthTokens(data.token, data.refreshToken)
 
     console.log('✅ Access token refreshed successfully')
     return data.token
