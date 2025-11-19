@@ -38,55 +38,62 @@ class CloudConvertService {
                 input_format: inputFormat,
                 output_format: outputFormat
             };
-            // Format-specific options with enhanced OCR for maximum text editability
+            // Determine if we need OCR preprocessing
+            const needsOCR = outputFormat === 'pptx' || outputFormat === 'docx' || outputFormat === 'xlsx';
+            // Build tasks based on format
+            const tasks = {
+                'upload-file': {
+                    operation: 'import/upload'
+                }
+            };
+            // Add OCR task for office formats to ensure text is editable
+            if (needsOCR) {
+                tasks['ocr-pdf'] = {
+                    operation: 'pdf/ocr',
+                    input: 'upload-file',
+                    language: ['eng'], // English OCR
+                    auto_orient: true // Auto-detect page orientation
+                };
+                // Convert task uses OCR output
+                taskConfig.input = 'ocr-pdf';
+            }
+            else {
+                // For image formats, use upload directly
+                taskConfig.input = 'upload-file';
+            }
+            // Format-specific options (no OCR params - handled by separate OCR task)
             if (outputFormat === 'pptx') {
                 taskConfig.pages = conversionOptions.pages || 'all';
-                // CRITICAL: Enable OCR to extract text from PDFs (makes text editable)
-                taskConfig.ocr = true; // Extract text from images/scanned PDFs
-                taskConfig.ocr_lang = 'eng'; // English language detection
-                taskConfig.ocr_mode = 'force'; // Force OCR even if PDF has embedded text (ensures editability)
-                // Layout and formatting preservation
+                // Layout preservation options only (OCR handled by separate task)
                 taskConfig.layout_preserving = true; // Maintain original layout
-                taskConfig.extract_text = true; // Extract embedded text from PDF
-                taskConfig.image_quality = 'high'; // High quality for better text recognition
-                // Disable watermarks
-                taskConfig.watermark = false;
-                taskConfig.no_watermark = true;
             }
             else if (outputFormat === 'docx') {
-                // Enhanced OCR configuration for DOCX - Focus on editable text
                 taskConfig.pages = conversionOptions.pages || 'all';
-                taskConfig.ocr = true; // Extract text from images/scanned PDFs
-                taskConfig.ocr_lang = 'eng'; // English language detection
-                taskConfig.ocr_mode = 'force'; // Force OCR for maximum text extraction
-                taskConfig.extract_text = true; // Extract embedded text from PDF
-                taskConfig.image_quality = 'high'; // High quality for better text recognition
                 taskConfig.layout_preserving = true; // Maintain formatting where possible
             }
             else if (outputFormat === 'xlsx') {
-                // Enhanced OCR configuration for XLSX - Focus on tables
-                taskConfig.ocr = true; // Extract text from images/scanned PDFs
-                taskConfig.ocr_lang = 'eng'; // English language detection
-                taskConfig.ocr_mode = 'force'; // Force OCR for maximum text extraction
+                // Table detection options
                 taskConfig.auto_detect_tables = true; // Automatically detect table structures
-                taskConfig.extract_text = true; // Extract embedded text
             }
             else if (outputFormat === 'png' || outputFormat === 'jpg') {
                 taskConfig.pages = conversionOptions.pages || 'all';
                 taskConfig.density = conversionOptions.dpi || 300;
             }
+            // Remove input from taskConfig (will be set dynamically)
+            delete taskConfig.input;
+            // Add convert task
+            tasks['convert-file'] = {
+                ...taskConfig,
+                input: needsOCR ? 'ocr-pdf' : 'upload-file'
+            };
+            // Add export task
+            tasks['export-file'] = {
+                operation: 'export/url',
+                input: 'convert-file'
+            };
             // Create CloudConvert job
             let job = await cloudConvertClient.jobs.create({
-                tasks: {
-                    'upload-file': {
-                        operation: 'import/upload'
-                    },
-                    'convert-file': taskConfig,
-                    'export-file': {
-                        operation: 'export/url',
-                        input: 'convert-file'
-                    }
-                },
+                tasks,
                 ...(webhookUrl && {
                     webhook_url: webhookUrl
                 })
