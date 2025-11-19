@@ -39,6 +39,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<{ user: User }>;
   logout: () => Promise<void>;
   signup: (credentials: SignupCredentials) => Promise<void>;
+  setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,14 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ refresh_token: refreshToken })
+                body: JSON.stringify({ refreshToken: refreshToken })
               });
 
               if (refreshResponse.ok) {
                 const refreshData = await refreshResponse.json();
                 // Store new tokens
                 localStorage.setItem('authToken', refreshData.token);
-                localStorage.setItem('refreshToken', refreshData.refresh_token);
+                localStorage.setItem('refreshToken', refreshData.refreshToken);
 
                 // Fetch profile with new token
                 const newProfileResponse = await fetch(`${API_URL}/api/auth/profile`, {
@@ -142,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Store access token and refresh token
       const token = data.access_token || data.token;
-      const refreshToken = data.refresh_token;
+      const refreshToken = data.refreshToken;
       localStorage.setItem('authToken', token);
       if (refreshToken) {
         localStorage.setItem('refreshToken', refreshToken);
@@ -205,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Auto-login after successful signup
       // Backend returns token and user data
       const token = data.token || data.access_token;
-      const refreshToken = data.refresh_token;
+      const refreshToken = data.refreshToken;
       if (token) {
         localStorage.setItem('authToken', token);
         if (refreshToken) {
@@ -225,8 +226,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Manually set tokens (used for OAuth flows)
+  const setTokens = async (accessToken: string, refreshToken: string) => {
+    setIsLoading(true);
+    try {
+      // Store tokens
+      localStorage.setItem('authToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      // Fetch user profile with the new token
+      const profileResponse = await fetch(`${API_URL}/api/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setUser(profileData);
+      } else {
+        throw new Error('Failed to fetch user profile');
+      }
+    } catch (error) {
+      console.error('Set tokens error:', error);
+      // Clear invalid tokens
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, signup }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, signup, setTokens }}>
       {children}
     </AuthContext.Provider>
   );
