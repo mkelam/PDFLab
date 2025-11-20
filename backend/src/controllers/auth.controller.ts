@@ -308,9 +308,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     })
   } catch (error) {
     console.error('Login error:', error)
-    res.status(500).json({
-      error: 'Login failed',
-      message: 'An error occurred during login'
+    // Return 401 for authentication failures (including SQL errors from malicious input)
+    // This prevents revealing database errors to attackers
+    res.status(401).json({
+      error: 'Invalid credentials',
+      message: 'Email or password is incorrect'
     })
   }
 }
@@ -344,6 +346,77 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({
       error: 'Failed to fetch profile',
       message: 'An error occurred while fetching your profile'
+    })
+  }
+}
+
+/**
+ * Update user profile
+ * Following Authentication Guardian skill - protect sensitive fields from user modification
+ */
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' })
+      return
+    }
+
+    const { name, email } = req.body
+
+    // Protected fields that users cannot modify directly (Authentication Guardian pattern)
+    const PROTECTED_FIELDS = ['role', 'plan', 'conversions_limit', 'conversions_used', 'subscription_status', 'password_hash', 'id']
+
+    // Check if request contains any protected fields
+    for (const field of PROTECTED_FIELDS) {
+      if (field in req.body) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: `Cannot modify protected field: ${field}`
+        })
+        return
+      }
+    }
+
+    // Sanitize name input (XSS protection - API Endpoint Guardian pattern)
+    const sanitizedName = name ? sanitizeText(name) : user.name
+
+    // Update allowed fields only
+    if (name !== undefined) {
+      user.name = sanitizedName
+    }
+    if (email !== undefined) {
+      // Check if new email is already taken
+      const existingUser = await User.findOne({ where: { email } })
+      if (existingUser && existingUser.id !== user.id) {
+        res.status(400).json({
+          error: 'Email already in use',
+          message: 'This email is already registered to another account'
+        })
+        return
+      }
+      user.email = email
+    }
+
+    await user.save()
+
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        plan: user.plan,
+        conversions_used: user.conversions_used,
+        conversions_limit: user.conversions_limit
+      }
+    })
+  } catch (error) {
+    console.error('Update profile error:', error)
+    res.status(500).json({
+      error: 'Update failed',
+      message: 'An error occurred while updating your profile'
     })
   }
 }

@@ -14,5 +14,6 @@ router.post('/forgot-password', ratelimit_middleware_1.authLimiter, auth_control
 router.post('/reset-password', ratelimit_middleware_1.authLimiter, auth_controller_1.resetPassword);
 // Protected routes
 router.get('/profile', auth_middleware_1.authMiddleware, auth_controller_1.getProfile);
+router.put('/profile', auth_middleware_1.authMiddleware, auth_controller_1.updateProfile);
 exports.default = router;
 //# sourceMappingURL=auth.routes.js.map

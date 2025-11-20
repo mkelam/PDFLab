@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { User } from '../models';
 declare global {
     namespace Express {
         interface Request {
@@ -19,6 +18,11 @@ export declare const authMiddleware: (req: Request, res: Response, next: NextFun
  * Skips check for guest users (they have separate quota check via guest middleware)
  */
 export declare const checkConversionQuota: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+/**
+ * Middleware to require admin role
+ * Following Authentication Guardian skill - distinguish between 401 (not authenticated) and 403 (not authorized)
+ */
+export declare const requireAdmin: (req: Request, res: Response, next: NextFunction) => void;
 /**
  * Middleware to require specific plan
  */

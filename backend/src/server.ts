@@ -213,23 +213,31 @@ app.get('/health', async (req: Request, res: Response) => {
 })
 
 // API routes
+// NOTE: Order matters! More specific routes MUST come before generic ones
+// Auth routes (includes legacy /api/auth/profile for backwards compatibility)
 app.use('/api/auth', authRoutes)
+
+// Specific feature routes (before generic /api routes)
 app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)
 app.use('/api/beta', betaRoutes)
-app.use('/api', feedbackRoutes)
 app.use('/api/onboarding', onboardingRoutes)
 app.use('/api/analytics', analyticsRoutes)
-app.use('/api/profile', profileRoutes)
+app.use('/api/profile', profileRoutes)  // New profile management endpoints
 app.use('/api/partners', partnerRoutes) // Influencer attribution tracking
 app.use('/api/partner-applications', partnerApplicationRoutes) // Partner application system
-app.use('/api/admin', adminRoutes)
-app.use('/api/admin', conversionAdminRoutes)
+
+// Admin routes (specific paths first)
 app.use('/api/admin/payments', paymentAdminRoutes)
 app.use('/api/admin/system', systemAdminRoutes)
 app.use('/api/admin/analytics', analyticsAdminRoutes)
 app.use('/api/admin/audit-logs', auditAdminRoutes)
-app.use('/api', conversionRoutes)
+app.use('/api/admin', adminRoutes)  // Generic admin routes last
+app.use('/api/admin', conversionAdminRoutes)
+
+// Generic routes LAST (these include wildcard routes like /api/upload)
+app.use('/api', feedbackRoutes)  // POST /api/feedback
+app.use('/api', conversionRoutes)  // POST /api/upload, /api/compress, etc.
 
 // Test routes (only in development/staging - NOT production)
 if (process.env.NODE_ENV !== 'production') {

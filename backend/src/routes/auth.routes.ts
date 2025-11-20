@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { register, login, getProfile, refreshToken, forgotPassword, resetPassword } from '../controllers/auth.controller'
+import { register, login, getProfile, updateProfile, refreshToken, forgotPassword, resetPassword } from '../controllers/auth.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
 import { authLimiter } from '../middleware/ratelimit.middleware'
 import { trackSignup } from '../middleware/analytics.middleware'
@@ -15,5 +15,6 @@ router.post('/reset-password', authLimiter, resetPassword)
 
 // Protected routes
 router.get('/profile', authMiddleware, getProfile)
+router.put('/profile', authMiddleware, updateProfile)
 
 export default router

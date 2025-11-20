@@ -8,6 +8,7 @@ const sequelize_1 = require("sequelize");
 const Feedback_1 = __importDefault(require("../models/Feedback"));
 const models_1 = require("../models");
 const email_service_1 = __importDefault(require("../services/email.service"));
+const sanitize_utils_1 = require("../utils/sanitize.utils");
 /**
  * POST /api/feedback
  * Submit new feedback (public endpoint - guests and authenticated users)
@@ -40,13 +41,17 @@ const submitFeedback = async (req, res) => {
                 name = user.name;
             }
         }
+        // Sanitize inputs to prevent XSS
+        const sanitizedMessage = (0, sanitize_utils_1.sanitizeRichText)(message.trim());
+        const sanitizedName = name ? (0, sanitize_utils_1.sanitizeText)(name) : null;
+        const sanitizedEmail = email ? (0, sanitize_utils_1.sanitizeText)(email) : null;
         // Create feedback
         const feedback = await Feedback_1.default.create({
             user_id: userId,
-            user_email: email || null,
-            user_name: name || null,
+            user_email: sanitizedEmail,
+            user_name: sanitizedName,
             type: type || 'general',
-            message: message.trim(),
+            message: sanitizedMessage,
             page_url: page_url || null,
             user_agent: userAgent,
             screenshot_url: screenshot_url || null,
@@ -75,7 +80,7 @@ const submitFeedback = async (req, res) => {
         }
         res.status(201).json({
             success: true,
-            message: 'Feedback submitted successfully',
+            message: 'Feedback received successfully',
             feedback: {
                 id: feedback.id,
                 type: feedback.type,
@@ -311,8 +316,10 @@ const replyToFeedback = async (req, res) => {
             res.status(404).json({ error: 'Feedback not found' });
             return;
         }
+        // Sanitize admin reply to prevent XSS
+        const sanitizedReply = (0, sanitize_utils_1.sanitizeRichText)(reply.trim());
         // Update feedback with reply
-        feedback.admin_reply = reply.trim();
+        feedback.admin_reply = sanitizedReply;
         feedback.admin_id = adminId;
         feedback.status = 'resolved';
         feedback.resolved_at = new Date();

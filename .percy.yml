@@ -1,0 +1,16 @@
+version: 2
+static:
+  include: /_next/static
+snapshot:
+  widths:
+    - 375  # Mobile
+    - 768  # Tablet
+    - 1280 # Desktop
+  min-height: 1024
+  percy-css: |
+    /* Hide elements that change frequently */
+    [data-testid="timestamp"],
+    [data-testid="conversion-count"],
+    .animate-pulse {
+      visibility: hidden;
+    }

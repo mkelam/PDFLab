@@ -219,23 +219,28 @@ app.get('/health', async (req, res) => {
     res.status(statusCode).json(health);
 });
 // API routes
+// NOTE: Order matters! More specific routes MUST come before generic ones
+// Auth routes (includes legacy /api/auth/profile for backwards compatibility)
 app.use('/api/auth', auth_routes_1.default);
+// Specific feature routes (before generic /api routes)
 app.use('/api/batch', batch_routes_1.default);
 app.use('/api/payfast', payfast_routes_1.default);
 app.use('/api/beta', beta_routes_1.default);
-app.use('/api', feedback_routes_1.default);
 app.use('/api/onboarding', onboarding_routes_1.default);
 app.use('/api/analytics', analytics_routes_1.default);
-app.use('/api/profile', profile_routes_1.default);
+app.use('/api/profile', profile_routes_1.default); // New profile management endpoints
 app.use('/api/partners', partner_routes_1.default); // Influencer attribution tracking
 app.use('/api/partner-applications', partnerApplication_routes_1.default); // Partner application system
-app.use('/api/admin', admin_routes_1.default);
-app.use('/api/admin', conversion_admin_routes_1.default);
+// Admin routes (specific paths first)
 app.use('/api/admin/payments', payment_admin_routes_1.default);
 app.use('/api/admin/system', system_admin_routes_1.default);
 app.use('/api/admin/analytics', analytics_admin_routes_1.default);
 app.use('/api/admin/audit-logs', audit_admin_routes_1.default);
-app.use('/api', conversion_routes_1.default);
+app.use('/api/admin', admin_routes_1.default); // Generic admin routes last
+app.use('/api/admin', conversion_admin_routes_1.default);
+// Generic routes LAST (these include wildcard routes like /api/upload)
+app.use('/api', feedback_routes_1.default); // POST /api/feedback
+app.use('/api', conversion_routes_1.default); // POST /api/upload, /api/compress, etc.
 // Test routes (only in development/staging - NOT production)
 if (process.env.NODE_ENV !== 'production') {
     app.use('/api', test_routes_1.default);

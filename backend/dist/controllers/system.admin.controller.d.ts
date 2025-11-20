@@ -34,4 +34,26 @@ export declare const clearCache: (_req: Request, res: Response) => Promise<void>
  * POST /api/admin/system/cleanup-storage
  */
 export declare const cleanupStorage: (req: Request, res: Response) => Promise<void>;
+/**
+ * Get application flow health (7-stage comprehensive pipeline)
+ * GET /api/admin/system/flow-health
+ *
+ * Stages: Auth → Upload → Database → Convert → Download → Payment → Email
+ */
+export declare const getApplicationFlowHealth: (_req: Request, res: Response) => Promise<void>;
+/**
+ * Get business metrics
+ * GET /api/admin/system/business-metrics
+ */
+export declare const getBusinessMetrics: (_req: Request, res: Response) => Promise<void>;
+/**
+ * Get environment configuration validation
+ * GET /api/admin/system/environment-config
+ */
+export declare const getEnvironmentConfig: (_req: Request, res: Response) => Promise<void>;
+/**
+ * Get recent error stream (last 10 errors from past hour)
+ * GET /api/admin/system/recent-errors
+ */
+export declare const getRecentErrors: (_req: Request, res: Response) => Promise<void>;
 //# sourceMappingURL=system.admin.controller.d.ts.map

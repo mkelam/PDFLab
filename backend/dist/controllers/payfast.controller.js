@@ -375,14 +375,15 @@ const getSubscription = async (req, res) => {
             return;
         }
         const { id } = req.params;
-        const subscription = await subscription_model_1.Subscription.findOne({
-            where: {
-                id,
-                user_id: user.id
-            }
-        });
+        // First, find the subscription by ID to check if it exists
+        const subscription = await subscription_model_1.Subscription.findByPk(id);
         if (!subscription) {
             res.status(404).json({ error: 'Subscription not found' });
+            return;
+        }
+        // Then check if the current user owns this subscription
+        if (subscription.user_id !== user.id) {
+            res.status(403).json({ error: 'Forbidden', message: 'You do not have permission to access this subscription' });
             return;
         }
         res.json({

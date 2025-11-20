@@ -153,6 +153,42 @@ export const checkConversionQuota = async (
 }
 
 /**
+ * Middleware to require admin role
+ * Following Authentication Guardian skill - distinguish between 401 (not authenticated) and 403 (not authorized)
+ */
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  // User must be authenticated first
+  if (!req.user) {
+    res.status(401).json({
+      error: 'Authentication required',
+      message: 'Please log in to access this feature',
+      cta: {
+        text: 'Log In',
+        url: '/login'
+      }
+    })
+    return
+  }
+
+  // User is authenticated, but check if admin
+  if (req.user.role !== 'admin') {
+    res.status(403).json({
+      error: 'Admin access required',
+      message: 'You do not have permission to access this resource',
+      current_role: req.user.role,
+      required_role: 'admin'
+    })
+    return
+  }
+
+  next()
+}
+
+/**
  * Middleware to require specific plan
  */
 export const requirePlan = (...requiredPlans: string[]) => {

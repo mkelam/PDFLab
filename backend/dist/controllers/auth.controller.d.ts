@@ -12,6 +12,11 @@ export declare const login: (req: Request, res: Response) => Promise<void>;
  */
 export declare const getProfile: (req: Request, res: Response) => Promise<void>;
 /**
+ * Update user profile
+ * Following Authentication Guardian skill - protect sensitive fields from user modification
+ */
+export declare const updateProfile: (req: Request, res: Response) => Promise<void>;
+/**
  * Refresh access token
  */
 export declare const refreshToken: (req: Request, res: Response) => Promise<void>;

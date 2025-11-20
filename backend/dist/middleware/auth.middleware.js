@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.optionalAuthMiddleware = exports.requireAuth = exports.optionalAuth = exports.requirePlan = exports.checkConversionQuota = exports.authMiddleware = void 0;
+exports.optionalAuthMiddleware = exports.requireAuth = exports.optionalAuth = exports.requirePlan = exports.requireAdmin = exports.checkConversionQuota = exports.authMiddleware = void 0;
 const auth_utils_1 = require("../utils/auth.utils");
 const models_1 = require("../models");
 /**
@@ -126,6 +126,36 @@ const checkConversionQuota = async (req, res, next) => {
     }
 };
 exports.checkConversionQuota = checkConversionQuota;
+/**
+ * Middleware to require admin role
+ * Following Authentication Guardian skill - distinguish between 401 (not authenticated) and 403 (not authorized)
+ */
+const requireAdmin = (req, res, next) => {
+    // User must be authenticated first
+    if (!req.user) {
+        res.status(401).json({
+            error: 'Authentication required',
+            message: 'Please log in to access this feature',
+            cta: {
+                text: 'Log In',
+                url: '/login'
+            }
+        });
+        return;
+    }
+    // User is authenticated, but check if admin
+    if (req.user.role !== 'admin') {
+        res.status(403).json({
+            error: 'Admin access required',
+            message: 'You do not have permission to access this resource',
+            current_role: req.user.role,
+            required_role: 'admin'
+        });
+        return;
+    }
+    next();
+};
+exports.requireAdmin = requireAdmin;
 /**
  * Middleware to require specific plan
  */

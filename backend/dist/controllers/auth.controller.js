@@ -36,10 +36,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.forgotPassword = exports.refreshToken = exports.getProfile = exports.login = exports.register = void 0;
+exports.resetPassword = exports.forgotPassword = exports.refreshToken = exports.updateProfile = exports.getProfile = exports.login = exports.register = void 0;
 const models_1 = require("../models");
 const UserAttribution_1 = require("../models/UserAttribution");
 const auth_utils_1 = require("../utils/auth.utils");
+const sanitize_utils_1 = require("../utils/sanitize.utils");
 const email_service_1 = __importDefault(require("../services/email.service"));
 const guest_session_service_1 = __importDefault(require("../services/guest-session.service"));
 const attribution_middleware_1 = require("../middleware/attribution.middleware");
@@ -65,7 +66,7 @@ const register = async (req, res) => {
             return;
         }
         if (!(0, auth_utils_1.isValidPassword)(password)) {
-            res.status(422).json({
+            res.status(400).json({
                 error: 'Weak password',
                 message: 'Password must be at least 8 characters long and contain letters and numbers'
             });
@@ -82,11 +83,13 @@ const register = async (req, res) => {
         }
         // Hash password
         const password_hash = await (0, auth_utils_1.hashPassword)(password);
+        // Sanitize user inputs to prevent XSS
+        const sanitizedName = name ? (0, sanitize_utils_1.sanitizeText)(name) : undefined;
         // Create user
         const user = await models_1.User.create({
             email,
             password_hash,
-            name: name || undefined,
+            name: sanitizedName,
             plan: models_1.UserPlan.FREE,
             conversions_used: 0,
             conversions_limit: parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
@@ -158,7 +161,7 @@ const register = async (req, res) => {
             // Organic signup (no partner attribution)
             await models_1.UserAttribution.create({
                 user_id: user.id,
-                partner_id: null,
+                partner_id: undefined,
                 attribution_method: UserAttribution_1.AttributionMethod.MANUAL,
                 created_at: new Date()
             });
@@ -223,7 +226,7 @@ const register = async (req, res) => {
                 conversions_limit: user.conversions_limit
             },
             token: accessToken,
-            refresh_token: refreshToken,
+            refreshToken: refreshToken,
             migrated_jobs: migratedJobs
         });
     }
@@ -295,14 +298,16 @@ const login = async (req, res) => {
                 last_login: user.last_login
             },
             token: accessToken,
-            refresh_token: refreshToken
+            refreshToken: refreshToken
         });
     }
     catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({
-            error: 'Login failed',
-            message: 'An error occurred during login'
+        // Return 401 for authentication failures (including SQL errors from malicious input)
+        // This prevents revealing database errors to attackers
+        res.status(401).json({
+            error: 'Invalid credentials',
+            message: 'Email or password is incorrect'
         });
     }
 };
@@ -341,12 +346,79 @@ const getProfile = async (req, res) => {
 };
 exports.getProfile = getProfile;
 /**
+ * Update user profile
+ * Following Authentication Guardian skill - protect sensitive fields from user modification
+ */
+const updateProfile = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            res.status(401).json({ error: 'User not authenticated' });
+            return;
+        }
+        const { name, email } = req.body;
+        // Protected fields that users cannot modify directly (Authentication Guardian pattern)
+        const PROTECTED_FIELDS = ['role', 'plan', 'conversions_limit', 'conversions_used', 'subscription_status', 'password_hash', 'id'];
+        // Check if request contains any protected fields
+        for (const field of PROTECTED_FIELDS) {
+            if (field in req.body) {
+                res.status(403).json({
+                    error: 'Forbidden',
+                    message: `Cannot modify protected field: ${field}`
+                });
+                return;
+            }
+        }
+        // Sanitize name input (XSS protection - API Endpoint Guardian pattern)
+        const sanitizedName = name ? (0, sanitize_utils_1.sanitizeText)(name) : user.name;
+        // Update allowed fields only
+        if (name !== undefined) {
+            user.name = sanitizedName;
+        }
+        if (email !== undefined) {
+            // Check if new email is already taken
+            const existingUser = await models_1.User.findOne({ where: { email } });
+            if (existingUser && existingUser.id !== user.id) {
+                res.status(400).json({
+                    error: 'Email already in use',
+                    message: 'This email is already registered to another account'
+                });
+                return;
+            }
+            user.email = email;
+        }
+        await user.save();
+        res.status(200).json({
+            message: 'Profile updated successfully',
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                plan: user.plan,
+                conversions_used: user.conversions_used,
+                conversions_limit: user.conversions_limit
+            }
+        });
+    }
+    catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({
+            error: 'Update failed',
+            message: 'An error occurred while updating your profile'
+        });
+    }
+};
+exports.updateProfile = updateProfile;
+/**
  * Refresh access token
  */
 const refreshToken = async (req, res) => {
     try {
-        const { refresh_token } = req.body;
-        if (!refresh_token) {
+        // Accept both refreshToken (camelCase) and refresh_token (snake_case) for backwards compatibility
+        const { refresh_token, refreshToken: refreshTokenCamel } = req.body;
+        const token = refreshTokenCamel || refresh_token;
+        if (!token) {
             res.status(400).json({
                 error: 'Missing refresh token',
                 message: 'Refresh token is required'
@@ -355,7 +427,7 @@ const refreshToken = async (req, res) => {
         }
         // Verify refresh token (using same verifyToken function)
         const { verifyToken } = await Promise.resolve().then(() => __importStar(require('../utils/auth.utils')));
-        const decoded = verifyToken(refresh_token);
+        const decoded = verifyToken(token);
         if (!decoded) {
             res.status(401).json({
                 error: 'Invalid refresh token',
@@ -385,7 +457,7 @@ const refreshToken = async (req, res) => {
         });
         res.status(200).json({
             token: newAccessToken,
-            refresh_token: newRefreshToken
+            refreshToken: newRefreshToken
         });
     }
     catch (error) {
