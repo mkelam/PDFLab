@@ -390,7 +390,8 @@ export const approveApplication = async (req: Request, res: Response) => {
         <ul>
           <li><strong>Bronze (30%):</strong> 0-10 conversions/month</li>
           <li><strong>Silver (40%):</strong> 11-50 conversions/month</li>
-          <li><strong>Gold (50%):</strong> 51+ conversions/month</li>
+          <li><strong>Gold (50%):</strong> 51-100 conversions/month</li>
+          <li><strong>Platinum (60%):</strong> 100+ conversions/month (Elite Partners)</li>
         </ul>
 
         <h2>How to Promote:</h2>
