@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { getTestConfig } from '../tests/config/staging.config'
 
 /**
  * End-to-End Partner Application and Approval Flow Test
@@ -11,11 +12,17 @@ import { test, expect } from '@playwright/test'
  * 5. Partner accesses dashboard
  *
  * IMPORTANT: These tests must run in serial order because Step 3 depends on Step 1 creating the application.
+ *
+ * Environment-aware: Set TEST_ENV=staging to run against staging VPS
+ * Example: TEST_ENV=staging npx playwright test e2e/partner-e2e-flow.spec.ts
  */
 
 test.describe.configure({ mode: 'serial' })
 
 test.describe('Partner Application E2E Flow', () => {
+  // Get environment-aware configuration
+  const config = getTestConfig()
+
   const timestamp = Date.now()
   const testPartner = {
     email: `testpartner${timestamp}@example.com`,
@@ -31,10 +38,8 @@ test.describe('Partner Application E2E Flow', () => {
     password: 'Welcome123!' // Password that will be set after approval
   }
 
-  const adminCredentials = {
-    email: 'admin@pdflab.test',
-    password: 'Admin123!'
-  }
+  // Use environment-aware admin credentials
+  const adminCredentials = config.testUsers.admin
 
   let partnerSlug: string
   let applicationId: string
@@ -46,10 +51,11 @@ test.describe('Partner Application E2E Flow', () => {
 
   test('Step 1: Partner submits application', async ({ page }) => {
     console.log('\n📝 Step 1: Submitting partner application...')
+    console.log(`📍 Partner Portal URL: ${config.partnerPortalUrl}`)
 
-    // Navigate to partner application page
-    await page.goto('http://localhost:3001/apply', { timeout: 15000 })
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
+    // Navigate to partner application page (environment-aware)
+    await page.goto(`${config.partnerPortalUrl}/apply`, { timeout: config.timeouts.pageLoad })
+    await page.waitForLoadState('networkidle', { timeout: config.timeouts.pageLoad })
 
     // Wait for page to load
     await expect(page.locator('h1')).toContainText(/apply/i, { timeout: 15000 })

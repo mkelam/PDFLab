@@ -16,7 +16,8 @@ var CommissionTier;
 (function (CommissionTier) {
     CommissionTier["BRONZE"] = "bronze";
     CommissionTier["SILVER"] = "silver";
-    CommissionTier["GOLD"] = "gold"; // 50%
+    CommissionTier["GOLD"] = "gold";
+    CommissionTier["PLATINUM"] = "platinum"; // 60%
 })(CommissionTier || (exports.CommissionTier = CommissionTier = {}));
 var PartnerStatus;
 (function (PartnerStatus) {
@@ -31,7 +32,8 @@ class Partner extends sequelize_1.Model {
         const tierRates = {
             [CommissionTier.BRONZE]: 30.0,
             [CommissionTier.SILVER]: 40.0,
-            [CommissionTier.GOLD]: 50.0
+            [CommissionTier.GOLD]: 50.0,
+            [CommissionTier.PLATINUM]: 60.0
         };
         return tierRates[this.commission_tier];
     }
@@ -121,7 +123,7 @@ Partner.init({
         type: sequelize_1.DataTypes.ENUM(...Object.values(CommissionTier)),
         allowNull: false,
         defaultValue: CommissionTier.BRONZE,
-        comment: 'bronze=30%, silver=40%, gold=50%'
+        comment: 'bronze=30%, silver=40%, gold=50%, platinum=60%'
     },
     free_licenses_allocated: {
         type: sequelize_1.DataTypes.INTEGER,

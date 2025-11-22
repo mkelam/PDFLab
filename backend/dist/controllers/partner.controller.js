@@ -328,7 +328,8 @@ const createPartner = async (req, res) => {
         const tierRates = {
             [Partner_1.CommissionTier.BRONZE]: 30.0,
             [Partner_1.CommissionTier.SILVER]: 40.0,
-            [Partner_1.CommissionTier.GOLD]: 50.0
+            [Partner_1.CommissionTier.GOLD]: 50.0,
+            [Partner_1.CommissionTier.PLATINUM]: 60.0
         };
         const commission_rate = tierRates[commission_tier] || 30.0;
         // Create partner

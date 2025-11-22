@@ -11,9 +11,10 @@ export enum PartnerPlatform {
 }
 
 export enum CommissionTier {
-  BRONZE = 'bronze',  // 30%
-  SILVER = 'silver',  // 40%
-  GOLD = 'gold'       // 50%
+  BRONZE = 'bronze',    // 30%
+  SILVER = 'silver',    // 40%
+  GOLD = 'gold',        // 50%
+  PLATINUM = 'platinum' // 60%
 }
 
 export enum PartnerStatus {
@@ -155,7 +156,8 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     const tierRates: Record<CommissionTier, number> = {
       [CommissionTier.BRONZE]: 30.0,
       [CommissionTier.SILVER]: 40.0,
-      [CommissionTier.GOLD]: 50.0
+      [CommissionTier.GOLD]: 50.0,
+      [CommissionTier.PLATINUM]: 60.0
     }
     return tierRates[this.commission_tier]
   }
@@ -250,7 +252,7 @@ Partner.init(
       type: DataTypes.ENUM(...Object.values(CommissionTier)),
       allowNull: false,
       defaultValue: CommissionTier.BRONZE,
-      comment: 'bronze=30%, silver=40%, gold=50%'
+      comment: 'bronze=30%, silver=40%, gold=50%, platinum=60%'
     },
     free_licenses_allocated: {
       type: DataTypes.INTEGER,

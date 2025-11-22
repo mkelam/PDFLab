@@ -10,7 +10,8 @@ export declare enum PartnerPlatform {
 export declare enum CommissionTier {
     BRONZE = "bronze",// 30%
     SILVER = "silver",// 40%
-    GOLD = "gold"
+    GOLD = "gold",// 50%
+    PLATINUM = "platinum"
 }
 export declare enum PartnerStatus {
     PENDING = "pending",
