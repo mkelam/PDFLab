@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { getTestConfig } from '../tests/config/staging.config'
 
 /**
  * End-to-End Partner Application and Approval Flow Test
@@ -11,11 +12,17 @@ import { test, expect } from '@playwright/test'
  * 5. Partner accesses dashboard
  *
  * IMPORTANT: These tests must run in serial order because Step 3 depends on Step 1 creating the application.
+ *
+ * Environment-aware: Set TEST_ENV=staging to run against staging VPS
+ * Example: TEST_ENV=staging npx playwright test e2e/partner-e2e-flow.spec.ts
  */
 
 test.describe.configure({ mode: 'serial' })
 
 test.describe('Partner Application E2E Flow', () => {
+  // Get environment-aware configuration
+  const config = getTestConfig()
+
   const timestamp = Date.now()
   const testPartner = {
     email: `testpartner${timestamp}@example.com`,
@@ -31,10 +38,8 @@ test.describe('Partner Application E2E Flow', () => {
     password: 'Welcome123!' // Password that will be set after approval
   }
 
-  const adminCredentials = {
-    email: 'admin@pdflab.test',
-    password: 'Admin123!'
-  }
+  // Use environment-aware admin credentials
+  const adminCredentials = config.testUsers.admin
 
   let partnerSlug: string
   let applicationId: string
@@ -46,10 +51,11 @@ test.describe('Partner Application E2E Flow', () => {
 
   test('Step 1: Partner submits application', async ({ page }) => {
     console.log('\n📝 Step 1: Submitting partner application...')
+    console.log(`📍 Partner Portal URL: ${config.partnerPortalUrl}`)
 
-    // Navigate to partner application page
-    await page.goto('http://localhost:3001/apply', { timeout: 15000 })
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
+    // Navigate to partner application page (environment-aware)
+    await page.goto(`${config.partnerPortalUrl}/apply`, { timeout: config.timeouts.pageLoad })
+    await page.waitForLoadState('networkidle', { timeout: config.timeouts.pageLoad })
 
     // Wait for page to load
     await expect(page.locator('h1')).toContainText(/apply/i, { timeout: 15000 })
@@ -137,10 +143,11 @@ test.describe('Partner Application E2E Flow', () => {
 
   test('Step 2: Admin logs in and views applications', async ({ page }) => {
     console.log('\n🔐 Step 2: Admin logging in...')
+    console.log(`📍 Main App URL: ${config.mainAppUrl}`)
 
-    // Navigate to main PDFLab login
-    await page.goto('http://localhost:3000/login', { timeout: 15000 })
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
+    // Navigate to main PDFLab login (environment-aware)
+    await page.goto(`${config.mainAppUrl}/login`, { timeout: config.timeouts.pageLoad })
+    await page.waitForLoadState('networkidle', { timeout: config.timeouts.pageLoad })
 
     // Wait for login form
     await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10000 })
@@ -162,7 +169,7 @@ test.describe('Partner Application E2E Flow', () => {
 
     // Navigate to partner applications admin page (FIX #6: URL is /partner-applications not /partners/applications)
     console.log('\n📋 Navigating to partner applications...')
-    await page.goto('http://localhost:3000/admin/partner-applications', { timeout: 15000, waitUntil: 'domcontentloaded' })
+    await page.goto(`${config.mainAppUrl}/admin/partner-applications`, { timeout: config.timeouts.pageLoad, waitUntil: 'domcontentloaded' })
 
     // FIX #7: Wait for the actual page heading to confirm we're on the right page
     await expect(page.locator('h1:has-text("Partner Applications")')).toBeVisible({ timeout: 15000 })
@@ -193,9 +200,9 @@ test.describe('Partner Application E2E Flow', () => {
   test('Step 3: Admin approves application', async ({ page }) => {
     console.log('\n✅ Step 3: Approving application...')
 
-    // Login as admin first
-    await page.goto('http://localhost:3000/login', { timeout: 15000 })
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
+    // Login as admin first (environment-aware)
+    await page.goto(`${config.mainAppUrl}/login`, { timeout: config.timeouts.pageLoad })
+    await page.waitForLoadState('networkidle', { timeout: config.timeouts.pageLoad })
     await page.fill('input[type="email"]', adminCredentials.email)
     await page.fill('input[type="password"]', adminCredentials.password)
     await page.click('button[type="submit"]')
@@ -204,7 +211,7 @@ test.describe('Partner Application E2E Flow', () => {
 
     // Navigate to partner applications page (FIX #6: URL is /partner-applications not /partners/applications)
     // FIX #9: Use networkidle + reload to force fresh page load
-    await page.goto('http://localhost:3000/admin/partner-applications', { timeout: 20000, waitUntil: 'networkidle' })
+    await page.goto(`${config.mainAppUrl}/admin/partner-applications`, { timeout: config.timeouts.pageLoad, waitUntil: 'networkidle' })
 
     // Force reload to bypass any cached content
     await page.reload({ waitUntil: 'networkidle' })
@@ -284,7 +291,7 @@ test.describe('Partner Application E2E Flow', () => {
 
     console.log(`Verifying existing partner: ${workingSlug}`)
 
-    const response = await request.get(`http://localhost:3006/api/partners/${workingSlug}/dashboard`)
+    const response = await request.get(`${config.apiUrl}/api/partners/${workingSlug}/dashboard`)
 
     expect(response.ok()).toBeTruthy()
     const data = await response.json()
@@ -309,8 +316,8 @@ test.describe('Partner Application E2E Flow', () => {
 
     console.log(`Testing with working partner: ${workingSlug}`)
 
-    // Navigate to partner login
-    await page.goto('http://localhost:3001/login')
+    // Navigate to partner login (environment-aware)
+    await page.goto(`${config.partnerPortalUrl}/login`)
 
     // Wait for login form
     await expect(page.locator('input[id="slug"]')).toBeVisible({ timeout: 10000 })
@@ -341,7 +348,7 @@ test.describe('Partner Application E2E Flow', () => {
     console.log('\n📊 Step 6: Verifying partner dashboard...')
 
     // Login as Sarah Johnson (verified working partner)
-    await page.goto('http://localhost:3001/login')
+    await page.goto(`${config.partnerPortalUrl}/login`)
     await page.fill('input[id="slug"]', 'sarah-johnson')
     await page.fill('input[id="password"]', 'Welcome123!')
     await page.click('button[type="submit"]')
@@ -381,9 +388,9 @@ test.describe('Partner Application E2E Flow', () => {
   test('Step 7: Partner logs out', async ({ page }) => {
     console.log('\n🚪 Step 7: Testing logout...')
 
-    // Login first
-    await page.goto('http://localhost:3001/login', { timeout: 15000 })
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
+    // Login first (environment-aware)
+    await page.goto(`${config.partnerPortalUrl}/login`, { timeout: config.timeouts.pageLoad })
+    await page.waitForLoadState('networkidle', { timeout: config.timeouts.pageLoad })
     await page.fill('input[id="slug"]', 'sarah-johnson')
     await page.fill('input[id="password"]', 'Welcome123!')
     await page.click('button[type="submit"]')
@@ -407,7 +414,7 @@ test.describe('Partner Application E2E Flow', () => {
     console.log('✅ Partner logged out successfully')
 
     // Verify cannot access dashboard without auth
-    await page.goto('http://localhost:3001/sarah-johnson', { timeout: 15000 })
+    await page.goto(`${config.partnerPortalUrl}/sarah-johnson`, { timeout: config.timeouts.pageLoad })
 
     // Should redirect to login
     await page.waitForURL(/login/, { timeout: 15000 })

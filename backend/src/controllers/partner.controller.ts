@@ -364,7 +364,8 @@ export const createPartner = async (req: Request, res: Response): Promise<void> 
     const tierRates: Record<CommissionTier, number> = {
       [CommissionTier.BRONZE]: 30.0,
       [CommissionTier.SILVER]: 40.0,
-      [CommissionTier.GOLD]: 50.0
+      [CommissionTier.GOLD]: 50.0,
+      [CommissionTier.PLATINUM]: 60.0
     }
     const commission_rate = tierRates[commission_tier as CommissionTier] || 30.0
 

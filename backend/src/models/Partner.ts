@@ -11,9 +11,10 @@ export enum PartnerPlatform {
 }
 
 export enum CommissionTier {
-  BRONZE = 'bronze',  // 30%
-  SILVER = 'silver',  // 40%
-  GOLD = 'gold'       // 50%
+  BRONZE = 'bronze',    // 30%
+  SILVER = 'silver',    // 40%
+  GOLD = 'gold',        // 50%
+  PLATINUM = 'platinum' // 60%
 }
 
 export enum PartnerStatus {
@@ -68,6 +69,7 @@ interface PartnerAttributes {
   // Payment info
   payment_method?: 'paypal' | 'bank_transfer' | 'stripe'
   payment_email?: string
+  payment_details?: any // JSON field in database
 
   // Authentication
   password_hash?: string
@@ -142,6 +144,7 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
 
   public payment_method?: 'paypal' | 'bank_transfer' | 'stripe'
   public payment_email?: string
+  public payment_details?: any
 
   public password_hash?: string
   public last_login_at?: Date
@@ -155,7 +158,8 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     const tierRates: Record<CommissionTier, number> = {
       [CommissionTier.BRONZE]: 30.0,
       [CommissionTier.SILVER]: 40.0,
-      [CommissionTier.GOLD]: 50.0
+      [CommissionTier.GOLD]: 50.0,
+      [CommissionTier.PLATINUM]: 60.0
     }
     return tierRates[this.commission_tier]
   }
@@ -191,6 +195,7 @@ Partner.init(
     },
     name: {
       type: DataTypes.STRING(255),
+      field: 'full_name', // Maps to DB column 'full_name'
       allowNull: false
     },
     email: {
@@ -228,16 +233,23 @@ Partner.init(
       comment: 'Unique referral code like JEFF25'
     },
     platform: {
-      type: DataTypes.ENUM(...Object.values(PartnerPlatform)),
+      type: DataTypes.STRING(50), // Changed from ENUM to STRING to match DB
+      field: 'primary_platform', // Maps to DB column 'primary_platform'
       allowNull: true,
       comment: 'Primary platform: youtube, twitter, linkedin, etc'
     },
     follower_count: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      field: 'audience_size', // Maps to DB column 'audience_size' (stored as string like '100k_500k')
+      allowNull: true,
+      get() {
+        // Virtual getter - audience_size is a string in DB, return 0 for now
+        return 0
+      }
     },
     website: {
       type: DataTypes.STRING(500),
+      field: 'platform_url', // Maps to DB column 'platform_url'
       allowNull: true
     },
     commission_rate: {
@@ -248,21 +260,22 @@ Partner.init(
     },
     commission_tier: {
       type: DataTypes.ENUM(...Object.values(CommissionTier)),
+      field: 'tier', // Maps to DB column 'tier'
       allowNull: false,
       defaultValue: CommissionTier.BRONZE,
       comment: 'bronze=30%, silver=40%, gold=50%'
     },
     free_licenses_allocated: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 10,
-      comment: 'Total free licenses given to partner'
+      allowNull: true,
+      defaultValue: 0,
+      comment: 'Total free licenses given to partner (not in DB schema yet)'
     },
     free_licenses_used: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
-      comment: 'How many have been redeemed'
+      comment: 'How many have been redeemed (not in DB schema yet)'
     },
     status: {
       type: DataTypes.ENUM(...Object.values(PartnerStatus)),
@@ -271,7 +284,8 @@ Partner.init(
     },
     contract_signed_at: {
       type: DataTypes.DATE,
-      allowNull: true
+      allowNull: true,
+      comment: 'Not in DB schema yet - returns null'
     },
     activated_at: {
       type: DataTypes.DATE,
@@ -286,9 +300,9 @@ Partner.init(
     },
     total_signups: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
-      comment: 'Total users who signed up via this partner'
+      comment: 'Total users who signed up via this partner (not in DB schema yet)'
     },
     total_conversions: {
       type: DataTypes.INTEGER,
@@ -298,21 +312,23 @@ Partner.init(
     },
     total_revenue_generated: {
       type: DataTypes.DECIMAL(10, 2),
+      field: 'total_revenue', // Maps to DB column 'total_revenue'
       allowNull: false,
       defaultValue: 0.0,
       comment: 'Total revenue from their referrals'
     },
     total_commission_earned: {
       type: DataTypes.DECIMAL(10, 2),
+      field: 'total_earnings', // Maps to DB column 'total_earnings'
       allowNull: false,
       defaultValue: 0.0,
       comment: 'Total commission owed to partner'
     },
     total_commission_paid: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0.0,
-      comment: 'Total commission already paid'
+      comment: 'Total commission already paid (not in DB schema yet)'
     },
     current_month_conversions: {
       type: DataTypes.INTEGER,
@@ -334,6 +350,11 @@ Partner.init(
       allowNull: true,
       comment: 'Email for PayPal or Stripe payments'
     },
+    payment_details: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: 'JSON object with payment configuration'
+    },
     password_hash: {
       type: DataTypes.STRING(255),
       allowNull: true,
@@ -346,7 +367,8 @@ Partner.init(
     },
     notes: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
+      comment: 'Not in DB schema yet - returns null'
     },
     created_at: {
       type: DataTypes.DATE,

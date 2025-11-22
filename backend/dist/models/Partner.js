@@ -16,7 +16,8 @@ var CommissionTier;
 (function (CommissionTier) {
     CommissionTier["BRONZE"] = "bronze";
     CommissionTier["SILVER"] = "silver";
-    CommissionTier["GOLD"] = "gold"; // 50%
+    CommissionTier["GOLD"] = "gold";
+    CommissionTier["PLATINUM"] = "platinum"; // 60%
 })(CommissionTier || (exports.CommissionTier = CommissionTier = {}));
 var PartnerStatus;
 (function (PartnerStatus) {
@@ -31,7 +32,8 @@ class Partner extends sequelize_1.Model {
         const tierRates = {
             [CommissionTier.BRONZE]: 30.0,
             [CommissionTier.SILVER]: 40.0,
-            [CommissionTier.GOLD]: 50.0
+            [CommissionTier.GOLD]: 50.0,
+            [CommissionTier.PLATINUM]: 60.0
         };
         return tierRates[this.commission_tier];
     }
@@ -62,6 +64,7 @@ Partner.init({
     },
     name: {
         type: sequelize_1.DataTypes.STRING(255),
+        field: 'full_name', // Maps to DB column 'full_name'
         allowNull: false
     },
     email: {
@@ -99,16 +102,23 @@ Partner.init({
         comment: 'Unique referral code like JEFF25'
     },
     platform: {
-        type: sequelize_1.DataTypes.ENUM(...Object.values(PartnerPlatform)),
+        type: sequelize_1.DataTypes.STRING(50), // Changed from ENUM to STRING to match DB
+        field: 'primary_platform', // Maps to DB column 'primary_platform'
         allowNull: true,
         comment: 'Primary platform: youtube, twitter, linkedin, etc'
     },
     follower_count: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: true
+        field: 'audience_size', // Maps to DB column 'audience_size' (stored as string like '100k_500k')
+        allowNull: true,
+        get() {
+            // Virtual getter - audience_size is a string in DB, return 0 for now
+            return 0;
+        }
     },
     website: {
         type: sequelize_1.DataTypes.STRING(500),
+        field: 'platform_url', // Maps to DB column 'platform_url'
         allowNull: true
     },
     commission_rate: {
@@ -119,21 +129,22 @@ Partner.init({
     },
     commission_tier: {
         type: sequelize_1.DataTypes.ENUM(...Object.values(CommissionTier)),
+        field: 'tier', // Maps to DB column 'tier'
         allowNull: false,
         defaultValue: CommissionTier.BRONZE,
         comment: 'bronze=30%, silver=40%, gold=50%'
     },
     free_licenses_allocated: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 10,
-        comment: 'Total free licenses given to partner'
+        allowNull: true,
+        defaultValue: 0,
+        comment: 'Total free licenses given to partner (not in DB schema yet)'
     },
     free_licenses_used: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         defaultValue: 0,
-        comment: 'How many have been redeemed'
+        comment: 'How many have been redeemed (not in DB schema yet)'
     },
     status: {
         type: sequelize_1.DataTypes.ENUM(...Object.values(PartnerStatus)),
@@ -142,7 +153,8 @@ Partner.init({
     },
     contract_signed_at: {
         type: sequelize_1.DataTypes.DATE,
-        allowNull: true
+        allowNull: true,
+        comment: 'Not in DB schema yet - returns null'
     },
     activated_at: {
         type: sequelize_1.DataTypes.DATE,
@@ -157,9 +169,9 @@ Partner.init({
     },
     total_signups: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         defaultValue: 0,
-        comment: 'Total users who signed up via this partner'
+        comment: 'Total users who signed up via this partner (not in DB schema yet)'
     },
     total_conversions: {
         type: sequelize_1.DataTypes.INTEGER,
@@ -169,21 +181,23 @@ Partner.init({
     },
     total_revenue_generated: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
+        field: 'total_revenue', // Maps to DB column 'total_revenue'
         allowNull: false,
         defaultValue: 0.0,
         comment: 'Total revenue from their referrals'
     },
     total_commission_earned: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
+        field: 'total_earnings', // Maps to DB column 'total_earnings'
         allowNull: false,
         defaultValue: 0.0,
         comment: 'Total commission owed to partner'
     },
     total_commission_paid: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
-        allowNull: false,
+        allowNull: true,
         defaultValue: 0.0,
-        comment: 'Total commission already paid'
+        comment: 'Total commission already paid (not in DB schema yet)'
     },
     current_month_conversions: {
         type: sequelize_1.DataTypes.INTEGER,
@@ -205,6 +219,11 @@ Partner.init({
         allowNull: true,
         comment: 'Email for PayPal or Stripe payments'
     },
+    payment_details: {
+        type: sequelize_1.DataTypes.JSON,
+        allowNull: true,
+        comment: 'JSON object with payment configuration'
+    },
     password_hash: {
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
@@ -217,7 +236,8 @@ Partner.init({
     },
     notes: {
         type: sequelize_1.DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        comment: 'Not in DB schema yet - returns null'
     },
     created_at: {
         type: sequelize_1.DataTypes.DATE,
