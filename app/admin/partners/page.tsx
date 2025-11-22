@@ -137,6 +137,8 @@ export default function AdminPartnersPage() {
 
   const getTierBadgeVariant = (tier: string): 'default' | 'secondary' | 'outline' => {
     switch (tier.toLowerCase()) {
+      case 'platinum':
+        return 'default'
       case 'gold':
         return 'default'
       case 'silver':
@@ -150,6 +152,8 @@ export default function AdminPartnersPage() {
 
   const getTierColor = (tier: string): string => {
     switch (tier.toLowerCase()) {
+      case 'platinum':
+        return 'text-cyan-400'
       case 'gold':
         return 'text-yellow-500'
       case 'silver':
@@ -534,6 +538,7 @@ export default function AdminPartnersPage() {
                     <option value="bronze">Bronze (30%)</option>
                     <option value="silver">Silver (40%)</option>
                     <option value="gold">Gold (50%)</option>
+                    <option value="platinum">Platinum (60%)</option>
                   </select>
                 </div>
 
