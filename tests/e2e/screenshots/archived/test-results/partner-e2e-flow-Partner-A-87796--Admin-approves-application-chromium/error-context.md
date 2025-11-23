@@ -1,0 +1,304 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]: PL
+        - generic [ref=e9]:
+          - heading "PDFLab Admin" [level=1] [ref=e10]
+          - paragraph [ref=e11]: Administration Panel
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - paragraph [ref=e14]: Admin User
+          - paragraph [ref=e15]: admin
+        - button "Logout" [ref=e16] [cursor=pointer]:
+          - img [ref=e17]
+    - generic [ref=e20]:
+      - navigation [ref=e21]:
+        - link "Dashboard" [ref=e22] [cursor=pointer]:
+          - /url: /admin
+          - img [ref=e23]
+          - generic [ref=e28]: Dashboard
+        - link "Users" [ref=e29] [cursor=pointer]:
+          - /url: /admin/users
+          - img [ref=e30]
+          - generic [ref=e35]: Users
+        - link "Partners" [ref=e36] [cursor=pointer]:
+          - /url: /admin/partners
+          - img [ref=e37]
+          - generic [ref=e41]: Partners
+        - link "Partner Applications" [ref=e42] [cursor=pointer]:
+          - /url: /admin/partner-applications
+          - img [ref=e43]
+          - generic [ref=e46]: Partner Applications
+        - link "Beta Users" [ref=e47] [cursor=pointer]:
+          - /url: /admin/beta-users
+          - img [ref=e48]
+          - generic [ref=e50]: Beta Users
+        - link "Beta Applications" [ref=e51] [cursor=pointer]:
+          - /url: /admin/beta
+          - img [ref=e52]
+          - generic [ref=e54]: Beta Applications
+        - link "Feedback" [ref=e55] [cursor=pointer]:
+          - /url: /admin/feedback
+          - img [ref=e56]
+          - generic [ref=e58]: Feedback
+        - link "Conversions" [ref=e59] [cursor=pointer]:
+          - /url: /admin/conversions
+          - img [ref=e60]
+          - generic [ref=e63]: Conversions
+        - link "Payments" [ref=e64] [cursor=pointer]:
+          - /url: /admin/payments
+          - img [ref=e65]
+          - generic [ref=e67]: Payments
+        - link "System Health" [ref=e68] [cursor=pointer]:
+          - /url: /admin/system
+          - img [ref=e69]
+          - generic [ref=e71]: System Health
+        - link "Analytics" [ref=e72] [cursor=pointer]:
+          - /url: /admin/analytics
+          - img [ref=e73]
+          - generic [ref=e75]: Analytics
+        - link "Audit Logs" [ref=e76] [cursor=pointer]:
+          - /url: /admin/audit-logs
+          - img [ref=e77]
+          - generic [ref=e79]: Audit Logs
+      - paragraph [ref=e81]: PDFLab Admin v1.0.0
+    - main [ref=e82]:
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - heading "Partner Applications" [level=1] [ref=e86]
+          - paragraph [ref=e87]: Review and approve influencer partner applications
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - img [ref=e92]
+            - generic [ref=e95]:
+              - generic [ref=e96]: Total Applications
+              - paragraph [ref=e97]: "9"
+          - generic [ref=e98]:
+            - img [ref=e101]
+            - generic [ref=e106]:
+              - generic [ref=e107]: Pending Review
+              - paragraph [ref=e108]: "9"
+          - generic [ref=e109]:
+            - img [ref=e112]
+            - generic [ref=e115]:
+              - generic [ref=e116]: Approved
+              - paragraph [ref=e117]: "0"
+          - generic [ref=e118]:
+            - img [ref=e121]
+            - generic [ref=e125]:
+              - generic [ref=e126]: Rejected
+              - paragraph [ref=e127]: "0"
+          - generic [ref=e128]:
+            - img [ref=e131]
+            - generic [ref=e133]:
+              - generic [ref=e134]: Flagged
+              - paragraph [ref=e135]: "0"
+        - generic [ref=e136]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: Applications
+            - generic [ref=e140]:
+              - button "All" [ref=e141] [cursor=pointer]
+              - button "Pending" [ref=e142] [cursor=pointer]
+              - button "Approved" [ref=e143] [cursor=pointer]
+              - button "Rejected" [ref=e144] [cursor=pointer]
+              - button "Flagged" [ref=e145] [cursor=pointer]
+          - generic [ref=e147]:
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - heading "Jane Doe" [level=3] [ref=e153]
+                  - generic [ref=e154]: pending
+                  - generic [ref=e155]: "Score: 90"
+                - generic [ref=e156]:
+                  - paragraph [ref=e157]: testpartner1763835979508@example.com
+                  - paragraph [ref=e158]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e159]: https://youtube.com/@janedoe1763835979508
+                - generic [ref=e160]: "Applied: 11/22/2025"
+              - generic [ref=e161]:
+                - button "Review" [ref=e162] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e163] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e164] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e167]:
+              - generic [ref=e168]:
+                - generic [ref=e169]:
+                  - heading "Jane Doe" [level=3] [ref=e170]
+                  - generic [ref=e171]: pending
+                  - generic [ref=e172]: "Score: 90"
+                - generic [ref=e173]:
+                  - paragraph [ref=e174]: testpartner1763835390485@example.com
+                  - paragraph [ref=e175]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e176]: https://youtube.com/@janedoe1763835390485
+                - generic [ref=e177]: "Applied: 11/22/2025"
+              - generic [ref=e178]:
+                - button "Review" [ref=e179] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e180] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e181] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e184]:
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - heading "Jane Doe" [level=3] [ref=e187]
+                  - generic [ref=e188]: pending
+                  - generic [ref=e189]: "Score: 90"
+                - generic [ref=e190]:
+                  - paragraph [ref=e191]: testpartner1763831658865@example.com
+                  - paragraph [ref=e192]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e193]: https://youtube.com/@janedoe1763831658865
+                - generic [ref=e194]: "Applied: 11/22/2025"
+              - generic [ref=e195]:
+                - button "Review" [ref=e196] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e197] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e198] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - heading "Jane Doe" [level=3] [ref=e204]
+                  - generic [ref=e205]: pending
+                  - generic [ref=e206]: "Score: 90"
+                - generic [ref=e207]:
+                  - paragraph [ref=e208]: testpartner1763835979501@example.com
+                  - paragraph [ref=e209]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e210]: https://youtube.com/@janedoe1763835979501
+                - generic [ref=e211]: "Applied: 11/22/2025"
+              - generic [ref=e212]:
+                - button "Review" [ref=e213] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e214] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e215] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e218]:
+              - generic [ref=e219]:
+                - generic [ref=e220]:
+                  - heading "Jane Doe" [level=3] [ref=e221]
+                  - generic [ref=e222]: pending
+                  - generic [ref=e223]: "Score: 90"
+                - generic [ref=e224]:
+                  - paragraph [ref=e225]: testpartner1763835390464@example.com
+                  - paragraph [ref=e226]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e227]: https://youtube.com/@janedoe1763835390464
+                - generic [ref=e228]: "Applied: 11/22/2025"
+              - generic [ref=e229]:
+                - button "Review" [ref=e230] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e231] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e232] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e235]:
+              - generic [ref=e236]:
+                - generic [ref=e237]:
+                  - heading "Jane Doe" [level=3] [ref=e238]
+                  - generic [ref=e239]: pending
+                  - generic [ref=e240]: "Score: 90"
+                - generic [ref=e241]:
+                  - paragraph [ref=e242]: testpartner1763832650702@example.com
+                  - paragraph [ref=e243]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e244]: https://youtube.com/@janedoe1763832650702
+                - generic [ref=e245]: "Applied: 11/22/2025"
+              - generic [ref=e246]:
+                - button "Review" [ref=e247] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e248] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e249] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e252]:
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - heading "Jane Doe" [level=3] [ref=e255]
+                  - generic [ref=e256]: pending
+                  - generic [ref=e257]: "Score: 90"
+                - generic [ref=e258]:
+                  - paragraph [ref=e259]: testpartner1763831357128@example.com
+                  - paragraph [ref=e260]: youtube • 100k 500k • Content Creators
+                  - paragraph [ref=e261]: https://youtube.com/@janedoe1763831357128
+                - generic [ref=e262]: "Applied: 11/22/2025"
+              - generic [ref=e263]:
+                - button "Review" [ref=e264] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e265] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e266] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e269]:
+              - generic [ref=e270]:
+                - generic [ref=e271]:
+                  - heading "Debug Test" [level=3] [ref=e272]
+                  - generic [ref=e273]: pending
+                  - generic [ref=e274]: "Score: 72"
+                - generic [ref=e275]:
+                  - paragraph [ref=e276]: debug-test-1763830117@example.com
+                  - paragraph [ref=e277]: youtube • 10k 50k • Developers
+                  - paragraph [ref=e278]: "@debugtest"
+                - generic [ref=e279]: "Applied: 11/22/2025"
+              - generic [ref=e280]:
+                - button "Review" [ref=e281] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e282] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e283] [cursor=pointer]:
+                  - img
+                  - text: Reject
+            - generic [ref=e286]:
+              - generic [ref=e287]:
+                - generic [ref=e288]:
+                  - heading "Final CORS Test" [level=3] [ref=e289]
+                  - generic [ref=e290]: pending
+                  - generic [ref=e291]: "Score: 72"
+                - generic [ref=e292]:
+                  - paragraph [ref=e293]: final-cors-test-1763831326@example.com
+                  - paragraph [ref=e294]: youtube • 10k 50k • Developers
+                  - paragraph [ref=e295]: "@finalcorstest"
+                - generic [ref=e296]: "Applied: 11/22/2025"
+              - generic [ref=e297]:
+                - button "Review" [ref=e298] [cursor=pointer]:
+                  - img
+                  - text: Review
+                - button "Approve" [ref=e299] [cursor=pointer]:
+                  - img
+                  - text: Approve
+                - button "Reject" [ref=e300] [cursor=pointer]:
+                  - img
+                  - text: Reject
+  - region "Notifications (F8)":
+    - list
+  - button "Send Feedback" [ref=e301] [cursor=pointer]:
+    - img [ref=e302]
+  - alert [ref=e304]
+```

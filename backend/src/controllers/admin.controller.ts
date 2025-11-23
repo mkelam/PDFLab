@@ -3,6 +3,7 @@ import { User } from '../models/User'
 import bcrypt from 'bcryptjs'
 import { Op } from 'sequelize'
 import { fixAllUserQuotas, syncUserQuota, getQuotaInfo } from '../utils/quota.utils'
+import logger from '../config/logger'
 
 /**
  * GET /api/admin/users
@@ -68,7 +69,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
       }
     })
   } catch (error) {
-    console.error('Get all users error:', error)
+    logger.error('Get all users error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch users',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -128,7 +129,7 @@ export const getBetaUsers = async (req: Request, res: Response): Promise<void> =
       }
     })
   } catch (error) {
-    console.error('Get beta users error:', error)
+    logger.error('Get beta users error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch beta users',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -161,7 +162,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
       user
     })
   } catch (error) {
-    console.error('Get user by ID error:', error)
+    logger.error('Get user by ID error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch user',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -219,7 +220,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
       }
     })
   } catch (error) {
-    console.error('Update user error:', error)
+    logger.error('Update user error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to update user',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -276,7 +277,7 @@ export const updateUserPlan = async (req: Request, res: Response): Promise<void>
       }
     })
   } catch (error) {
-    console.error('Update user plan error:', error)
+    logger.error('Update user plan error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to update user plan',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -315,7 +316,7 @@ export const resetUserQuota = async (req: Request, res: Response): Promise<void>
       }
     })
   } catch (error) {
-    console.error('Reset user quota error:', error)
+    logger.error('Reset user quota error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to reset user quota',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -358,7 +359,7 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
       resetToken
     })
   } catch (error) {
-    console.error('Reset password error:', error)
+    logger.error('Reset password error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to generate reset link',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -411,7 +412,7 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
       email: user.email
     })
   } catch (error) {
-    console.error('Resend verification email error:', error)
+    logger.error('Resend verification email error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to send verification email',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -461,7 +462,7 @@ export const verifyUserEmail = async (req: Request, res: Response): Promise<void
       }
     })
   } catch (error) {
-    console.error('Verify user email error:', error)
+    logger.error('Verify user email error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to verify user email',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -519,7 +520,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       }
     })
   } catch (error) {
-    console.error('Create user error:', error)
+    logger.error('Create user error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to create user',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -579,7 +580,7 @@ export const impersonateUser = async (req: Request, res: Response): Promise<void
       expiresIn: '30m'
     })
   } catch (error) {
-    console.error('Impersonate user error:', error)
+    logger.error('Impersonate user error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to generate impersonation token',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -610,7 +611,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       message: 'User deleted successfully'
     })
   } catch (error) {
-    console.error('Delete user error:', error)
+    logger.error('Delete user error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to delete user',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -677,7 +678,7 @@ export const getUserConversions = async (req: Request, res: Response): Promise<v
       }
     })
   } catch (error) {
-    console.error('Get user conversions error:', error)
+    logger.error('Get user conversions error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch user conversions',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -792,7 +793,7 @@ export const getUserActivity = async (req: Request, res: Response): Promise<void
       }
     })
   } catch (error) {
-    console.error('Get user activity error:', error)
+    logger.error('Get user activity error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch user activity',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -844,7 +845,7 @@ export const bulkQuotaReset = async (req: Request, res: Response): Promise<void>
       users: updatedUsers
     })
   } catch (error) {
-    console.error('Bulk quota reset error:', error)
+    logger.error('Bulk quota reset error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to reset quotas',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -919,7 +920,7 @@ export const exportUsersToCSV = async (req: Request, res: Response): Promise<voi
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.send(csvContent)
   } catch (error) {
-    console.error('Export users error:', error)
+    logger.error('Export users error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to export users',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -952,7 +953,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
       }
     })
   } catch (error) {
-    console.error('Get stats error:', error)
+    logger.error('Get stats error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch stats',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -992,7 +993,7 @@ export const getQuotaStatus = async (req: Request, res: Response): Promise<void>
       users: status
     })
   } catch (error) {
-    console.error('Get quota status error:', error)
+    logger.error('Get quota status error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to get quota status',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -1006,7 +1007,7 @@ export const getQuotaStatus = async (req: Request, res: Response): Promise<void>
  */
 export const fixQuotas = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('🔧 Admin triggered quota fix for all users')
+    logger.info('🔧 Admin triggered quota fix for all users')
 
     const result = await fixAllUserQuotas()
 
@@ -1018,7 +1019,7 @@ export const fixQuotas = async (req: Request, res: Response): Promise<void> => {
       unchanged: result.total - result.fixed
     })
   } catch (error) {
-    console.error('Fix quotas error:', error)
+    logger.error('Fix quotas error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fix quotas',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -1065,7 +1066,7 @@ export const syncUserQuotaEndpoint = async (req: Request, res: Response): Promis
       }
     })
   } catch (error) {
-    console.error('Sync user quota error:', error)
+    logger.error('Sync user quota error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to sync quota',
       message: error instanceof Error ? error.message : 'Unknown error'

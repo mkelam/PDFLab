@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { ConversionJob, User } from '../models'
 import { Op } from 'sequelize'
+import logger from '../config/logger'
 
 /**
  * Get user analytics dashboard data
@@ -126,7 +127,7 @@ export const getDashboardAnalytics = async (req: Request, res: Response) => {
       recentActivity
     })
   } catch (error: any) {
-    console.error('Analytics error:', error)
+    logger.error('Analytics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch analytics',
       message: error.message
@@ -200,7 +201,7 @@ export const getConversionHistory = async (req: Request, res: Response) => {
       conversions
     })
   } catch (error: any) {
-    console.error('History error:', error)
+    logger.error('History error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch history',
       message: error.message
@@ -258,7 +259,7 @@ export const exportAnalytics = async (req: Request, res: Response) => {
     res.setHeader('Content-Disposition', `attachment; filename="pdflab-conversions-${Date.now()}.csv"`)
     res.send(csv)
   } catch (error: any) {
-    console.error('Export error:', error)
+    logger.error('Export error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to export data',
       message: error.message

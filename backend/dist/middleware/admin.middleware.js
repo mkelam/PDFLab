@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAdmin = exports.hasPermission = exports.requirePermission = exports.requireRole = exports.requireAdmin = exports.PERMISSIONS = void 0;
 const models_1 = require("../models");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Permission matrix defining which roles can access which resources
  */
@@ -52,7 +56,7 @@ const requireAdmin = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Admin middleware error:', error);
+        logger_1.default.error('Admin middleware error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Authorization failed',
             message: 'An error occurred during authorization'
@@ -87,7 +91,7 @@ const requireRole = (...allowedRoles) => {
             next();
         }
         catch (error) {
-            console.error('Role check error:', error);
+            logger_1.default.error('Role check error:', { error: error instanceof Error ? error.message : String(error) });
             res.status(500).json({
                 error: 'Authorization failed',
                 message: 'An error occurred during role verification'
@@ -124,7 +128,7 @@ const requirePermission = (permission) => {
             next();
         }
         catch (error) {
-            console.error('Permission check error:', error);
+            logger_1.default.error('Permission check error:', { error: error instanceof Error ? error.message : String(error) });
             res.status(500).json({
                 error: 'Authorization failed',
                 message: 'An error occurred during permission verification'

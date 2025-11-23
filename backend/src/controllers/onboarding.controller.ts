@@ -7,6 +7,7 @@ import { ConversionJob, ConversionType, JobStatus } from '../models/ConversionJo
 import path from 'path'
 import fs from 'fs/promises'
 import { Op } from 'sequelize'
+import logger from '../config/logger'
 
 /**
  * Get user's onboarding progress
@@ -71,7 +72,7 @@ export const getOnboardingProgress = async (req: Request, res: Response): Promis
       }
     })
   } catch (error) {
-    console.error('Error fetching onboarding progress:', error)
+    logger.error('Error fetching onboarding progress:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to fetch onboarding progress' })
   }
 }
@@ -184,7 +185,7 @@ export const updateOnboardingProgress = async (req: Request, res: Response): Pro
       }
     })
   } catch (error) {
-    console.error('Error updating onboarding progress:', error)
+    logger.error('Error updating onboarding progress:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to update onboarding progress' })
   }
 }
@@ -236,7 +237,7 @@ export const completeOnboarding = async (req: Request, res: Response): Promise<v
       }
     })
   } catch (error) {
-    console.error('Error completing onboarding:', error)
+    logger.error('Error completing onboarding:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to complete onboarding' })
   }
 }
@@ -287,7 +288,7 @@ export const skipOnboarding = async (req: Request, res: Response): Promise<void>
       }
     })
   } catch (error) {
-    console.error('Error skipping onboarding:', error)
+    logger.error('Error skipping onboarding:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to skip onboarding' })
   }
 }
@@ -320,7 +321,7 @@ export const getOnboardingTemplates = async (req: Request, res: Response): Promi
       templates: templatesWithDetails
     })
   } catch (error) {
-    console.error('Error fetching onboarding templates:', error)
+    logger.error('Error fetching onboarding templates:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to fetch templates' })
   }
 }
@@ -457,7 +458,7 @@ export const convertSampleTemplate = async (req: Request, res: Response): Promis
       }
     })
   } catch (error) {
-    console.error('Error converting sample template:', error)
+    logger.error('Error converting sample template:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to start conversion' })
   }
 }
@@ -548,7 +549,7 @@ export const getOnboardingAnalytics = async (req: Request, res: Response): Promi
       }
     })
   } catch (error) {
-    console.error('Error fetching onboarding analytics:', error)
+    logger.error('Error fetching onboarding analytics:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to fetch analytics' })
   }
 }

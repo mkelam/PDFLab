@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { Partner } from '../models/Partner'
+import logger from '../config/logger'
 
 /**
  * Attribution Middleware
@@ -103,7 +104,7 @@ export const captureAttribution = async (
 
     next()
   } catch (error) {
-    console.error('[Attribution] Error capturing attribution:', error)
+    logger.error('[Attribution] Error capturing attribution:', { error: error instanceof Error ? error.message : String(error) })
     // Don't block the request if attribution capture fails
     next()
   }

@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import https from 'https'
 import { URLSearchParams } from 'url'
+import logger from '../config/logger'
 
 /**
  * PayFast Payment Gateway Service
@@ -297,7 +298,7 @@ export async function verifyPaymentWithPayFast(data: Record<string, any>): Promi
     })
 
     req.on('error', (error) => {
-      console.error('PayFast verification error:', error)
+      logger.error('PayFast verification error:', { error: error instanceof Error ? error.message : String(error) })
       reject(error)
     })
 
@@ -418,7 +419,7 @@ export async function cancelSubscription(token: string): Promise<{ success: bool
     })
 
     req.on('error', (error) => {
-      console.error('PayFast subscription cancellation error:', error)
+      logger.error('PayFast subscription cancellation error:', { error: error instanceof Error ? error.message : String(error) })
       reject(error)
     })
 
@@ -520,7 +521,7 @@ export async function pauseSubscription(token: string, cycles: number = 0): Prom
     })
 
     req.on('error', (error) => {
-      console.error('PayFast subscription pause error:', error)
+      logger.error('PayFast subscription pause error:', { error: error instanceof Error ? error.message : String(error) })
       reject(error)
     })
 

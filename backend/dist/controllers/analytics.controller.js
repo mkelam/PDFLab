@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exportAnalytics = exports.getConversionHistory = exports.getDashboardAnalytics = void 0;
 const models_1 = require("../models");
 const sequelize_1 = require("sequelize");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Get user analytics dashboard data
  * @route GET /api/analytics/dashboard
@@ -104,7 +108,7 @@ const getDashboardAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Analytics error:', error);
+        logger_1.default.error('Analytics error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch analytics',
             message: error.message
@@ -164,7 +168,7 @@ const getConversionHistory = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('History error:', error);
+        logger_1.default.error('History error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch history',
             message: error.message
@@ -218,7 +222,7 @@ const exportAnalytics = async (req, res) => {
         res.send(csv);
     }
     catch (error) {
-        console.error('Export error:', error);
+        logger_1.default.error('Export error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to export data',
             message: error.message

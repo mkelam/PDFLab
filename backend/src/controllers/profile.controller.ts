@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { User } from '../models'
 import bcrypt from 'bcrypt'
+import logger from '../config/logger'
 
 /**
  * Get user profile
@@ -37,7 +38,7 @@ export const getProfile = async (req: Request, res: Response) => {
 
     res.json({ user })
   } catch (error: any) {
-    console.error('Get profile error:', error)
+    logger.error('Get profile error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch profile',
       message: error.message
@@ -117,7 +118,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       user: updatedUser
     })
   } catch (error: any) {
-    console.error('Update profile error:', error)
+    logger.error('Update profile error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to update profile',
       message: error.message
@@ -169,7 +170,7 @@ export const changePassword = async (req: Request, res: Response) => {
 
     res.json({ message: 'Password changed successfully' })
   } catch (error: any) {
-    console.error('Change password error:', error)
+    logger.error('Change password error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to change password',
       message: error.message
@@ -215,7 +216,7 @@ export const deleteAccount = async (req: Request, res: Response) => {
 
     res.json({ message: 'Account deleted successfully' })
   } catch (error: any) {
-    console.error('Delete account error:', error)
+    logger.error('Delete account error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to delete account',
       message: error.message
@@ -293,7 +294,7 @@ export const getAccountStats = async (req: Request, res: Response) => {
       }
     })
   } catch (error: any) {
-    console.error('Get stats error:', error)
+    logger.error('Get stats error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch account statistics',
       message: error.message

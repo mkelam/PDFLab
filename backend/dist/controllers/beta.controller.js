@@ -7,6 +7,7 @@ exports.getBetaApplicationStatus = exports.rejectBetaApplication = exports.appro
 const models_1 = require("../models");
 const uuid_1 = require("uuid");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const logger_1 = __importDefault(require("../config/logger"));
 // Submit Beta Application
 const submitBetaApplication = async (req, res) => {
     try {
@@ -64,7 +65,7 @@ const submitBetaApplication = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Beta application error:', error);
+        logger_1.default.error('Beta application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -84,7 +85,7 @@ const getAllBetaApplications = async (req, res) => {
         res.json({ applications });
     }
     catch (error) {
-        console.error('Fetch applications error:', error);
+        logger_1.default.error('Fetch applications error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -145,7 +146,7 @@ const approveBetaApplication = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Approve application error:', error);
+        logger_1.default.error('Approve application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -183,7 +184,7 @@ const rejectBetaApplication = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Reject application error:', error);
+        logger_1.default.error('Reject application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -214,7 +215,7 @@ const getBetaApplicationStatus = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get application status error:', error);
+        logger_1.default.error('Get application status error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ message: 'Server error' });
     }
 };

@@ -1,0 +1,51 @@
+# PDFLab Staging Environment Overrides
+# Deploy with: docker-compose -f docker-compose.base.yml -f docker-compose.staging.yml up -d
+
+version: '3.8'
+
+services:
+  mysql:
+    container_name: pdflab-mysql-staging
+    ports:
+      - "3307:3306"  # Different port to avoid conflict with production
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: pdflab_staging
+      MYSQL_USER: pdflab
+      MYSQL_PASSWORD: pdflab_staging_2024
+
+  redis:
+    container_name: pdflab-redis-staging
+    ports:
+      - "6380:6379"  # Different port to avoid conflict with production
+
+  backend:
+    container_name: pdflab-backend-staging
+    ports:
+      - "3007:3006"  # Different port to avoid conflict with production
+    environment:
+      NODE_ENV: staging
+      PORT: 3006
+      DB_NAME: pdflab_staging
+      DB_USER: pdflab
+      DB_PASSWORD: pdflab_staging_2024
+      ENV_FILE_PATH: ./backend/.env.staging
+
+  worker:
+    container_name: pdflab-worker-staging
+    environment:
+      NODE_ENV: staging
+      DB_NAME: pdflab_staging
+      DB_USER: pdflab
+      DB_PASSWORD: pdflab_staging_2024
+      ENV_FILE_PATH: ./backend/.env.staging
+
+  frontend:
+    container_name: pdflab-frontend-staging
+    ports:
+      - "3001:3000"  # Different port to avoid conflict with production
+    environment:
+      NEXT_PUBLIC_API_URL: https://staging.pdflab.pro
+      NEXT_PUBLIC_APP_URL: https://staging.pdflab.pro
+      NEXT_PUBLIC_CURRENCY: USD
+      NEXT_PUBLIC_CURRENCY_SYMBOL: $$

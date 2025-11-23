@@ -13,7 +13,6 @@ export interface GuestSession {
 export declare class GuestSessionService {
     private static readonly SESSION_TTL;
     private static readonly QUOTA_TTL;
-    private static readonly MAX_CONVERSIONS;
     /**
      * Generate a new guest session ID
      */

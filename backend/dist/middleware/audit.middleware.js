@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.auditLogMiddleware = void 0;
 const audit_service_1 = require("../services/audit.service");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Middleware to automatically log all admin actions
  * Should be applied after auth and admin middleware
@@ -51,7 +55,7 @@ const auditLogMiddleware = (req, res, next) => {
             }
             catch (error) {
                 // Log error but don't fail the request
-                console.error('Audit logging failed:', error);
+                logger_1.default.error('Audit logging failed:', { error: error instanceof Error ? error.message : String(error) });
             }
         });
         // Call original end function

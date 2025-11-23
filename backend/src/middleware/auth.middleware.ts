@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { verifyToken, JWTPayload } from '../utils/auth.utils'
 import { User } from '../models'
+import logger from '../config/logger'
 
 // Extend Express Request to include user
 declare global {
@@ -67,7 +68,7 @@ export const authMiddleware = async (
 
     next()
   } catch (error) {
-    console.error('Auth middleware error:', error)
+    logger.error('Auth middleware error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Authentication failed',
       message: 'An error occurred during authentication'
@@ -144,7 +145,7 @@ export const checkConversionQuota = async (
 
     next()
   } catch (error) {
-    console.error('Quota check error:', error)
+    logger.error('Quota check error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Quota check failed',
       message: 'An error occurred while checking your quota'

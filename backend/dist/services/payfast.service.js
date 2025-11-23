@@ -18,6 +18,7 @@ exports.pauseSubscription = pauseSubscription;
 const crypto_1 = __importDefault(require("crypto"));
 const https_1 = __importDefault(require("https"));
 const url_1 = require("url");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * PayFast Payment Gateway Service
  * Handles payment initialization, signature generation, and ITN verification
@@ -203,7 +204,7 @@ async function verifyPaymentWithPayFast(data) {
             });
         });
         req.on('error', (error) => {
-            console.error('PayFast verification error:', error);
+            logger_1.default.error('PayFast verification error:', { error: error instanceof Error ? error.message : String(error) });
             reject(error);
         });
         req.write(paramString);
@@ -308,7 +309,7 @@ async function cancelSubscription(token) {
             });
         });
         req.on('error', (error) => {
-            console.error('PayFast subscription cancellation error:', error);
+            logger_1.default.error('PayFast subscription cancellation error:', { error: error instanceof Error ? error.message : String(error) });
             reject(error);
         });
         req.end();
@@ -394,7 +395,7 @@ async function pauseSubscription(token, cycles = 0) {
             });
         });
         req.on('error', (error) => {
-            console.error('PayFast subscription pause error:', error);
+            logger_1.default.error('PayFast subscription pause error:', { error: error instanceof Error ? error.message : String(error) });
             reject(error);
         });
         req.write(paramString);

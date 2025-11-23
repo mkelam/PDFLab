@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserActivity = exports.getAuditLogStats = exports.getSecurityEvents = exports.getAuditLogById = exports.getAllAuditLogs = void 0;
 const sequelize_1 = require("sequelize");
@@ -66,7 +69,7 @@ const getAllAuditLogs = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get audit logs error:', error);
+        logger_1.default.error('Get audit logs error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch audit logs',
@@ -122,7 +125,7 @@ const getAuditLogById = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get audit log by ID error:', error);
+        logger_1.default.error('Get audit log by ID error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch audit log',
@@ -166,7 +169,7 @@ const getSecurityEvents = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get security events error:', error);
+        logger_1.default.error('Get security events error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch security events',
@@ -243,7 +246,7 @@ const getAuditLogStats = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get audit log stats error:', error);
+        logger_1.default.error('Get audit log stats error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch audit log statistics',
@@ -282,7 +285,7 @@ const getUserActivity = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get user activity error:', error);
+        logger_1.default.error('Get user activity error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch user activity',
@@ -293,4 +296,5 @@ const getUserActivity = async (req, res) => {
 exports.getUserActivity = getUserActivity;
 // Import sequelize for stats
 const database_1 = require("../config/database");
+const logger_1 = __importDefault(require("../config/logger"));
 //# sourceMappingURL=audit.admin.controller.js.map

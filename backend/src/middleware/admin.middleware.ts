@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { User, UserRole } from '../models'
+import logger from '../config/logger'
 
 /**
  * Permission matrix defining which roles can access which resources
@@ -59,7 +60,7 @@ export const requireAdmin = async (
 
     next()
   } catch (error) {
-    console.error('Admin middleware error:', error)
+    logger.error('Admin middleware error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Authorization failed',
       message: 'An error occurred during authorization'
@@ -96,7 +97,7 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
 
       next()
     } catch (error) {
-      console.error('Role check error:', error)
+      logger.error('Role check error:', { error: error instanceof Error ? error.message : String(error) })
       res.status(500).json({
         error: 'Authorization failed',
         message: 'An error occurred during role verification'
@@ -136,7 +137,7 @@ export const requirePermission = (permission: keyof typeof PERMISSIONS) => {
 
       next()
     } catch (error) {
-      console.error('Permission check error:', error)
+      logger.error('Permission check error:', { error: error instanceof Error ? error.message : String(error) })
       res.status(500).json({
         error: 'Authorization failed',
         message: 'An error occurred during permission verification'

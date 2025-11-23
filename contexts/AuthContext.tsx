@@ -36,6 +36,7 @@ interface SignupCredentials extends LoginCredentials {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<{ user: User }>;
   logout: () => Promise<void>;
   signup: (credentials: SignupCredentials) => Promise<void>;
@@ -46,6 +47,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isAuthenticated = !!user;
 
   // Check for existing session on mount
   useEffect(() => {
@@ -226,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, signup }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, login, logout, signup }}>
       {children}
     </AuthContext.Provider>
   );

@@ -13,8 +13,8 @@ export declare const uploadLimiter: import("express-rate-limit").RateLimitReques
 /**
  * Authentication rate limiter
  * Prevents brute force attacks on login/register
- * 5 attempts per 15 minutes per IP (production)
- * 1000 attempts per 15 minutes (development)
+ * 5 attempts per 15 minutes per IP (production/test)
+ * 1000 attempts per 15 minutes (development only)
  */
 export declare const authLimiter: import("express-rate-limit").RateLimitRequestHandler;
 /**

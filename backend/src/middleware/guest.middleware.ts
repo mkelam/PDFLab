@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import GuestSessionService from '../services/guest-session.service'
 import { GUEST_LIMITS, USER_PLAN_LIMITS } from '../config/constants'
+import logger from '../config/logger'
 
 /**
  * Guest session middleware
@@ -92,7 +93,7 @@ export const initializeGuestSession = async (
 
     next()
   } catch (error) {
-    console.error('Guest session initialization error:', error)
+    logger.error('Guest session initialization error:', { error: error instanceof Error ? error.message : String(error) })
     // Don't block request on session error
     req.isGuest = true
     next()
@@ -111,14 +112,14 @@ export const validateGuestQuota = async (
   try {
     // Skip validation if user is authenticated
     if (req.user) {
-      console.log('[Guest Quota] Skipping - user is authenticated')
+      logger.info('[Guest Quota] Skipping - user is authenticated')
       return next()
     }
 
     const sessionId = req.guestSession?.sessionId || null
     const ipAddress = getClientIp(req)
 
-    console.log('[Guest Quota] Validating:', { sessionId, ipAddress })
+    logger.info('[Guest Quota] Validating:', { { sessionId, ipAddress } })
 
     // Validate conversion eligibility
     const validation = await GuestSessionService.validateConversion(
@@ -126,10 +127,10 @@ export const validateGuestQuota = async (
       ipAddress
     )
 
-    console.log('[Guest Quota] Validation result:', validation)
+    logger.info('[Guest Quota] Validation result:', { validation })
 
     if (!validation.allowed) {
-      console.log('[Guest Quota] Blocked:', validation.reason)
+      logger.info('[Guest Quota] Blocked:', { validation.reason })
 
       const hoursUntilReset = validation.resetAt
         ? Math.ceil((validation.resetAt.getTime() - Date.now()) / (60 * 60 * 1000))
@@ -178,7 +179,7 @@ export const validateGuestQuota = async (
       return
     }
 
-    console.log('[Guest Quota] Allowed - proceeding')
+    logger.info('[Guest Quota] Allowed - proceeding')
 
     // Update session if new one was created
     if (validation.session && !sessionId) {
@@ -193,7 +194,7 @@ export const validateGuestQuota = async (
 
     next()
   } catch (error) {
-    console.error('Guest quota validation error:', error)
+    logger.error('Guest quota validation error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Validation failed',
       message: 'Unable to validate guest quota. Please try again.'
@@ -227,7 +228,7 @@ export const recordGuestConversion = async (
 
     next()
   } catch (error) {
-    console.error('Record guest conversion error:', error)
+    logger.error('Record guest conversion error:', { error: error instanceof Error ? error.message : String(error) })
     // Don't block the request, just log the error
     next()
   }

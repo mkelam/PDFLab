@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { Partner, PromoCode, UserAttribution, User } from '../models'
 import { PartnerStatus, CommissionTier } from '../models/Partner'
 import { DiscountType } from '../models/PromoCode'
+import logger from '../config/logger'
 
 /**
  * Partner Dashboard Controller
@@ -91,7 +92,7 @@ export const partnerLogin = async (req: Request, res: Response): Promise<void> =
       }
     })
   } catch (error) {
-    console.error('[Partner Login] Error:', error)
+    logger.error('[Partner Login] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Login failed',
       message: 'An error occurred during login'
@@ -231,7 +232,7 @@ export const getPartnerDashboard = async (req: Request, res: Response): Promise<
       }))
     })
   } catch (error) {
-    console.error('[Partner Dashboard] Error:', error)
+    logger.error('[Partner Dashboard] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to load dashboard',
       message: 'An error occurred while loading partner dashboard'
@@ -311,7 +312,7 @@ export const getPartnerReferrals = async (req: Request, res: Response): Promise<
       }
     })
   } catch (error) {
-    console.error('[Partner Referrals] Error:', error)
+    logger.error('[Partner Referrals] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to load referrals',
       message: 'An error occurred while loading referrals'
@@ -407,7 +408,7 @@ export const createPartner = async (req: Request, res: Response): Promise<void> 
       }
     })
   } catch (error) {
-    console.error('[Create Partner] Error:', error)
+    logger.error('[Create Partner] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to create partner',
       message: 'An error occurred while creating partner'
@@ -459,7 +460,7 @@ export const getAllPartners = async (req: Request, res: Response): Promise<void>
       }))
     })
   } catch (error) {
-    console.error('[Get All Partners] Error:', error)
+    logger.error('[Get All Partners] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to load partners',
       message: 'An error occurred while loading partners'
@@ -525,7 +526,7 @@ export const createPromoCode = async (req: Request, res: Response): Promise<void
       }
     })
   } catch (error) {
-    console.error('[Create Promo Code] Error:', error)
+    logger.error('[Create Promo Code] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to create promo code',
       message: 'An error occurred while creating promo code'
@@ -574,7 +575,7 @@ export const getAttributionStats = async (req: Request, res: Response): Promise<
       }
     })
   } catch (error) {
-    console.error('[Attribution Stats] Error:', error)
+    logger.error('[Attribution Stats] Error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to load stats',
       message: 'An error occurred while loading attribution stats'

@@ -11,6 +11,7 @@ const archiver_1 = __importDefault(require("archiver"));
 const models_1 = require("../models");
 const redis_1 = require("../config/redis");
 const quota_utils_1 = require("../utils/quota.utils");
+const logger_1 = __importDefault(require("../config/logger"));
 // Helper function to get storage path
 const getStoragePath = () => {
     const storagePath = process.env['STORAGE_PATH'] || './storage';
@@ -373,7 +374,7 @@ const downloadBatchZip = async (req, res) => {
         const fileName = `${batchJob.batch_name.replace(/[^a-z0-9]/gi, '_')}.zip`;
         res.download(zipPath, fileName, (err) => {
             if (err) {
-                console.error('Download error:', err);
+                logger_1.default.error('Download error:', { error: err instanceof Error ? err.message : String(err) });
                 if (!res.headersSent) {
                     res.status(500).json({
                         error: 'Download failed',

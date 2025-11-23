@@ -40,9 +40,11 @@ exports.resetPassword = exports.forgotPassword = exports.refreshToken = exports.
 const models_1 = require("../models");
 const UserAttribution_1 = require("../models/UserAttribution");
 const auth_utils_1 = require("../utils/auth.utils");
+const sanitize_utils_1 = require("../utils/sanitize.utils");
 const email_service_1 = __importDefault(require("../services/email.service"));
 const guest_session_service_1 = __importDefault(require("../services/guest-session.service"));
 const attribution_middleware_1 = require("../middleware/attribution.middleware");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Register a new user
  */
@@ -65,7 +67,7 @@ const register = async (req, res) => {
             return;
         }
         if (!(0, auth_utils_1.isValidPassword)(password)) {
-            res.status(422).json({
+            res.status(400).json({
                 error: 'Weak password',
                 message: 'Password must be at least 8 characters long and contain letters and numbers'
             });
@@ -82,11 +84,13 @@ const register = async (req, res) => {
         }
         // Hash password
         const password_hash = await (0, auth_utils_1.hashPassword)(password);
+        // Sanitize user inputs to prevent XSS
+        const sanitizedName = name ? (0, sanitize_utils_1.sanitizeText)(name) : undefined;
         // Create user
         const user = await models_1.User.create({
             email,
             password_hash,
-            name: name || undefined,
+            name: sanitizedName,
             plan: models_1.UserPlan.FREE,
             conversions_used: 0,
             conversions_limit: parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
@@ -116,10 +120,10 @@ const register = async (req, res) => {
                 attributionMethod = UserAttribution_1.AttributionMethod.PROMO_CODE;
                 // Increment promo code usage
                 await promoCodeRecord.incrementUse();
-                console.log(`[Attribution] User ${user.email} signed up with promo code ${promo_code}`);
+                logger_1.default.info(`[Attribution] User ${user.email} signed up with promo code ${promo_code}`);
             }
             else {
-                console.warn(`[Attribution] Invalid or expired promo code: ${promo_code}`);
+                logger_1.default.warn(`[Attribution] Invalid or expired promo code: ${promo_code}`);
             }
         }
         // 2. Check for referral link attribution (from middleware)
@@ -132,7 +136,7 @@ const register = async (req, res) => {
                 utmMedium = attributionData.utm_medium;
                 utmCampaign = attributionData.utm_campaign;
                 attributionMethod = UserAttribution_1.AttributionMethod.REFERRAL_LINK;
-                console.log(`[Attribution] User ${user.email} signed up via referral link from partner ${partnerId}`);
+                logger_1.default.info(`[Attribution] User ${user.email} signed up via referral link from partner ${partnerId}`);
             }
         }
         // 3. Create attribution record
@@ -152,17 +156,17 @@ const register = async (req, res) => {
                 commission_paid: false,
                 created_at: new Date()
             });
-            console.log(`[Attribution] Created attribution record for user ${user.email} → partner ${partnerId}`);
+            logger_1.default.info(`[Attribution] Created attribution record for user ${user.email} → partner ${partnerId}`);
         }
         else {
             // Organic signup (no partner attribution)
             await models_1.UserAttribution.create({
                 user_id: user.id,
-                partner_id: null,
+                partner_id: undefined,
                 attribution_method: UserAttribution_1.AttributionMethod.MANUAL,
                 created_at: new Date()
             });
-            console.log(`[Attribution] User ${user.email} is an organic signup (no partner)`);
+            logger_1.default.info(`[Attribution] User ${user.email} is an organic signup (no partner)`);
         }
         // Migrate guest session if exists
         const guestSessionId = req.cookies?.guest_session_id;
@@ -176,26 +180,26 @@ const register = async (req, res) => {
                     const updatedCount = await models_1.ConversionJob.update({ user_id: user.id }, { where: { user_id: null } });
                     migratedJobs = Array.isArray(updatedCount) ? updatedCount[0] : updatedCount;
                     if (migratedJobs > 0) {
-                        console.log(`✅ Migrated ${migratedJobs} guest conversion job(s) to user ${user.email}`);
+                        logger_1.default.info(`✅ Migrated ${migratedJobs} guest conversion job(s) to user ${user.email}`);
                         // Update user's conversion count
                         user.conversions_used = migratedJobs;
                         await user.save();
                     }
                     // Delete guest session from Redis
                     await guest_session_service_1.default.deleteSession(guestSessionId);
-                    console.log(`✅ Deleted guest session ${guestSessionId}`);
+                    logger_1.default.info(`✅ Deleted guest session ${guestSessionId}`);
                     // Clear guest session cookie
                     res.clearCookie('guest_session_id');
                 }
             }
             catch (error) {
-                console.error('Guest session migration error:', error);
+                logger_1.default.error('Guest session migration error:', { error: error instanceof Error ? error.message : String(error) });
                 // Don't fail registration if migration fails
             }
         }
         // Send welcome email (non-blocking)
         email_service_1.default.sendWelcomeEmail(user.email, user.name || undefined).catch((error) => {
-            console.error('Failed to send welcome email:', error);
+            logger_1.default.error('Failed to send welcome email:', { error: error instanceof Error ? error.message : String(error) });
             // Don't fail registration if email fails
         });
         // Generate tokens
@@ -223,12 +227,12 @@ const register = async (req, res) => {
                 conversions_limit: user.conversions_limit
             },
             token: accessToken,
-            refresh_token: refreshToken,
+            refreshToken: refreshToken,
             migrated_jobs: migratedJobs
         });
     }
     catch (error) {
-        console.error('Registration error:', error);
+        logger_1.default.error('Registration error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Registration failed',
             message: 'An error occurred during registration'
@@ -295,11 +299,11 @@ const login = async (req, res) => {
                 last_login: user.last_login
             },
             token: accessToken,
-            refresh_token: refreshToken
+            refreshToken: refreshToken
         });
     }
     catch (error) {
-        console.error('Login error:', error);
+        logger_1.default.error('Login error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Login failed',
             message: 'An error occurred during login'
@@ -332,7 +336,7 @@ const getProfile = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get profile error:', error);
+        logger_1.default.error('Get profile error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch profile',
             message: 'An error occurred while fetching your profile'
@@ -345,8 +349,10 @@ exports.getProfile = getProfile;
  */
 const refreshToken = async (req, res) => {
     try {
-        const { refresh_token } = req.body;
-        if (!refresh_token) {
+        // Accept both refreshToken (camelCase) and refresh_token (snake_case) for backwards compatibility
+        const { refresh_token, refreshToken: refreshTokenCamel } = req.body;
+        const token = refreshTokenCamel || refresh_token;
+        if (!token) {
             res.status(400).json({
                 error: 'Missing refresh token',
                 message: 'Refresh token is required'
@@ -355,7 +361,7 @@ const refreshToken = async (req, res) => {
         }
         // Verify refresh token (using same verifyToken function)
         const { verifyToken } = await Promise.resolve().then(() => __importStar(require('../utils/auth.utils')));
-        const decoded = verifyToken(refresh_token);
+        const decoded = verifyToken(token);
         if (!decoded) {
             res.status(401).json({
                 error: 'Invalid refresh token',
@@ -385,11 +391,11 @@ const refreshToken = async (req, res) => {
         });
         res.status(200).json({
             token: newAccessToken,
-            refresh_token: newRefreshToken
+            refreshToken: newRefreshToken
         });
     }
     catch (error) {
-        console.error('Refresh token error:', error);
+        logger_1.default.error('Refresh token error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Token refresh failed',
             message: 'An error occurred while refreshing your token'
@@ -439,7 +445,7 @@ const forgotPassword = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Forgot password error:', error);
+        logger_1.default.error('Forgot password error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Request failed',
             message: 'An error occurred while processing your request'
@@ -569,14 +575,14 @@ const resetPassword = async (req, res) => {
         user.failed_reset_attempts = 0;
         user.reset_locked_until = undefined;
         await user.save(); // Sequelize automatically updates updated_at
-        console.log(`Password reset successful for user: ${user.email}`);
+        logger_1.default.info(`Password reset successful for user: ${user.email}`);
         res.status(200).json({
             success: true,
             message: 'Password has been reset successfully'
         });
     }
     catch (error) {
-        console.error('Reset password error:', error);
+        logger_1.default.error('Reset password error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Reset failed',
             message: 'An error occurred while resetting your password'

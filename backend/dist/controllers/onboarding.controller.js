@@ -44,6 +44,7 @@ const User_1 = require("../models/User");
 const ConversionJob_1 = require("../models/ConversionJob");
 const path_1 = __importDefault(require("path"));
 const sequelize_1 = require("sequelize");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Get user's onboarding progress
  * GET /api/onboarding/progress
@@ -97,7 +98,7 @@ const getOnboardingProgress = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error fetching onboarding progress:', error);
+        logger_1.default.error('Error fetching onboarding progress:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to fetch onboarding progress' });
     }
 };
@@ -184,7 +185,7 @@ const updateOnboardingProgress = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error updating onboarding progress:', error);
+        logger_1.default.error('Error updating onboarding progress:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to update onboarding progress' });
     }
 };
@@ -230,7 +231,7 @@ const completeOnboarding = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error completing onboarding:', error);
+        logger_1.default.error('Error completing onboarding:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to complete onboarding' });
     }
 };
@@ -275,7 +276,7 @@ const skipOnboarding = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error skipping onboarding:', error);
+        logger_1.default.error('Error skipping onboarding:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to skip onboarding' });
     }
 };
@@ -307,7 +308,7 @@ const getOnboardingTemplates = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error fetching onboarding templates:', error);
+        logger_1.default.error('Error fetching onboarding templates:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to fetch templates' });
     }
 };
@@ -426,7 +427,7 @@ const convertSampleTemplate = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error converting sample template:', error);
+        logger_1.default.error('Error converting sample template:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to start conversion' });
     }
 };
@@ -509,7 +510,7 @@ const getOnboardingAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error fetching onboarding analytics:', error);
+        logger_1.default.error('Error fetching onboarding analytics:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to fetch analytics' });
     }
 };

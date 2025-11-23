@@ -55,7 +55,19 @@
       "Bash(python3:*)",
       "Bash(npm run build:*)",
       "Bash(scp:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(bash:*)",
+      "SlashCommand(/BMad:agents:architect)",
+      "SlashCommand(/BMad:agents:bmad-orchestrator)",
+      "Bash(git checkout:*)",
+      "Bash(if not exist docs mkdir docs)",
+      "Bash(git rm:*)",
+      "Bash(cat:*)",
+      "Bash(if not exist \"scripts\" mkdir scripts)",
+      "Bash(git stash:*)",
+      "Bash(git reset:*)",
+      "Bash(npm test)",
+      "Bash(npm run test:*)"
     ],
     "deny": [],
     "ask": []

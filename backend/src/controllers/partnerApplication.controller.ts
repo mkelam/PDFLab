@@ -4,6 +4,7 @@ import PartnerApplication from '../models/PartnerApplication'
 import { Partner } from '../models/Partner'
 import emailService from '../services/email.service'
 import { generateSlug, generateReferralCode } from '../utils/partner.utils'
+import logger from '../config/logger'
 
 /**
  * Auto-scoring algorithm for partner applications
@@ -215,7 +216,7 @@ export const submitApplication = async (req: Request, res: Response) => {
           <p>You're welcome to reapply after 90 days if your circumstances change.</p>
           <p>Best regards,<br/>The PDFLab Team</p>
         `
-      }).catch(err => console.error('Email error:', err))
+      }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
       return res.status(200).json({
         message: 'Application received but does not meet current requirements',
@@ -240,7 +241,7 @@ export const submitApplication = async (req: Request, res: Response) => {
         <p>We'll be in touch soon!</p>
         <p>Best regards,<br/>The PDFLab Team</p>
       `
-    }).catch(err => console.error('Email error:', err))
+    }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
     res.status(201).json({
       message: 'Application submitted successfully',
@@ -249,7 +250,7 @@ export const submitApplication = async (req: Request, res: Response) => {
     })
 
   } catch (error: any) {
-    console.error('Submit application error:', error)
+    logger.error('Submit application error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to submit application' })
   }
 }
@@ -275,7 +276,7 @@ export const getApplications = async (req: Request, res: Response) => {
 
     res.json({ applications })
   } catch (error: any) {
-    console.error('Get applications error:', error)
+    logger.error('Get applications error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to fetch applications' })
   }
 }
@@ -296,7 +297,7 @@ export const getApplication = async (req: Request, res: Response) => {
 
     res.json({ application })
   } catch (error: any) {
-    console.error('Get application error:', error)
+    logger.error('Get application error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to fetch application' })
   }
 }
@@ -414,7 +415,7 @@ export const approveApplication = async (req: Request, res: Response) => {
         <p>Let's grow together! 🚀</p>
         <p>Best regards,<br/>The PDFLab Team</p>
       `
-    }).catch(err => console.error('Email error:', err))
+    }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
     res.json({
       message: 'Application approved successfully',
@@ -427,7 +428,7 @@ export const approveApplication = async (req: Request, res: Response) => {
     })
 
   } catch (error: any) {
-    console.error('Approve application error:', error)
+    logger.error('Approve application error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to approve application' })
   }
 }
@@ -473,12 +474,12 @@ export const rejectApplication = async (req: Request, res: Response) => {
         <p>We appreciate your interest in PDFLab!</p>
         <p>Best regards,<br/>The PDFLab Team</p>
       `
-    }).catch(err => console.error('Email error:', err))
+    }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
     res.json({ message: 'Application rejected' })
 
   } catch (error: any) {
-    console.error('Reject application error:', error)
+    logger.error('Reject application error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to reject application' })
   }
 }
@@ -505,7 +506,7 @@ export const flagApplication = async (req: Request, res: Response) => {
     res.json({ message: 'Application flagged for review' })
 
   } catch (error: any) {
-    console.error('Flag application error:', error)
+    logger.error('Flag application error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to flag application' })
   }
 }

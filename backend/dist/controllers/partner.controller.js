@@ -9,6 +9,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const models_1 = require("../models");
 const Partner_1 = require("../models/Partner");
 const PromoCode_1 = require("../models/PromoCode");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Partner Dashboard Controller
  *
@@ -81,12 +82,12 @@ const partnerLogin = async (req, res) => {
                 platform: partner.platform,
                 status: partner.status,
                 commission_tier: partner.commission_tier,
-                commission_rate: partner.commission_rate
+                commission_rate: parseFloat(partner.commission_rate?.toString() || '0')
             }
         });
     }
     catch (error) {
-        console.error('[Partner Login] Error:', error);
+        logger_1.default.error('[Partner Login] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Login failed',
             message: 'An error occurred during login'
@@ -157,7 +158,7 @@ const getPartnerDashboard = async (req, res) => {
                 slug: partner.slug,
                 platform: partner.platform,
                 follower_count: partner.follower_count,
-                commission_rate: partner.commission_rate,
+                commission_rate: parseFloat(partner.commission_rate?.toString() || '0'),
                 commission_tier: partner.commission_tier,
                 status: partner.status,
                 referral_link: partner.getReferralLink(),
@@ -172,7 +173,7 @@ const getPartnerDashboard = async (req, res) => {
                     signups: totalSignups,
                     conversions: totalConversions,
                     conversion_rate: conversionRate.toFixed(2) + '%',
-                    revenue_generated: partner.total_revenue_generated,
+                    revenue_generated: parseFloat(partner.total_revenue_generated?.toString() || '0'),
                     commission_earned: totalCommissionEarned.toFixed(2),
                     commission_paid: totalCommissionPaid.toFixed(2),
                     commission_pending: pendingCommission.toFixed(2)
@@ -189,7 +190,7 @@ const getPartnerDashboard = async (req, res) => {
                 id: code.id,
                 code: code.code,
                 discount_type: code.discount_type,
-                discount_value: code.discount_value,
+                discount_value: parseFloat(code.discount_value?.toString() || '0'),
                 uses: code.current_uses,
                 max_uses: code.max_uses,
                 is_active: code.is_active,
@@ -204,13 +205,13 @@ const getPartnerDashboard = async (req, res) => {
                 signup_date: attr.created_at,
                 converted: attr.converted_to_paid,
                 conversion_date: attr.converted_at,
-                commission_due: attr.commission_due,
+                commission_due: parseFloat(attr.commission_due?.toString() || '0'),
                 commission_paid: attr.commission_paid
             }))
         });
     }
     catch (error) {
-        console.error('[Partner Dashboard] Error:', error);
+        logger_1.default.error('[Partner Dashboard] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to load dashboard',
             message: 'An error occurred while loading partner dashboard'
@@ -275,8 +276,8 @@ const getPartnerReferrals = async (req, res) => {
                 signup_date: attr.created_at,
                 converted: attr.converted_to_paid,
                 conversion_date: attr.converted_at,
-                first_payment: attr.first_payment_amount,
-                commission_due: attr.commission_due,
+                first_payment: parseFloat(attr.first_payment_amount?.toString() || '0'),
+                commission_due: parseFloat(attr.commission_due?.toString() || '0'),
                 commission_paid: attr.commission_paid
             })),
             pagination: {
@@ -288,7 +289,7 @@ const getPartnerReferrals = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('[Partner Referrals] Error:', error);
+        logger_1.default.error('[Partner Referrals] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to load referrals',
             message: 'An error occurred while loading referrals'
@@ -362,14 +363,14 @@ const createPartner = async (req, res) => {
                 email: partner.email,
                 slug: partner.slug,
                 commission_tier: partner.commission_tier,
-                commission_rate: partner.commission_rate,
+                commission_rate: parseFloat(partner.commission_rate?.toString() || '0'),
                 referral_link: partner.getReferralLink(),
                 default_promo_code: defaultPromoCode
             }
         });
     }
     catch (error) {
-        console.error('[Create Partner] Error:', error);
+        logger_1.default.error('[Create Partner] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to create partner',
             message: 'An error occurred while creating partner'
@@ -405,7 +406,7 @@ const getAllPartners = async (req, res) => {
                 platform: partner.platform,
                 follower_count: partner.follower_count,
                 commission_tier: partner.commission_tier,
-                commission_rate: partner.commission_rate,
+                commission_rate: parseFloat(partner.commission_rate?.toString() || '0'),
                 status: partner.status,
                 referral_link: partner.getReferralLink(),
                 total_signups: partner.total_signups || 0,
@@ -420,7 +421,7 @@ const getAllPartners = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('[Get All Partners] Error:', error);
+        logger_1.default.error('[Get All Partners] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to load partners',
             message: 'An error occurred while loading partners'
@@ -482,7 +483,7 @@ const createPromoCode = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('[Create Promo Code] Error:', error);
+        logger_1.default.error('[Create Promo Code] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to create promo code',
             message: 'An error occurred while creating promo code'
@@ -524,7 +525,7 @@ const getAttributionStats = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('[Attribution Stats] Error:', error);
+        logger_1.default.error('[Attribution Stats] Error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to load stats',
             message: 'An error occurred while loading attribution stats'

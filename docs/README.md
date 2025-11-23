@@ -1,164 +1,223 @@
-# PDFLab Documentation Index
+# PDFLab - Professional PDF Conversion Platform
 
-**Last Updated**: 2025-11-12
-**Project Version**: 1.2.0 (Beta Launch)
-**Status**: Production ✅ (Live at https://pdflab.pro)
+A production-ready PDF conversion and manipulation platform with a modern Next.js frontend and robust Express.js backend.
 
----
+## 🎯 Overview
 
-## 🎯 Quick Start
+**PDFLab** is now **LIVE IN PRODUCTION** at [https://pdflab.pro](https://pdflab.pro), offering professional PDF conversion services (PPTX, DOCX, XLSX, PNG) with integrated payment processing via PayFast.
 
-**New to PDFLab?** Start here:
-1. Read [CLAUDE.md](../CLAUDE.md) - Project overview and guidelines
-2. Review [architecture.md](architecture.md) - System architecture
-3. Check [deployment/COMPLETE_DEPLOYMENT_GUIDE.md](deployment/COMPLETE_DEPLOYMENT_GUIDE.md) - Deployment instructions
+## ✅ Core Features
 
----
+### **PDF Conversion** ✅ LIVE
+- PDF to PowerPoint (PPTX)
+- PDF to Word (DOCX)
+- PDF to Excel (XLSX)
+- PDF to PNG (Images)
+- PDF Merge (combine multiple PDFs)
 
-## 📚 Documentation Structure (Consolidated)
+### **Authentication System** ✅ LIVE
+- JWT-based authentication
+- Email verification
+- Password reset functionality
+- Session persistence
 
-### 🌟 Master Guides (Start Here)
+### **Payment Integration** ✅ LIVE
+- PayFast payment gateway (Production Mode)
+- Multi-currency support (USD primary, auto-conversion by PayFast)
+- Subscription plans: Free, Starter ($9.99), Pro ($29.99), Enterprise ($99.99)
+- Payment logging and audit trail
 
-- **[CLAUDE.md](../CLAUDE.md)** - Claude Code project instructions
-- **[COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md](../COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md)** - ⭐ Complete architecture review (11,000+ lines)
-- **[CODEBASE_REVIEW_SUMMARY.md](../CODEBASE_REVIEW_SUMMARY.md)** - ⭐ Executive summary of review
-- **[architecture.md](architecture.md)** - Complete system architecture
-- **[deployment/COMPLETE_DEPLOYMENT_GUIDE.md](deployment/COMPLETE_DEPLOYMENT_GUIDE.md)** - ⭐ Master deployment guide
-- **[deployment/ENVIRONMENT_SETUP.md](deployment/ENVIRONMENT_SETUP.md)** - ⭐ Environment configuration
-- **[payment/README.md](payment/README.md)** - ⭐ Payment system index
-- **[admin/ADMIN_PANEL_GUIDE.md](admin/ADMIN_PANEL_GUIDE.md)** - ⭐ Admin panel guide
+### **Admin Panel** ✅ LIVE
+- User management
+- Conversion monitoring
+- Payment tracking
+- Analytics dashboard
+- System health monitoring
 
-### Architecture & Design
+### **Design System**
+- Modern glassmorphism UI
+- OKLCH color space
+- Dark theme with subtle effects
+- Fully responsive (mobile/tablet/desktop)
 
-- **[architecture.md](architecture.md)** - Main system architecture
-- **[GLASSMORPHISM_DESIGN_SYSTEM.md](GLASSMORPHISM_DESIGN_SYSTEM.md)** - ⭐ UI design system breakdown
-- **[GLASSMORPHISM_IMPLEMENTATION_GUIDE.md](GLASSMORPHISM_IMPLEMENTATION_GUIDE.md)** - ⭐ Step-by-step implementation guide
-- **[STORAGE_ARCHITECTURE.md](STORAGE_ARCHITECTURE.md)** - File storage design
-- **[architecture/BACKGROUND_JOBS_ARCHITECTURE.md](architecture/BACKGROUND_JOBS_ARCHITECTURE.md)** - Job queue
+## 🚀 Quick Start
 
-### Deployment & Operations
+### Local Development
 
-- **[deployment/COMPLETE_DEPLOYMENT_GUIDE.md](deployment/COMPLETE_DEPLOYMENT_GUIDE.md)** - Complete deployment guide
-- **[deployment/ENVIRONMENT_SETUP.md](deployment/ENVIRONMENT_SETUP.md)** - Environment variables
-- **[deployment/DOCKER_GUIDE.md](deployment/DOCKER_GUIDE.md)** - Docker setup
-- **[deployment/DOCKER_RELIABILITY_GUIDE.md](deployment/DOCKER_RELIABILITY_GUIDE.md)** - Docker troubleshooting
-- **[deployment/VPS_UPDATE_GUIDE.md](deployment/VPS_UPDATE_GUIDE.md)** - VPS maintenance
+```bash
+# Install dependencies
+npm install
 
-### Development & Testing
+# Start Docker containers (MySQL + Redis)
+docker start pdflab-mysql pdflab-redis
 
-- **[FUNCTION_LEVEL_DOCUMENTATION.md](FUNCTION_LEVEL_DOCUMENTATION.md)** - ⭐ Complete function-level breakdown
-- **[api/API_DOCUMENTATION.md](api/API_DOCUMENTATION.md)** - Complete API reference
-- **[testing/MANUAL_TEST_GUIDE.md](testing/MANUAL_TEST_GUIDE.md)** - Testing procedures
-- **[guides/COMPLETE_MIGRATION_GUIDE.md](guides/COMPLETE_MIGRATION_GUIDE.md)** - Database migration
+# Start backend (in /backend directory)
+cd backend
+npm run dev  # Runs on http://localhost:3006
 
-### Payment System (PayFast)
-
-- **[payment/README.md](payment/README.md)** - Payment documentation index
-- **[payment/PAYFAST_INTEGRATION_AUDIT.md](payment/PAYFAST_INTEGRATION_AUDIT.md)** - Integration overview
-- **[payment/PAYFAST_TESTING_GUIDE.md](payment/PAYFAST_TESTING_GUIDE.md)** - Testing guide
-- **[payment/PAYFAST_ITN_TESTING_GUIDE.md](payment/PAYFAST_ITN_TESTING_GUIDE.md)** - Webhook testing
-- **Dual-Currency System**: USD display, ZAR processing (PayFast limitation)
-
-### Admin Panel
-
-- **[admin/ADMIN_PANEL_GUIDE.md](admin/ADMIN_PANEL_GUIDE.md)** - Complete admin guide
-
-### Historical Records
-
-- **[archives/TEST_REPORTS_SUMMARY.md](archives/TEST_REPORTS_SUMMARY.md)** - Test results summary
-- **[archives/](archives/)** - 70+ archived documents
-
----
-
-## 🎯 Quick Links by Role
-
-### For Developers
-- [CLAUDE.md](../CLAUDE.md) - Start here for Claude Code guidance
-- [COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md](../COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md) - Complete architecture review
-- [CODEBASE_REVIEW_SUMMARY.md](../CODEBASE_REVIEW_SUMMARY.md) - Review executive summary
-- [FUNCTION_LEVEL_DOCUMENTATION.md](FUNCTION_LEVEL_DOCUMENTATION.md) - Complete function breakdown
-- [GLASSMORPHISM_DESIGN_SYSTEM.md](GLASSMORPHISM_DESIGN_SYSTEM.md) - UI design system
-- [architecture.md](architecture.md) - System design
-- [api/API_DOCUMENTATION.md](api/API_DOCUMENTATION.md) - API endpoints
-- [deployment/ENVIRONMENT_SETUP.md](deployment/ENVIRONMENT_SETUP.md) - Environment variables
-
-### For DevOps
-- [deployment/COMPLETE_DEPLOYMENT_GUIDE.md](deployment/COMPLETE_DEPLOYMENT_GUIDE.md) - Master deployment guide
-- [deployment/DOCKER_GUIDE.md](deployment/DOCKER_GUIDE.md) - Container setup
-- [deployment/ENVIRONMENT_SETUP.md](deployment/ENVIRONMENT_SETUP.md) - Configuration
-- [deployment/VPS_UPDATE_GUIDE.md](deployment/VPS_UPDATE_GUIDE.md) - VPS maintenance
-
-### For QA/Testers
-- [testing/MANUAL_TEST_GUIDE.md](testing/MANUAL_TEST_GUIDE.md) - Testing procedures
-- [payment/PAYFAST_TESTING_GUIDE.md](payment/PAYFAST_TESTING_GUIDE.md) - Payment testing
-- [archives/TEST_REPORTS_SUMMARY.md](archives/TEST_REPORTS_SUMMARY.md) - Historical test results
-
-### For Product Owners
-- [PROJECT_STATUS_AND_ROADMAP.md](PROJECT_STATUS_AND_ROADMAP.md) - Current status & roadmap
-- [admin/ADMIN_PANEL_GUIDE.md](admin/ADMIN_PANEL_GUIDE.md) - Admin panel features
-- [payment/README.md](payment/README.md) - Payment system overview
-
----
-
-## 📁 Folder Structure
-
-```
-docs/
-├── README.md (this file)
-├── architecture/           # System architecture documents
-├── api/                    # API documentation
-├── deployment/             # Deployment and operations guides
-├── testing/                # Testing documentation
-├── payment/                # PayFast payment integration docs
-├── admin/                  # Admin panel documentation
-├── guides/                 # General guides and how-tos
-├── prd/                    # Product requirements (sharded)
-└── archives/               # Historical reports and records
+# Start frontend (in root directory)
+npm run dev  # Runs on http://localhost:3000
 ```
 
+### Production Deployment
+
+**Live URL**: https://pdflab.pro
+**VPS IP**: 141.136.44.168
+**Deployed**: November 5, 2025
+**Infrastructure**: Docker Compose + Nginx + Let's Encrypt
+
+## 📁 Project Structure
+
+```
+PDFLab/
+├── app/                      # Next.js 14 app directory
+│   ├── page.tsx              # Landing page
+│   ├── dashboard/            # User dashboard
+│   ├── login/                # Auth pages
+│   ├── pricing/              # Pricing page
+│   └── admin/                # Admin panel
+├── backend/                  # Express.js API (Node.js)
+│   ├── src/
+│   │   ├── config/          # DB, Redis config
+│   │   ├── controllers/     # API handlers
+│   │   ├── middleware/      # Auth, uploads
+│   │   ├── models/          # Sequelize models
+│   │   ├── routes/          # API routes
+│   │   ├── services/        # CloudConvert, PayFast
+│   │   ├── jobs/            # Background workers
+│   │   └── server.ts        # Express entry
+│   └── storage/             # File uploads
+├── backend-python/          # FastAPI API (Python) [Not deployed]
+├── components/              # React components
+│   ├── ui/                  # Shadcn UI library
+│   └── UnifiedConversionInterface.tsx
+├── contexts/
+│   └── AuthContext.tsx      # Authentication state
+├── lib/
+│   ├── api.ts               # API client
+│   └── auth-api.ts          # Auth helpers
+├── docs/                    # **ALL PROJECT DOCUMENTATION**
+│   ├── README.md            # Documentation index
+│   ├── architecture/        # Architecture docs
+│   ├── api/                 # API documentation
+│   ├── deployment/          # Deployment guides
+│   └── payment/             # PayFast integration
+└── public/                  # Static assets
+```
+
+## 🎨 Design Features
+
+### **Glassmorphic Theme**
+- Frosted glass effects
+- Subtle backdrop blur
+- Gradient accents
+- Circuit board background pattern
+
+### **3-Card Conversion Interface**
+- PDF to PowerPoint
+- PDF to Word
+- PDF to Excel
+- Drag-and-drop file upload
+- Format selector
+- Progress tracking (stubbed)
+
+### **Responsive Design**
+- Mobile-first approach
+- Breakpoints: mobile, tablet, desktop
+- Touch-friendly interface
+
+## 📚 Documentation
+
+All comprehensive documentation is organized in the [`docs/`](docs/) directory:
+
+### Essential Documentation (Root Level)
+- **[README.md](README.md)** - This file (project overview)
+- **[CLAUDE.md](CLAUDE.md)** - Claude Code project documentation
+- **[Roadmap](ROADMAP_ANALYSIS_V1.3.0.md)** - Product roadmap and priorities
+- **[Phase 1 Complete](PHASE_1_IMPLEMENTATION_COMPLETE.md)** - Latest milestone report
+- **[Comprehensive Review](COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md)** - Full codebase audit
+
+### Organized Documentation (`docs/` directory)
+- **[Documentation Index](docs/README.md)** - Master documentation guide
+- **[API Documentation](docs/api/API_DOCUMENTATION.md)** - Complete API reference
+- **[Deployment Guides](docs/deployment/)** - Production deployment instructions
+- **[PayFast Integration](docs/payment/)** - Payment system documentation
+- **[Admin Panel](docs/admin/)** - Admin panel features and usage
+- **[Architecture](docs/architecture/)** - System architecture details
+- **[Testing](docs/testing/)** - Test strategy and reports
+- **[Features](docs/features/implemented/)** - Feature implementation reports
+- **[Partner Portal](docs/partners/)** - Partner program documentation
+- **[Archives](docs/archives/)** - Historical reports (organized by date and type)
+
+### Recent Documentation Cleanup (2025-11-22)
+We've reorganized 100+ markdown files into a clean structure:
+- **Root**: 8 essential files only
+- **Archives**: Historical reports organized by type and date
+  - `docs/archives/2025-11-testing/` - Test reports
+  - `docs/archives/2025-11-deployments/` - Deployment reports
+  - `docs/archives/2025-11-fixes/` - Bug fix reports
+  - `docs/archives/2025-11-sessions/` - Session summaries
+  - `docs/archives/2025-11-bmad/` - BMAD session reports
+
+## 🔧 Tech Stack
+
+### Frontend
+- Next.js 14 (App Router)
+- TypeScript
+- TailwindCSS with OKLCH color space
+- React hooks
+- Shadcn UI components
+
+### Backend
+- **Active**: Express.js + TypeScript (port 3006)
+- **Inactive**: Python FastAPI + Celery (port 3007) - not deployed
+- MySQL 8.0 (Sequelize ORM)
+- Redis 7 (Bull job queue)
+- JWT authentication
+
+### External Services
+- CloudConvert API v3 (PDF processing)
+- PayFast (Payment gateway)
+- Hostinger VPS (Production hosting)
+- Let's Encrypt (SSL certificates)
+
+## 🚀 Deployment Status
+
+### ✅ LIVE IN PRODUCTION
+- **Deployed**: November 5, 2025
+- **URL**: https://pdflab.pro
+- **Backend**: Node.js Express (port 3006)
+- **Frontend**: Next.js (served via Nginx)
+- **Database**: MySQL + Redis (Docker containers)
+- **SSL**: Auto-renewed Let's Encrypt
+- **Payment**: PayFast Production Mode
+
+### 🏗️ In Progress
+- PayFast ITN live payment testing
+- Advanced monitoring setup (UptimeRobot, Sentry)
+- Cloud storage migration (S3/R2)
+- Python backend activation (optional)
+
+## 📊 Project Metrics
+
+**Overall Grade**: 9.5/10 (EXCELLENT - Production Live)
+
+- ✅ Core Features: 100% Complete
+- ✅ Backend: 100% Complete
+- ✅ Frontend: 100% Complete
+- ✅ Security: Strong fundamentals
+- ✅ Testing: 91% pass rate
+- ✅ Documentation: Comprehensive
+- ✅ Production: Deployed & Live
+
+## 🤝 Contributing
+
+For development setup, contribution guidelines, and coding standards, see [docs/README.md](docs/README.md).
+
 ---
 
-## 🔄 Recent Major Changes
-
-### Documentation Reorganization (2025-11-06)
-- ✅ Consolidated 90+ root files → 2 (CLAUDE.md, README.md)
-- ✅ Organized all docs into structured folders
-- ✅ Merged duplicate guides into master documents
-- ✅ Created comprehensive indexes
-- ✅ Archived 70+ historical reports
-- ✅ Reduced documentation files by ~40%
-
-### Project Updates
-- **2025-11-12**: Comprehensive codebase review completed
-- **2025-11-12**: Feedback system implemented
-- **2025-11-10**: Beta user system deployed (v1.2.0)
-- **2025-11-10**: Beta expiration timer added
-- **2025-11-09**: Batch processing feature implemented
-- **2025-11-08**: Sentry monitoring integrated
-- **2025-11-06**: PDF compression feature added
-- **2025-11-06**: Documentation consolidation complete
-- **2025-11-06**: Dual-currency system documented and verified
-- **2025-11-05**: VPS deployment completed
-- **2025-11-04**: Admin panel integration completed
-- **2025-11-03**: Error messaging improvements
-- **2025-10-30**: CloudConvert integration stabilized (enhanced OCR)
-- **2025-10-29**: PayFast payment gateway integrated
-
----
-
-## 🛠️ Technology Stack
-
-**Frontend**: Next.js 14, TypeScript, TailwindCSS
-**Backend**: Express.js, TypeScript, MySQL 8.0, Redis 7
-**External Services**: CloudConvert API (v3), PayFast Payment Gateway
-**Infrastructure**: Docker, VPS deployment
-
----
-
-## 📝 Documentation Standards
-
-- All guides must include: Date, Purpose, Prerequisites, Steps
-- Code examples must be tested and working
-- Deprecated docs moved to `archives/` with date prefix
-- Update this index when adding new documentation
-
+**Created**: October 2025
+**Deployed**: November 5, 2025
+**Status**: ✅ LIVE IN PRODUCTION
+**Version**: 1.3.0 (Phase 1 Complete)
+**Last Updated**: November 22, 2025

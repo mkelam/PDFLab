@@ -87,7 +87,7 @@ const handleUploadError = (err, req, res, next) => {
         }
     }
     if (err.message === 'Only PDF files are allowed') {
-        return res.status(415).json({
+        return res.status(400).json({
             error: 'Invalid file type',
             message: 'Only PDF files are allowed'
         });

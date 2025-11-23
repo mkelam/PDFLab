@@ -4,6 +4,7 @@ import { sequelize } from '../config/database'
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
 import { User, UserPlan } from '../models/User'
 import { Subscription, SubscriptionStatus } from '../models/subscription.model'
+import logger from '../config/logger'
 
 /**
  * Get all subscriptions with filters, search, and pagination
@@ -102,7 +103,7 @@ export const getAllSubscriptions = async (req: Request, res: Response): Promise<
       }
     })
   } catch (error: any) {
-    console.error('Get all subscriptions error:', error)
+    logger.error('Get all subscriptions error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch subscriptions',
@@ -148,7 +149,7 @@ export const getSubscriptionById = async (req: Request, res: Response): Promise<
       paymentHistory
     })
   } catch (error: any) {
-    console.error('Get subscription by ID error:', error)
+    logger.error('Get subscription by ID error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch subscription',
@@ -198,7 +199,7 @@ export const updateSubscription = async (req: Request, res: Response): Promise<v
       subscription
     })
   } catch (error: any) {
-    console.error('Update subscription error:', error)
+    logger.error('Update subscription error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to update subscription',
@@ -265,7 +266,7 @@ export const cancelSubscription = async (req: Request, res: Response): Promise<v
       subscription
     })
   } catch (error: any) {
-    console.error('Cancel subscription error:', error)
+    logger.error('Cancel subscription error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to cancel subscription',
@@ -311,7 +312,7 @@ export const pauseSubscription = async (req: Request, res: Response): Promise<vo
       subscription
     })
   } catch (error: any) {
-    console.error('Pause subscription error:', error)
+    logger.error('Pause subscription error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to pause subscription',
@@ -355,7 +356,7 @@ export const resumeSubscription = async (req: Request, res: Response): Promise<v
       subscription
     })
   } catch (error: any) {
-    console.error('Resume subscription error:', error)
+    logger.error('Resume subscription error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to resume subscription',
@@ -463,7 +464,7 @@ export const getAllTransactions = async (req: Request, res: Response): Promise<v
       }
     })
   } catch (error: any) {
-    console.error('Get all transactions error:', error)
+    logger.error('Get all transactions error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch transactions',
@@ -508,7 +509,7 @@ export const getTransactionById = async (req: Request, res: Response): Promise<v
       transaction
     })
   } catch (error: any) {
-    console.error('Get transaction by ID error:', error)
+    logger.error('Get transaction by ID error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch transaction',
@@ -595,7 +596,7 @@ export const processRefund = async (req: Request, res: Response): Promise<void> 
       refund: refundLog
     })
   } catch (error: any) {
-    console.error('Process refund error:', error)
+    logger.error('Process refund error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to process refund',
@@ -667,7 +668,7 @@ export const getITNLogs = async (req: Request, res: Response): Promise<void> => 
       }
     })
   } catch (error: any) {
-    console.error('Get ITN logs error:', error)
+    logger.error('Get ITN logs error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch ITN logs',
@@ -794,7 +795,7 @@ export const getRevenueAnalytics = async (req: Request, res: Response): Promise<
       }
     })
   } catch (error: any) {
-    console.error('Get revenue analytics error:', error)
+    logger.error('Get revenue analytics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch analytics',
@@ -850,7 +851,7 @@ export const retryFailedPayment = async (req: Request, res: Response): Promise<v
       transaction
     })
   } catch (error: any) {
-    console.error('Retry failed payment error:', error)
+    logger.error('Retry failed payment error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to retry payment',

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import archiver from 'archiver'
 import { ConversionJob, ConversionType, JobStatus } from '../models'
 import { conversionQueue } from '../config/redis'
+import logger from '../config/logger'
 
 /**
  * Compress PDF file to reduce size
@@ -389,9 +390,9 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
     const guestSession = req.guestSession
     const isGuest = !user && !!guestSession
 
-    console.log('[Upload] user:', user ? 'authenticated' : 'none')
-    console.log('[Upload] guestSession:', guestSession ? 'exists' : 'none')
-    console.log('[Upload] isGuest:', isGuest)
+    logger.info('[Upload] user', { authenticated: user ? 'yes' : 'no' })
+    logger.info('[Upload] guestSession', { exists: guestSession ? 'yes' : 'no' })
+    logger.info('[Upload] isGuest', { isGuest })
 
     // Check if file was uploaded
     if (!req.file) {
@@ -880,7 +881,7 @@ export const downloadBatchZip = async (req: Request, res: Response): Promise<voi
     // Finalize the archive
     await archive.finalize()
 
-    console.log(`[Batch Download] Created ZIP with ${validJobs.length} files for user ${user?.id || 'guest'}`)
+    logger.info(`[Batch Download] Created ZIP with ${validJobs.length} files for user ${user?.id || 'guest'}`)
 
   } catch (error) {
     const { sendInternalServerError, logError } = require('../utils/error.utils')

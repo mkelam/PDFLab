@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuditService = void 0;
 const AdminAuditLog_1 = require("../models/AdminAuditLog");
 const crypto_1 = __importDefault(require("crypto"));
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Service for creating and managing audit logs
  */
@@ -26,7 +27,7 @@ class AuditService {
             return log;
         }
         catch (error) {
-            console.error('Failed to create audit log:', error);
+            logger_1.default.error('Failed to create audit log:', { error: error instanceof Error ? error.message : String(error) });
             // Don't throw - we don't want logging failures to break operations
             throw error;
         }
@@ -40,7 +41,7 @@ class AuditService {
                 await this.createLog(data);
             }
             catch (error) {
-                console.error('Async audit log creation failed:', error);
+                logger_1.default.error('Async audit log creation failed:', { error: error instanceof Error ? error.message : String(error) });
             }
         });
     }
@@ -114,11 +115,11 @@ class AuditService {
                 }
             });
             const totalDeleted = normalDeleted + criticalDeleted;
-            console.log(`Audit log cleanup: Deleted ${totalDeleted} old logs (${normalDeleted} normal, ${criticalDeleted} critical)`);
+            logger_1.default.info(`Audit log cleanup: Deleted ${totalDeleted} old logs (${normalDeleted} normal, { ${criticalDeleted} critical })`);
             return { deleted: totalDeleted };
         }
         catch (error) {
-            console.error('Audit log cleanup failed:', error);
+            logger_1.default.error('Audit log cleanup failed:', { error: error instanceof Error ? error.message : String(error) });
             throw error;
         }
     }

@@ -1,4 +1,5 @@
 import nodemailer, { Transporter } from 'nodemailer'
+import logger from '../config/logger'
 
 interface EmailOptions {
   to: string
@@ -31,10 +32,10 @@ class EmailService {
     // Only initialize if SMTP credentials are provided
     if (emailConfig.auth.user && emailConfig.auth.pass) {
       this.transporter = nodemailer.createTransport(emailConfig)
-      console.log('✓ Email service initialized with SMTP:', emailConfig.host)
+      logger.info('✓ Email service initialized with SMTP:', { emailConfig.host })
     } else {
-      console.warn('⚠ Email service not configured - missing SMTP credentials')
-      console.warn('  Emails will be logged to console only (development mode)')
+      logger.warn('⚠ Email service not configured - missing SMTP credentials')
+      logger.warn('  Emails will be logged to console only (development mode)')
     }
   }
 
@@ -45,13 +46,13 @@ class EmailService {
     try {
       // If transporter is not configured, log to console (development mode)
       if (!this.transporter) {
-        console.log('='.repeat(80))
-        console.log('EMAIL (Development Mode - Not Sent)')
-        console.log('='.repeat(80))
-        console.log(`To: ${options.to}`)
-        console.log(`Subject: ${options.subject}`)
-        console.log(`Text: ${options.text || 'See HTML content'}`)
-        console.log('='.repeat(80))
+        logger.info('='.repeat(80))
+        logger.info('EMAIL (Development Mode - Not Sent)')
+        logger.info('='.repeat(80))
+        logger.info(`To: ${options.to}`)
+        logger.info(`Subject: ${options.subject}`)
+        logger.info(`Text: ${options.text || 'See HTML content'}`)
+        logger.info('='.repeat(80))
         return true
       }
 
@@ -65,10 +66,10 @@ class EmailService {
       }
 
       await this.transporter.sendMail(mailOptions)
-      console.log(`✓ Email sent successfully to ${options.to}`)
+      logger.info(`✓ Email sent successfully to ${options.to}`)
       return true
     } catch (error) {
-      console.error('✗ Failed to send email:', error)
+      logger.error('✗ Failed to send email:', { error: error instanceof Error ? error.message : String(error) })
       return false
     }
   }

@@ -14,6 +14,7 @@ import { sanitizeText } from '../utils/sanitize.utils'
 import emailService from '../services/email.service'
 import GuestSessionService from '../services/guest-session.service'
 import { getAttributionData } from '../middleware/attribution.middleware'
+import logger from '../config/logger'
 
 /**
  * Register a new user
@@ -102,9 +103,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // Increment promo code usage
         await promoCodeRecord.incrementUse()
 
-        console.log(`[Attribution] User ${user.email} signed up with promo code ${promo_code}`)
+        logger.info(`[Attribution] User ${user.email} signed up with promo code ${promo_code}`)
       } else {
-        console.warn(`[Attribution] Invalid or expired promo code: ${promo_code}`)
+        logger.warn(`[Attribution] Invalid or expired promo code: ${promo_code}`)
       }
     }
 
@@ -119,7 +120,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         utmCampaign = attributionData.utm_campaign
         attributionMethod = AttributionMethod.REFERRAL_LINK
 
-        console.log(`[Attribution] User ${user.email} signed up via referral link from partner ${partnerId}`)
+        logger.info(`[Attribution] User ${user.email} signed up via referral link from partner ${partnerId}`)
       }
     }
 
@@ -141,7 +142,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         created_at: new Date()
       })
 
-      console.log(`[Attribution] Created attribution record for user ${user.email} → partner ${partnerId}`)
+      logger.info(`[Attribution] Created attribution record for user ${user.email} → partner ${partnerId}`)
     } else {
       // Organic signup (no partner attribution)
       await UserAttribution.create({
@@ -151,7 +152,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         created_at: new Date()
       })
 
-      console.log(`[Attribution] User ${user.email} is an organic signup (no partner)`)
+      logger.info(`[Attribution] User ${user.email} is an organic signup (no partner)`)
     }
 
     // Migrate guest session if exists
@@ -173,7 +174,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
           migratedJobs = Array.isArray(updatedCount) ? updatedCount[0] : updatedCount
 
           if (migratedJobs > 0) {
-            console.log(`✅ Migrated ${migratedJobs} guest conversion job(s) to user ${user.email}`)
+            logger.info(`✅ Migrated ${migratedJobs} guest conversion job(s) to user ${user.email}`)
 
             // Update user's conversion count
             user.conversions_used = migratedJobs
@@ -182,20 +183,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
           // Delete guest session from Redis
           await GuestSessionService.deleteSession(guestSessionId)
-          console.log(`✅ Deleted guest session ${guestSessionId}`)
+          logger.info(`✅ Deleted guest session ${guestSessionId}`)
 
           // Clear guest session cookie
           res.clearCookie('guest_session_id')
         }
       } catch (error) {
-        console.error('Guest session migration error:', error)
+        logger.error('Guest session migration error:', { error: error instanceof Error ? error.message : String(error) })
         // Don't fail registration if migration fails
       }
     }
 
     // Send welcome email (non-blocking)
     emailService.sendWelcomeEmail(user.email, user.name || undefined).catch((error) => {
-      console.error('Failed to send welcome email:', error)
+      logger.error('Failed to send welcome email:', { error: error instanceof Error ? error.message : String(error) })
       // Don't fail registration if email fails
     })
 
@@ -230,7 +231,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       migrated_jobs: migratedJobs
     })
   } catch (error) {
-    console.error('Registration error:', error)
+    logger.error('Registration error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Registration failed',
       message: 'An error occurred during registration'
@@ -307,7 +308,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       refreshToken: refreshToken
     })
   } catch (error) {
-    console.error('Login error:', error)
+    logger.error('Login error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Login failed',
       message: 'An error occurred during login'
@@ -340,7 +341,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       last_login: user.last_login
     })
   } catch (error) {
-    console.error('Get profile error:', error)
+    logger.error('Get profile error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch profile',
       message: 'An error occurred while fetching your profile'
@@ -405,7 +406,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       refreshToken: newRefreshToken
     })
   } catch (error) {
-    console.error('Refresh token error:', error)
+    logger.error('Refresh token error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Token refresh failed',
       message: 'An error occurred while refreshing your token'
@@ -460,7 +461,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
       message: 'If an account exists with this email, a password reset link has been sent'
     })
   } catch (error) {
-    console.error('Forgot password error:', error)
+    logger.error('Forgot password error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Request failed',
       message: 'An error occurred while processing your request'
@@ -612,14 +613,14 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     user.reset_locked_until = undefined
     await user.save() // Sequelize automatically updates updated_at
 
-    console.log(`Password reset successful for user: ${user.email}`)
+    logger.info(`Password reset successful for user: ${user.email}`)
 
     res.status(200).json({
       success: true,
       message: 'Password has been reset successfully'
     })
   } catch (error) {
-    console.error('Reset password error:', error)
+    logger.error('Reset password error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Reset failed',
       message: 'An error occurred while resetting your password'

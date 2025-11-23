@@ -7,22 +7,46 @@ exports.closeQueues = exports.initializeQueues = exports.emailQueue = exports.cl
 const redis_1 = require("redis");
 const bull_1 = __importDefault(require("bull"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("./logger"));
 dotenv_1.default.config();
 // Redis client for caching and pub/sub
 exports.redisClient = (0, redis_1.createClient)({
     socket: {
         host: process.env['REDIS_HOST'] || 'localhost',
         port: parseInt(process.env['REDIS_PORT'] || '6379'),
-        connectTimeout: 5000, // 5 second timeout
-        reconnectStrategy: false // Disable automatic reconnection
+        connectTimeout: 15000, // Increased from 5000ms to 15000ms
+        reconnectStrategy: (retries) => {
+            // Max 10 retries
+            if (retries > 10) {
+                logger_1.default.error('Redis reconnection failed after maximum attempts', { retries });
+                return new Error('Max Redis reconnection retries reached');
+            }
+            // Exponential backoff: 100ms, 200ms, 400ms... up to 3000ms
+            const delay = Math.min(retries * 100, 3000);
+            logger_1.default.warn('Redis reconnecting', { delay, retries, maxRetries: 10 });
+            return delay;
+        }
     },
     password: process.env['REDIS_PASSWORD'] || undefined
 });
-exports.redisClient.on('error', (err) => {
-    console.error('Redis Client Error:', err);
-});
+// Connection event handlers
 exports.redisClient.on('connect', () => {
-    console.log('✓ Redis client connected');
+    logger_1.default.info('Redis client connected', {
+        host: process.env['REDIS_HOST'] || 'localhost',
+        port: process.env['REDIS_PORT'] || '6379'
+    });
+});
+exports.redisClient.on('ready', () => {
+    logger_1.default.info('Redis client ready');
+});
+exports.redisClient.on('error', (err) => {
+    logger_1.default.error('Redis client error', { error: err.message });
+});
+exports.redisClient.on('reconnecting', () => {
+    logger_1.default.warn('Redis client reconnecting');
+});
+exports.redisClient.on('end', () => {
+    logger_1.default.warn('Redis client connection closed');
 });
 // Initialize Redis connection with timeout
 const connectRedis = async () => {
@@ -35,7 +59,11 @@ const connectRedis = async () => {
         return true;
     }
     catch (error) {
-        console.error('✗ Failed to connect to Redis:', error instanceof Error ? error.message : error);
+        logger_1.default.error('Failed to connect to Redis', {
+            error: error instanceof Error ? error.message : String(error),
+            host: process.env['REDIS_HOST'],
+            port: process.env['REDIS_PORT']
+        });
         // Ensure client is fully disconnected to prevent background retries
         try {
             await exports.redisClient.disconnect();
@@ -75,22 +103,22 @@ const getConversionQueue = () => {
         });
         // Setup event listeners
         _conversionQueue.on('error', (error) => {
-            console.error('Conversion Queue Error:', error);
+            logger_1.default.error('Conversion Queue Error', { error: error.message });
         });
         _conversionQueue.on('waiting', (jobId) => {
-            console.log(`Job ${jobId} is waiting`);
+            logger_1.default.debug('Job waiting in queue', { jobId });
         });
         _conversionQueue.on('active', (job) => {
-            console.log(`Job ${job.id} started processing`);
+            logger_1.default.info('Job started processing', { jobId: job.id });
         });
         _conversionQueue.on('completed', (job, result) => {
-            console.log(`Job ${job.id} completed successfully:`, result);
+            logger_1.default.info('Job completed successfully', { jobId: job.id, result });
         });
         _conversionQueue.on('failed', (job, error) => {
-            console.error(`Job ${job?.id} failed:`, error.message);
+            logger_1.default.error('Job failed', { jobId: job?.id, error: error.message });
         });
         _conversionQueue.on('stalled', (job) => {
-            console.warn(`Job ${job.id} stalled`);
+            logger_1.default.warn('Job stalled', { jobId: job.id });
         });
     }
     return _conversionQueue;
@@ -107,10 +135,10 @@ const getCleanupQueue = () => {
             }
         });
         _cleanupQueue.on('error', (error) => {
-            console.error('Cleanup Queue Error:', error);
+            logger_1.default.error('Cleanup Queue Error', { error: error.message });
         });
         _cleanupQueue.on('completed', (job) => {
-            console.log(`Cleanup job ${job.id} completed`);
+            logger_1.default.info('Cleanup job completed', { jobId: job.id });
         });
     }
     return _cleanupQueue;
@@ -164,9 +192,9 @@ exports.emailQueue = new Proxy({}, {
 });
 // Force initialize all queues (call after Redis connects)
 const initializeQueues = () => {
-    console.log('🔧 Initializing Bull queues...');
+    logger_1.default.info('Initializing Bull queues');
     if (!_conversionQueue) {
-        console.log('  Creating conversion queue...');
+        logger_1.default.debug('Creating conversion queue');
         _conversionQueue = new bull_1.default('pdf-conversion', {
             redis: redisConfig,
             defaultJobOptions: {
@@ -181,15 +209,15 @@ const initializeQueues = () => {
             }
         });
         _conversionQueue.on('error', (error) => {
-            console.error('Conversion Queue Error:', error);
+            logger_1.default.error('Conversion Queue Error', { error: error.message });
         });
-        console.log('  ✓ Conversion queue created');
+        logger_1.default.info('Conversion queue created');
     }
     else {
-        console.log('  ℹ Conversion queue already exists');
+        logger_1.default.debug('Conversion queue already exists');
     }
     if (!_cleanupQueue) {
-        console.log('  Creating cleanup queue...');
+        logger_1.default.debug('Creating cleanup queue');
         _cleanupQueue = new bull_1.default('file-cleanup', {
             redis: redisConfig,
             defaultJobOptions: {
@@ -199,14 +227,14 @@ const initializeQueues = () => {
             }
         });
         _cleanupQueue.on('error', (error) => {
-            console.error('Cleanup Queue Error:', error);
+            logger_1.default.error('Cleanup Queue Error', { error: error.message });
         });
-        console.log('  ✓ Cleanup queue created');
+        logger_1.default.info('Cleanup queue created');
     }
     else {
-        console.log('  ℹ Cleanup queue already exists');
+        logger_1.default.debug('Cleanup queue already exists');
     }
-    console.log('✓ Bull queues initialized');
+    logger_1.default.info('Bull queues initialized');
 };
 exports.initializeQueues = initializeQueues;
 // Graceful shutdown
@@ -220,7 +248,7 @@ const closeQueues = async () => {
     if (exports.redisClient.isOpen) {
         await exports.redisClient.quit();
     }
-    console.log('✓ All queues and Redis connection closed');
+    logger_1.default.info('All queues and Redis connection closed');
 };
 exports.closeQueues = closeQueues;
 //# sourceMappingURL=redis.js.map

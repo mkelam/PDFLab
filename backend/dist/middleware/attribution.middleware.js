@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractPartnerSlug = exports.getAttributionData = exports.requireAttribution = exports.captureAttribution = void 0;
 const Partner_1 = require("../models/Partner");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Capture Attribution Middleware
  *
@@ -59,7 +63,7 @@ const captureAttribution = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('[Attribution] Error capturing attribution:', error);
+        logger_1.default.error('[Attribution] Error capturing attribution:', { error: error instanceof Error ? error.message : String(error) });
         // Don't block the request if attribution capture fails
         next();
     }

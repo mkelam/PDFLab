@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const logger_1 = __importDefault(require("../config/logger"));
 class EmailService {
     constructor() {
         this.transporter = null;
@@ -25,11 +26,11 @@ class EmailService {
         // Only initialize if SMTP credentials are provided
         if (emailConfig.auth.user && emailConfig.auth.pass) {
             this.transporter = nodemailer_1.default.createTransport(emailConfig);
-            console.log('✓ Email service initialized with SMTP:', emailConfig.host);
+            logger_1.default.info('✓ Email service initialized with SMTP:', { emailConfig, : .host });
         }
         else {
-            console.warn('⚠ Email service not configured - missing SMTP credentials');
-            console.warn('  Emails will be logged to console only (development mode)');
+            logger_1.default.warn('⚠ Email service not configured - missing SMTP credentials');
+            logger_1.default.warn('  Emails will be logged to console only (development mode)');
         }
     }
     /**
@@ -39,13 +40,13 @@ class EmailService {
         try {
             // If transporter is not configured, log to console (development mode)
             if (!this.transporter) {
-                console.log('='.repeat(80));
-                console.log('EMAIL (Development Mode - Not Sent)');
-                console.log('='.repeat(80));
-                console.log(`To: ${options.to}`);
-                console.log(`Subject: ${options.subject}`);
-                console.log(`Text: ${options.text || 'See HTML content'}`);
-                console.log('='.repeat(80));
+                logger_1.default.info('='.repeat(80));
+                logger_1.default.info('EMAIL (Development Mode - Not Sent)');
+                logger_1.default.info('='.repeat(80));
+                logger_1.default.info(`To: ${options.to}`);
+                logger_1.default.info(`Subject: ${options.subject}`);
+                logger_1.default.info(`Text: ${options.text || 'See HTML content'}`);
+                logger_1.default.info('='.repeat(80));
                 return true;
             }
             // Send email via SMTP
@@ -57,11 +58,11 @@ class EmailService {
                 html: options.html,
             };
             await this.transporter.sendMail(mailOptions);
-            console.log(`✓ Email sent successfully to ${options.to}`);
+            logger_1.default.info(`✓ Email sent successfully to ${options.to}`);
             return true;
         }
         catch (error) {
-            console.error('✗ Failed to send email:', error);
+            logger_1.default.error('✗ Failed to send email:', { error: error instanceof Error ? error.message : String(error) });
             return false;
         }
     }

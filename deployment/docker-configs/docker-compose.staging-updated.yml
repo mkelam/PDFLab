@@ -1,0 +1,190 @@
+version: '3.8'
+
+services:
+  # MySQL Database for Staging
+  mysql-staging:
+    image: mysql:8.0
+    container_name: pdflab-mysql-staging
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: StagingRoot2024!SecurePass
+      MYSQL_DATABASE: pdflab_staging
+      MYSQL_USER: pdflab_staging
+      MYSQL_PASSWORD: StagingDB2024!UserPass
+    volumes:
+      - mysql-staging-data:/var/lib/mysql
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pStagingRoot2024!SecurePass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Redis Cache for Staging
+  redis-staging:
+    image: redis:7-alpine
+    container_name: pdflab-redis-staging
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-staging-data:/data
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API for Staging (UPDATED TO :latest)
+  backend-staging:
+    image: mkelam/pdflab-backend:latest
+    container_name: pdflab-backend-staging
+    restart: unless-stopped
+    ports:
+      - "3007:3006"
+    environment:
+      NODE_ENV: staging
+      PORT: 3006
+      DB_HOST: mysql-staging
+      DB_PORT: 3306
+      DB_USER: pdflab_staging
+      DB_PASSWORD: StagingDB2024!UserPass
+      DB_NAME: pdflab_staging
+      DB_SYNC: "false"
+      DB_ALTER: "false"
+      REDIS_HOST: redis-staging
+      REDIS_PORT: 6379
+      JWT_SECRET: qhiIVg1DhB6DtC77NDR2KxShHBuNzFSSUoJaYA3C2Uat5sw8JJ6eRwsp7BAinWp4PAPLwdiFMBXx727HyZkx3Q==
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 30d
+      CLOUDCONVERT_API_KEY: ***REMOVED***.eyJhdWQiOiIxIiwianRpIjoiYmUzMzgxMmRkZWY4YTliN2JiOTIzYmY5MTMyOTM2OGIyNjJiMzdkODlkZmFlN2FlMmJkNDA5NTVlY2VjZjcwZDUxOTI4NTJhNmIyYTQ3ZDkiLCJpYXQiOjE3NjEyNDQyNTQuNTA2MDAzLCJuYmYiOjE3NjEyNDQyNTQuNTA2MDA0LCJleHAiOjQ5MTY5MTc4NTQuNDk5OTU0LCJzdWIiOiI3MzAzMjA4MCIsInNjb3BlcyI6WyJ3ZWJob29rLndyaXRlIiwid2ViaG9vay5yZWFkIiwidGFzay53cml0ZSIsInRhc2sucmVhZCIsInVzZXIud3JpdGUiLCJ1c2VyLnJlYWQiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.bYu1XCp5kaX7t8iX-lATNDDCE_Hwm8xLD5kvKuZzKA4X3ALnejMkXAtC2NTbeEknTxUQwzyQ46733XiVcwIIxJzz49UmqTX8roJF6UTHkMkyNfOzO8H8STGYONoPSLl0ZqfAtvyK2wrXiqRhOBivgKyaB-ZCMwD1gEOGzNGKZSyvKD4DyY8D5JVVx4B9uD9N6MBwzJ08jeOT3MIAGIEJ8uqSwt25hekbdmeJgR4od-3c1GR52NDd6sPpgmvbL7ednMDeZbaXwO3KaPdyE9WuHge4zGHQKnVZpLAB25fWS-9zF-6Noe4Rl1J6UBX2sAXzug_-rChvsT0EqQveQlJIJiaAP-q21Jq2XlfohCAWnWzx7UYTaFZ9wI9239TgWtP3ZlenD1o3STvpZ_dF11h7HGZi1csyBCG8MOxpUKbb0w0WAP7ChAfVnSHwsMldxm6XocmsKn4xCQcMa0aEhPRfKKz9WmR96_5Xwc_5nSjMaL8XSwNAC5ELGENiJaUWTL7vpV78m5U1qF-w2SOJlgpCJ-V4lHwBn9gJAc2DTEaYVUjmFpWe1e37PXqPWUWoXTMlCz7tgTMx9pllFVZmJbspkvKBhwy3-EmwTqlU18d_SAuJJfbNHLNUhcEzlPPUPfaTfWl8hXenQBOX9uiXmikqwgpfaVS7gHGYGb6LM7nVG-Y
+      CLOUDCONVERT_SANDBOX: "false"
+      PAYFAST_MERCHANT_ID: 10000100
+      PAYFAST_MERCHANT_KEY: 46f0cd694581a
+      PAYFAST_PASSPHRASE: Xitbx99D2fsZtt1nWuQ8VCLWZi2Tl7WWz5QTa+EniM8=
+      PAYFAST_MODE: sandbox
+      CORS_ORIGIN: https://staging.pdflab.pro,http://staging.pdflab.pro,http://141.136.44.168:3002,http://141.136.44.168:3003,http://141.136.44.168:3007
+      STORAGE_PATH: /app/storage
+      SMTP_HOST: smtp.hostinger.com
+      SMTP_PORT: 465
+      SMTP_SECURE: "true"
+      SMTP_USER: support@pdflab.pro
+      SMTP_PASSWORD: ""
+      EMAIL_FROM: support@pdflab.pro
+    volumes:
+      - backend-staging-storage:/app/storage
+    depends_on:
+      mysql-staging:
+        condition: service_healthy
+      redis-staging:
+        condition: service_healthy
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Worker Service for Staging (NEW - CRITICAL GAP FIX)
+  worker-staging:
+    image: mkelam/pdflab-backend:latest
+    container_name: pdflab-worker-staging
+    restart: unless-stopped
+    environment:
+      NODE_ENV: staging
+      WORKER_MODE: "true"
+      DB_HOST: mysql-staging
+      DB_PORT: 3306
+      DB_USER: pdflab_staging
+      DB_PASSWORD: StagingDB2024!UserPass
+      DB_NAME: pdflab_staging
+      DB_SYNC: "false"
+      DB_ALTER: "false"
+      REDIS_HOST: redis-staging
+      REDIS_PORT: 6379
+      JWT_SECRET: qhiIVg1DhB6DtC77NDR2KxShHBuNzFSSUoJaYA3C2Uat5sw8JJ6eRwsp7BAinWp4PAPLwdiFMBXx727HyZkx3Q==
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 30d
+      CLOUDCONVERT_API_KEY: ***REMOVED***.eyJhdWQiOiIxIiwianRpIjoiYmUzMzgxMmRkZWY4YTliN2JiOTIzYmY5MTMyOTM2OGIyNjJiMzdkODlkZmFlN2FlMmJkNDA5NTVlY2VjZjcwZDUxOTI4NTJhNmIyYTQ3ZDkiLCJpYXQiOjE3NjEyNDQyNTQuNTA2MDAzLCJuYmYiOjE3NjEyNDQyNTQuNTA2MDA0LCJleHAiOjQ5MTY5MTc4NTQuNDk5OTU0LCJzdWIiOiI3MzAzMjA4MCIsInNjb3BlcyI6WyJ3ZWJob29rLndyaXRlIiwid2ViaG9vay5yZWFkIiwidGFzay53cml0ZSIsInRhc2sucmVhZCIsInVzZXIud3JpdGUiLCJ1c2VyLnJlYWQiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.bYu1XCp5kaX7t8iX-lATNDDCE_Hwm8xLD5kvKuZzKA4X3ALnejMkXAtC2NTbeEknTxUQwzyQ46733XiVcwIIxJzz49UmqTX8roJF6UTHkMkyNfOzO8H8STGYONoPSLl0ZqfAtvyK2wrXiqRhOBivgKyaB-ZCMwD1gEOGzNGKZSyvKD4DyY8D5JVVx4B9uD9N6MBwzJ08jeOT3MIAGIEJ8uqSwt25hekbdmeJgR4od-3c1GR52NDd6sPpgmvbL7ednMDeZbaXwO3KaPdyE9WuHge4zGHQKnVZpLAB25fWS-9zF-6Noe4Rl1J6UBX2sAXzug_-rChvsT0EqQveQlJIJiaAP-q21Jq2XlfohCAWnWzx7UYTaFZ9wI9239TgWtP3ZlenD1o3STvpZ_dF11h7HGZi1csyBCG8MOxpUKbb0w0WAP7ChAfVnSHwsMldxm6XocmsKn4xCQcMa0aEhPRfKKz9WmR96_5Xwc_5nSjMaL8XSwNAC5ELGENiJaUWTL7vpV78m5U1qF-w2SOJlgpCJ-V4lHwBn9gJAc2DTEaYVUjmFpWe1e37PXqPWUWoXTMlCz7tgTMx9pllFVZmJbspkvKBhwy3-EmwTqlU18d_SAuJJfbNHLNUhcEzlPPUPfaTfWl8hXenQBOX9uiXmikqwgpfaVS7gHGYGb6LM7nVG-Y
+      CLOUDCONVERT_SANDBOX: "false"
+      STORAGE_PATH: /app/storage
+      SMTP_HOST: smtp.hostinger.com
+      SMTP_PORT: 465
+      SMTP_SECURE: "true"
+      SMTP_USER: support@pdflab.pro
+      SMTP_PASSWORD: ""
+      EMAIL_FROM: support@pdflab.pro
+    volumes:
+      - backend-staging-storage:/app/storage
+    depends_on:
+      mysql-staging:
+        condition: service_healthy
+      redis-staging:
+        condition: service_healthy
+    networks:
+      - pdflab-staging-network
+
+  # Frontend for Staging (UPDATED TO :latest)
+  frontend-staging:
+    image: mkelam/pdflab-frontend:latest
+    container_name: pdflab-frontend-staging
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    environment:
+      NODE_ENV: staging
+      NEXT_PUBLIC_API_URL: https://staging.pdflab.pro/api
+    depends_on:
+      backend-staging:
+        condition: service_healthy
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Partner Portal for Staging (UPDATED TO :latest)
+  partners-staging:
+    image: mkelam/pdflab-partners:latest
+    container_name: pdflab-partners-staging
+    restart: unless-stopped
+    ports:
+      - "3003:3001"
+    environment:
+      NODE_ENV: staging
+      PORT: 3001
+      NEXT_PUBLIC_API_URL: https://staging.pdflab.pro/api
+    depends_on:
+      backend-staging:
+        condition: service_healthy
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mysql-staging-data:
+    driver: local
+  redis-staging-data:
+    driver: local
+  backend-staging-storage:
+    driver: local
+
+networks:
+  pdflab-staging-network:
+    driver: bridge

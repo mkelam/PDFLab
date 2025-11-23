@@ -32,12 +32,16 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getQueueStatus = exports.bulkRetryJobs = exports.deleteConversionJob = exports.cancelConversionJob = exports.retryConversionJob = exports.getConversionJobById = exports.getAllConversionJobs = void 0;
 const ConversionJob_1 = require("../models/ConversionJob");
 const User_1 = require("../models/User");
 const sequelize_1 = require("sequelize");
 const conversion_job_1 = require("../jobs/conversion.job");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * GET /api/admin/conversions
  * List all conversion jobs with filtering and pagination
@@ -113,7 +117,7 @@ const getAllConversionJobs = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get all conversion jobs error:', error);
+        logger_1.default.error('Get all conversion jobs error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch conversion jobs',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -147,7 +151,7 @@ const getConversionJobById = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get conversion job error:', error);
+        logger_1.default.error('Get conversion job error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch job',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -201,7 +205,7 @@ const retryConversionJob = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Retry job error:', error);
+        logger_1.default.error('Retry job error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to retry job',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -243,7 +247,7 @@ const cancelConversionJob = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Cancel job error:', error);
+        logger_1.default.error('Cancel job error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to cancel job',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -274,7 +278,7 @@ const deleteConversionJob = async (req, res) => {
                 await fs.unlink(inputPath);
             }
             catch (err) {
-                console.log('Input file already deleted or not found');
+                logger_1.default.info('Input file already deleted or not found');
             }
         }
         if (job.output_file) {
@@ -283,7 +287,7 @@ const deleteConversionJob = async (req, res) => {
                 await fs.unlink(outputPath);
             }
             catch (err) {
-                console.log('Output file already deleted or not found');
+                logger_1.default.info('Output file already deleted or not found');
             }
         }
         await job.destroy();
@@ -293,7 +297,7 @@ const deleteConversionJob = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Delete job error:', error);
+        logger_1.default.error('Delete job error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to delete job',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -353,7 +357,7 @@ const bulkRetryJobs = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Bulk retry error:', error);
+        logger_1.default.error('Bulk retry error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to retry jobs',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -399,7 +403,7 @@ const getQueueStatus = async (_req, res) => {
         });
     }
     catch (error) {
-        console.error('Get queue status error:', error);
+        logger_1.default.error('Get queue status error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch queue status',
             message: error instanceof Error ? error.message : 'Unknown error'

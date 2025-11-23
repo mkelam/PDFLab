@@ -10,6 +10,7 @@ const uuid_1 = require("uuid");
 const archiver_1 = __importDefault(require("archiver"));
 const models_1 = require("../models");
 const redis_1 = require("../config/redis");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Compress PDF file to reduce size
  */
@@ -355,9 +356,9 @@ const uploadFile = async (req, res) => {
         const user = req.user;
         const guestSession = req.guestSession;
         const isGuest = !user && !!guestSession;
-        console.log('[Upload] user:', user ? 'authenticated' : 'none');
-        console.log('[Upload] guestSession:', guestSession ? 'exists' : 'none');
-        console.log('[Upload] isGuest:', isGuest);
+        logger_1.default.info('[Upload] user', { authenticated: user ? 'yes' : 'no' });
+        logger_1.default.info('[Upload] guestSession', { exists: guestSession ? 'yes' : 'no' });
+        logger_1.default.info('[Upload] isGuest', { isGuest });
         // Check if file was uploaded
         if (!req.file) {
             res.status(400).json({
@@ -798,7 +799,7 @@ const downloadBatchZip = async (req, res) => {
         });
         // Finalize the archive
         await archive.finalize();
-        console.log(`[Batch Download] Created ZIP with ${validJobs.length} files for user ${user?.id || 'guest'}`);
+        logger_1.default.info(`[Batch Download] Created ZIP with ${validJobs.length} files for user ${user?.id || 'guest'}`);
     }
     catch (error) {
         const { sendInternalServerError, logError } = require('../utils/error.utils');
