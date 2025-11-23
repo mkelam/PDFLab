@@ -8,6 +8,8 @@ const sequelize_1 = require("sequelize");
 const Feedback_1 = __importDefault(require("../models/Feedback"));
 const models_1 = require("../models");
 const email_service_1 = __importDefault(require("../services/email.service"));
+const sanitize_utils_1 = require("../utils/sanitize.utils");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * POST /api/feedback
  * Submit new feedback (public endpoint - guests and authenticated users)
@@ -40,13 +42,17 @@ const submitFeedback = async (req, res) => {
                 name = user.name;
             }
         }
+        // Sanitize inputs to prevent XSS
+        const sanitizedMessage = (0, sanitize_utils_1.sanitizeRichText)(message.trim());
+        const sanitizedName = name ? (0, sanitize_utils_1.sanitizeText)(name) : null;
+        const sanitizedEmail = email ? (0, sanitize_utils_1.sanitizeText)(email) : null;
         // Create feedback
         const feedback = await Feedback_1.default.create({
             user_id: userId,
-            user_email: email || null,
-            user_name: name || null,
+            user_email: sanitizedEmail,
+            user_name: sanitizedName,
             type: type || 'general',
-            message: message.trim(),
+            message: sanitizedMessage,
             page_url: page_url || null,
             user_agent: userAgent,
             screenshot_url: screenshot_url || null,
@@ -70,12 +76,12 @@ const submitFeedback = async (req, res) => {
             });
         }
         catch (emailError) {
-            console.error('Failed to send feedback notification email:', emailError);
+            logger_1.default.error('Failed to send feedback notification email:', { emailError });
             // Don't fail the request if email fails
         }
         res.status(201).json({
             success: true,
-            message: 'Feedback submitted successfully',
+            message: 'Feedback received successfully',
             feedback: {
                 id: feedback.id,
                 type: feedback.type,
@@ -84,7 +90,7 @@ const submitFeedback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Submit feedback error:', error);
+        logger_1.default.error('Submit feedback error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to submit feedback',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -154,7 +160,7 @@ const getAllFeedback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get feedback error:', error);
+        logger_1.default.error('Get feedback error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch feedback',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -195,7 +201,7 @@ const getFeedbackStats = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get feedback stats error:', error);
+        logger_1.default.error('Get feedback stats error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch feedback statistics',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -236,7 +242,7 @@ const getFeedbackById = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get feedback by ID error:', error);
+        logger_1.default.error('Get feedback by ID error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch feedback',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -276,7 +282,7 @@ const updateFeedbackStatus = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Update feedback status error:', error);
+        logger_1.default.error('Update feedback status error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to update feedback status',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -311,8 +317,10 @@ const replyToFeedback = async (req, res) => {
             res.status(404).json({ error: 'Feedback not found' });
             return;
         }
+        // Sanitize admin reply to prevent XSS
+        const sanitizedReply = (0, sanitize_utils_1.sanitizeRichText)(reply.trim());
         // Update feedback with reply
-        feedback.admin_reply = reply.trim();
+        feedback.admin_reply = sanitizedReply;
         feedback.admin_id = adminId;
         feedback.status = 'resolved';
         feedback.resolved_at = new Date();
@@ -340,7 +348,7 @@ const replyToFeedback = async (req, res) => {
                 });
             }
             catch (emailError) {
-                console.error('Failed to send reply email:', emailError);
+                logger_1.default.error('Failed to send reply email:', { emailError });
                 // Don't fail the request if email fails
             }
         }
@@ -351,7 +359,7 @@ const replyToFeedback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Reply to feedback error:', error);
+        logger_1.default.error('Reply to feedback error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to send reply',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -378,7 +386,7 @@ const deleteFeedback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Delete feedback error:', error);
+        logger_1.default.error('Delete feedback error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to delete feedback',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -421,7 +429,7 @@ const bulkUpdateFeedback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Bulk update feedback error:', error);
+        logger_1.default.error('Bulk update feedback error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to bulk update feedback',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -452,7 +460,7 @@ const bulkDeleteFeedback = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Bulk delete feedback error:', error);
+        logger_1.default.error('Bulk delete feedback error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to bulk delete feedback',
             message: error instanceof Error ? error.message : 'Unknown error'

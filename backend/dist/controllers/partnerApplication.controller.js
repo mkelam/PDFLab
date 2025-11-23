@@ -9,6 +9,7 @@ const PartnerApplication_1 = __importDefault(require("../models/PartnerApplicati
 const Partner_1 = require("../models/Partner");
 const email_service_1 = __importDefault(require("../services/email.service"));
 const partner_utils_1 = require("../utils/partner.utils");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Auto-scoring algorithm for partner applications
  * Scores 0-100 based on:
@@ -183,7 +184,7 @@ const submitApplication = async (req, res) => {
           <p>You're welcome to reapply after 90 days if your circumstances change.</p>
           <p>Best regards,<br/>The PDFLab Team</p>
         `
-            }).catch(err => console.error('Email error:', err));
+            }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
             return res.status(200).json({
                 message: 'Application received but does not meet current requirements',
                 status: 'rejected'
@@ -206,7 +207,7 @@ const submitApplication = async (req, res) => {
         <p>We'll be in touch soon!</p>
         <p>Best regards,<br/>The PDFLab Team</p>
       `
-        }).catch(err => console.error('Email error:', err));
+        }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
         res.status(201).json({
             message: 'Application submitted successfully',
             application_id: application.id,
@@ -214,7 +215,7 @@ const submitApplication = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Submit application error:', error);
+        logger_1.default.error('Submit application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to submit application' });
     }
 };
@@ -238,7 +239,7 @@ const getApplications = async (req, res) => {
         res.json({ applications });
     }
     catch (error) {
-        console.error('Get applications error:', error);
+        logger_1.default.error('Get applications error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to fetch applications' });
     }
 };
@@ -257,7 +258,7 @@ const getApplication = async (req, res) => {
         res.json({ application });
     }
     catch (error) {
-        console.error('Get application error:', error);
+        logger_1.default.error('Get application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to fetch application' });
     }
 };
@@ -343,7 +344,8 @@ const approveApplication = async (req, res) => {
         <ul>
           <li><strong>Bronze (30%):</strong> 0-10 conversions/month</li>
           <li><strong>Silver (40%):</strong> 11-50 conversions/month</li>
-          <li><strong>Gold (50%):</strong> 51+ conversions/month</li>
+          <li><strong>Gold (50%):</strong> 51-100 conversions/month</li>
+          <li><strong>Platinum (60%):</strong> 100+ conversions/month (Elite Partners)</li>
         </ul>
 
         <h2>How to Promote:</h2>
@@ -366,7 +368,7 @@ const approveApplication = async (req, res) => {
         <p>Let's grow together! 🚀</p>
         <p>Best regards,<br/>The PDFLab Team</p>
       `
-        }).catch(err => console.error('Email error:', err));
+        }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
         res.json({
             message: 'Application approved successfully',
             partner: {
@@ -378,7 +380,7 @@ const approveApplication = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Approve application error:', error);
+        logger_1.default.error('Approve application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to approve application' });
     }
 };
@@ -419,11 +421,11 @@ const rejectApplication = async (req, res) => {
         <p>We appreciate your interest in PDFLab!</p>
         <p>Best regards,<br/>The PDFLab Team</p>
       `
-        }).catch(err => console.error('Email error:', err));
+        }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
         res.json({ message: 'Application rejected' });
     }
     catch (error) {
-        console.error('Reject application error:', error);
+        logger_1.default.error('Reject application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to reject application' });
     }
 };
@@ -446,7 +448,7 @@ const flagApplication = async (req, res) => {
         res.json({ message: 'Application flagged for review' });
     }
     catch (error) {
-        console.error('Flag application error:', error);
+        logger_1.default.error('Flag application error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to flag application' });
     }
 };

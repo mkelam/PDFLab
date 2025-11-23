@@ -9,6 +9,9 @@
 
 # testing
 /coverage
+/tests/temp
+/playwright-report*
+/test-results
 
 # next.js
 /.next/
@@ -16,6 +19,16 @@
 
 # production
 /build
+
+# logs
+/logs
+*.log
+
+# archives and temporary files
+/deployment/archives
+*.tar
+*.tar.gz
+*.zip
 
 # misc
 .DS_Store
@@ -29,6 +42,13 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+*.env
+*-env.txt
+
+# credentials and sensitive data
+/tests/fixtures/credentials
+client_secret*.json
+test-credentials.txt
 
 # vercel
 .vercel
@@ -38,3 +58,7 @@ yarn-error.log*
 next-env.d.ts
 nul
 backend/nul
+
+# docker temporary configs
+docker-compose-*-temp.yml
+docker-compose-staging-temp.yml

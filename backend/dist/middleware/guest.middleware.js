@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authOrGuest = exports.recordGuestConversion = exports.validateGuestQuota = exports.initializeGuestSession = void 0;
 exports.getClientIp = getClientIp;
 const guest_session_service_1 = __importDefault(require("../services/guest-session.service"));
+const constants_1 = require("../config/constants");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Get client IP address from request
  */
@@ -63,7 +65,7 @@ const initializeGuestSession = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Guest session initialization error:', error);
+        logger_1.default.error('Guest session initialization error:', { error: error instanceof Error ? error.message : String(error) });
         // Don't block request on session error
         req.isGuest = true;
         next();
@@ -78,67 +80,87 @@ const validateGuestQuota = async (req, res, next) => {
     try {
         // Skip validation if user is authenticated
         if (req.user) {
-            console.log('[Guest Quota] Skipping - user is authenticated');
+            logger_1.default.info('[Guest Quota] Skipping - user is authenticated');
             return next();
         }
         const sessionId = req.guestSession?.sessionId || null;
         const ipAddress = getClientIp(req);
-        console.log('[Guest Quota] Validating:', { sessionId, ipAddress });
-        // Validate conversion eligibility
-        const validation = await guest_session_service_1.default.validateConversion(sessionId, ipAddress);
-        console.log('[Guest Quota] Validation result:', validation);
-        if (!validation.allowed) {
-            console.log('[Guest Quota] Blocked:', validation.reason);
-            const hoursUntilReset = validation.resetAt
-                ? Math.ceil((validation.resetAt.getTime() - Date.now()) / (60 * 60 * 1000))
-                : 24;
-            res.status(429).json({
-                error: 'Daily limit reached',
-                message: "You've used your free guest conversion! ✨",
-                resetAt: validation.resetAt,
-                hoursUntilReset,
-                options: [
-                    {
-                        id: 'signup',
-                        title: 'Get 3 free conversions/month',
-                        description: '+ 7-day file storage + larger files (10MB)',
-                        cta: 'Create Free Account',
-                        url: '/signup',
-                        primary: true
-                    },
-                    {
-                        id: 'wait',
-                        title: 'Wait and try again',
-                        description: `Come back in ${hoursUntilReset} hour${hoursUntilReset !== 1 ? 's' : ''} for another free conversion`,
-                        cta: null,
-                        primary: false
-                    }
-                ]
-            });
-            return;
-        }
-        console.log('[Guest Quota] Allowed - proceeding');
-        // Update session if new one was created
-        if (validation.session && !sessionId) {
-            req.guestSession = validation.session;
-            res.cookie('guest_session_id', validation.session.sessionId, {
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax'
-            });
-        }
-        next();
+        logger_1.default.info('[Guest Quota] Validating:', {}, { sessionId, ipAddress });
     }
-    catch (error) {
-        console.error('Guest quota validation error:', error);
-        res.status(500).json({
-            error: 'Validation failed',
-            message: 'Unable to validate guest quota. Please try again.'
+    finally // Validate conversion eligibility
+     { }
+    // Validate conversion eligibility
+    const validation = await guest_session_service_1.default.validateConversion(sessionId, ipAddress);
+    logger_1.default.info('[Guest Quota] Validation result:', { validation });
+    if (!validation.allowed) {
+        logger_1.default.info('[Guest Quota] Blocked:', { validation, : .reason });
+        const hoursUntilReset = validation.resetAt
+            ? Math.ceil((validation.resetAt.getTime() - Date.now()) / (60 * 60 * 1000))
+            : 24;
+        res.status(429).json({
+            error: 'Guest quota exceeded',
+            message: validation.reason,
+            resetAt: validation.resetAt,
+            hoursUntilReset,
+            conversions_used: constants_1.GUEST_LIMITS.MAX_CONVERSIONS,
+            conversions_limit: constants_1.GUEST_LIMITS.MAX_CONVERSIONS,
+            upgrade_required: true,
+            upgrade_benefits: {
+                free_account: {
+                    conversions: constants_1.USER_PLAN_LIMITS.free.MAX_CONVERSIONS,
+                    file_size_mb: constants_1.USER_PLAN_LIMITS.free.MAX_FILE_SIZE_MB,
+                    retention_days: constants_1.USER_PLAN_LIMITS.free.FILE_RETENTION_DAYS,
+                    price: 'Free'
+                },
+                starter_plan: {
+                    conversions: constants_1.USER_PLAN_LIMITS.starter.MAX_CONVERSIONS,
+                    file_size_mb: constants_1.USER_PLAN_LIMITS.starter.MAX_FILE_SIZE_MB,
+                    retention_days: constants_1.USER_PLAN_LIMITS.starter.FILE_RETENTION_DAYS,
+                    price: '$9.99/month'
+                }
+            },
+            options: [
+                {
+                    id: 'signup',
+                    title: `Get ${constants_1.USER_PLAN_LIMITS.free.MAX_CONVERSIONS} free conversions/month`,
+                    description: `+ ${constants_1.USER_PLAN_LIMITS.free.FILE_RETENTION_DAYS}-day file storage + larger files (${constants_1.USER_PLAN_LIMITS.free.MAX_FILE_SIZE_MB}MB)`,
+                    cta: 'Create Free Account',
+                    url: '/signup',
+                    primary: true
+                },
+                {
+                    id: 'wait',
+                    title: 'Wait and try again',
+                    description: `Come back in ${hoursUntilReset} hour${hoursUntilReset !== 1 ? 's' : ''} for another free conversion`,
+                    cta: null,
+                    primary: false
+                }
+            ]
+        });
+        return;
+    }
+    logger_1.default.info('[Guest Quota] Allowed - proceeding');
+    // Update session if new one was created
+    if (validation.session && !sessionId) {
+        req.guestSession = validation.session;
+        res.cookie('guest_session_id', validation.session.sessionId, {
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
         });
     }
+    next();
 };
 exports.validateGuestQuota = validateGuestQuota;
+try { }
+catch (error) {
+    logger_1.default.error('Guest quota validation error:', { error: error instanceof Error ? error.message : String(error) });
+    res.status(500).json({
+        error: 'Validation failed',
+        message: 'Unable to validate guest quota. Please try again.'
+    });
+}
 /**
  * Record guest conversion
  * Increments conversion count for guest session and IP
@@ -158,7 +180,7 @@ const recordGuestConversion = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Record guest conversion error:', error);
+        logger_1.default.error('Record guest conversion error:', { error: error instanceof Error ? error.message : String(error) });
         // Don't block the request, just log the error
         next();
     }

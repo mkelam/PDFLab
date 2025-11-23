@@ -8,6 +8,7 @@ import { User, SubscriptionStatus as UserSubscriptionStatus, UserPlan } from '..
 import { Subscription, SubscriptionStatus, PlanType } from '../models/subscription.model'
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
 import { updateUserPlan } from '../utils/quota.utils'
+import logger from '../config/logger'
 
 // Helper function to render with layout
 const renderWithLayout = async (view: string, data: any = {}): Promise<string> => {
@@ -109,7 +110,7 @@ export const getPlans = async (_req: Request, res: Response): Promise<void> => {
     // Return JSON response
     res.json({ success: true, plans })
   } catch (error) {
-    console.error('Get plans error:', error)
+    logger.error('Get plans error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch plans',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -209,7 +210,7 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
       subscriptionId: subscription.id
     })
   } catch (error) {
-    console.error('Initialize payment error:', error)
+    logger.error('Initialize payment error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to initialize payment',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -223,7 +224,7 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
  */
 export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('🔔 PayFast ITN received:', JSON.stringify(req.body, null, 2))
+    logger.info('🔔 PayFast ITN received:', { JSON.stringify(req.body, null, 2 }))
 
     const itnData = req.body
 
@@ -234,15 +235,15 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       try {
         const host = new URL(referer as string).hostname
         if (payfastService.validatePayFastHost(host)) {
-          console.log('✓ Request from valid PayFast host:', host)
+          logger.info('✓ Request from valid PayFast host:', { host })
         } else {
-          console.warn('⚠️  Request from non-PayFast host:', host, '- proceeding with signature validation')
+          logger.warn('Request from non-PayFast host - proceeding with signature validation', { host })
         }
       } catch (e) {
-        console.warn('⚠️  Could not parse referer/origin:', referer)
+        logger.warn('⚠️  Could not parse referer/origin:', { referer })
       }
     } else {
-      console.log('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation')
+      logger.info('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation')
     }
 
     // Step 2: Validate signature (PRIMARY security check)
@@ -250,7 +251,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
     delete itnData.signature // Remove signature before validation
 
     if (!payfastService.validateSignature(itnData, receivedSignature)) {
-      console.error('Invalid signature')
+      logger.error('Invalid signature')
       res.status(403).send('Invalid signature')
       return
     }
@@ -258,7 +259,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
     // Step 3: Verify payment with PayFast server
     const isValid = await payfastService.verifyPaymentWithPayFast(itnData)
     if (!isValid) {
-      console.error('Payment verification failed')
+      logger.error('Payment verification failed')
       res.status(403).send('Payment verification failed')
       return
     }
@@ -272,7 +273,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
     })
 
     if (!paymentLog) {
-      console.error('Payment log not found:', m_payment_id)
+      logger.error('Payment log not found:', { m_payment_id })
       res.status(404).send('Payment not found')
       return
     }
@@ -300,7 +301,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       // Find user
       const user = await User.findByPk(userId)
       if (!user) {
-        console.error('User not found:', userId)
+        logger.error('User not found:', { userId })
         res.status(404).send('User not found')
         return
       }
@@ -328,7 +329,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       // Update user plan and sync quota (this ensures quota is correct)
       await updateUserPlan(user, planId as UserPlan, true) // true = reset usage on new subscription
 
-      console.log(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`)
+      logger.info(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`)
 
       // Send payment receipt email (non-blocking)
       if (subscription) {
@@ -341,7 +342,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
           billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
           nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
         }).catch((error) => {
-          console.error('Failed to send payment receipt email:', error)
+          logger.error('Failed to send payment receipt email:', { error: error instanceof Error ? error.message : String(error) })
           // Don't fail webhook if email fails
         })
       }
@@ -350,7 +351,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
     // Send 200 OK response to PayFast
     res.status(200).send('OK')
   } catch (error) {
-    console.error('Webhook error:', error)
+    logger.error('Webhook error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).send('Webhook processing failed')
   }
 }
@@ -366,7 +367,7 @@ export const handleReturn = async (req: Request, res: Response): Promise<void> =
     // Redirect to success page
     res.redirect(`${frontendUrl}/payment/success?${req.url.split('?')[1] || ''}`)
   } catch (error) {
-    console.error('Return handler error:', error)
+    logger.error('Return handler error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to process return' })
   }
 }
@@ -382,7 +383,7 @@ export const handleCancel = async (req: Request, res: Response): Promise<void> =
     // Redirect to cancel page
     res.redirect(`${frontendUrl}/payment/cancel?${req.url.split('?')[1] || ''}`)
   } catch (error) {
-    console.error('Cancel handler error:', error)
+    logger.error('Cancel handler error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({ error: 'Failed to process cancellation' })
   }
 }
@@ -418,7 +419,7 @@ export const getSubscription = async (req: Request, res: Response): Promise<void
       subscription
     })
   } catch (error) {
-    console.error('Get subscription error:', error)
+    logger.error('Get subscription error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch subscription',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -468,7 +469,7 @@ export const cancelSubscription = async (req: Request, res: Response): Promise<v
       cancellationDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       accessUntil: subscription.ended_at?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
     }).catch((error) => {
-      console.error('Failed to send cancellation email:', error)
+      logger.error('Failed to send cancellation email:', { error: error instanceof Error ? error.message : String(error) })
       // Don't fail cancellation if email fails
     })
 
@@ -478,7 +479,7 @@ export const cancelSubscription = async (req: Request, res: Response): Promise<v
       subscription
     })
   } catch (error) {
-    console.error('Cancel subscription error:', error)
+    logger.error('Cancel subscription error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to cancel subscription',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -498,7 +499,7 @@ export const getConfig = async (req: Request, res: Response): Promise<void> => {
       config
     })
   } catch (error) {
-    console.error('Get config error:', error)
+    logger.error('Get config error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to get configuration',
       message: error instanceof Error ? error.message : 'Unknown error'

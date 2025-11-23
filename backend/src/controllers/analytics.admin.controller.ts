@@ -5,6 +5,7 @@ import { User } from '../models/User'
 import { ConversionJob } from '../models/ConversionJob'
 import { Subscription, SubscriptionStatus } from '../models/subscription.model'
 import { PaymentLog, PaymentStatus } from '../models/payment-log.model'
+import logger from '../config/logger'
 
 /**
  * Get analytics overview
@@ -109,7 +110,7 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
       }
     })
   } catch (error: any) {
-    console.error('Get analytics overview error:', error)
+    logger.error('Get analytics overview error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch analytics overview',
@@ -176,7 +177,7 @@ export const getUserAnalytics = async (req: Request, res: Response): Promise<voi
       }
     })
   } catch (error: any) {
-    console.error('Get user analytics error:', error)
+    logger.error('Get user analytics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch user analytics',
@@ -268,7 +269,7 @@ export const getConversionAnalytics = async (req: Request, res: Response): Promi
       }
     })
   } catch (error: any) {
-    console.error('Get conversion analytics error:', error)
+    logger.error('Get conversion analytics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch conversion analytics',
@@ -357,7 +358,7 @@ export const getRevenueAnalytics = async (req: Request, res: Response): Promise<
       }
     })
   } catch (error: any) {
-    console.error('Get revenue analytics error:', error)
+    logger.error('Get revenue analytics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch revenue analytics',
@@ -404,7 +405,7 @@ export const getFeatureAnalytics = async (req: Request, res: Response): Promise<
       }
     })
   } catch (error: any) {
-    console.error('Get feature analytics error:', error)
+    logger.error('Get feature analytics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch feature analytics',

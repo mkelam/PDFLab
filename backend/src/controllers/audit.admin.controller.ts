@@ -84,7 +84,7 @@ export const getAllAuditLogs = async (req: Request, res: Response): Promise<void
       }
     })
   } catch (error: any) {
-    console.error('Get audit logs error:', error)
+    logger.error('Get audit logs error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch audit logs',
@@ -144,7 +144,7 @@ export const getAuditLogById = async (req: Request, res: Response): Promise<void
       relatedLogs
     })
   } catch (error: any) {
-    console.error('Get audit log by ID error:', error)
+    logger.error('Get audit log by ID error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch audit log',
@@ -190,7 +190,7 @@ export const getSecurityEvents = async (req: Request, res: Response): Promise<vo
       }
     })
   } catch (error: any) {
-    console.error('Get security events error:', error)
+    logger.error('Get security events error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch security events',
@@ -273,7 +273,7 @@ export const getAuditLogStats = async (req: Request, res: Response): Promise<voi
       }
     })
   } catch (error: any) {
-    console.error('Get audit log stats error:', error)
+    logger.error('Get audit log stats error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch audit log statistics',
@@ -313,7 +313,7 @@ export const getUserActivity = async (req: Request, res: Response): Promise<void
       }
     })
   } catch (error: any) {
-    console.error('Get user activity error:', error)
+    logger.error('Get user activity error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch user activity',
@@ -324,3 +324,4 @@ export const getUserActivity = async (req: Request, res: Response): Promise<void
 
 // Import sequelize for stats
 import { sequelize } from '../config/database'
+import logger from '../config/logger'

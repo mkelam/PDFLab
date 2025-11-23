@@ -1,5 +1,6 @@
 import { AdminAuditLog, AuditLogSeverity } from '../models/AdminAuditLog'
 import crypto from 'crypto'
+import logger from '../config/logger'
 
 export interface AuditLogData {
   admin_user_id: string
@@ -33,7 +34,7 @@ export class AuditService {
 
       return log
     } catch (error) {
-      console.error('Failed to create audit log:', error)
+      logger.error('Failed to create audit log:', { error: error instanceof Error ? error.message : String(error) })
       // Don't throw - we don't want logging failures to break operations
       throw error
     }
@@ -47,7 +48,7 @@ export class AuditService {
       try {
         await this.createLog(data)
       } catch (error) {
-        console.error('Async audit log creation failed:', error)
+        logger.error('Async audit log creation failed:', { error: error instanceof Error ? error.message : String(error) })
       }
     })
   }
@@ -137,11 +138,11 @@ export class AuditService {
 
       const totalDeleted = normalDeleted + criticalDeleted
 
-      console.log(`Audit log cleanup: Deleted ${totalDeleted} old logs (${normalDeleted} normal, ${criticalDeleted} critical)`)
+      logger.info(`Audit log cleanup: Deleted ${totalDeleted} old logs (${normalDeleted} normal, { ${criticalDeleted} critical })`)
 
       return { deleted: totalDeleted }
     } catch (error) {
-      console.error('Audit log cleanup failed:', error)
+      logger.error('Audit log cleanup failed:', { error: error instanceof Error ? error.message : String(error) })
       throw error
     }
   }

@@ -13,6 +13,7 @@ const User_1 = require("../models/User");
 const subscription_model_1 = require("../models/subscription.model");
 const payment_log_model_1 = require("../models/payment-log.model");
 const quota_utils_1 = require("../utils/quota.utils");
+const logger_1 = __importDefault(require("../config/logger"));
 // Helper function to render with layout
 const renderWithLayout = async (view, data = {}) => {
     const layoutPath = path_1.default.join(__dirname, '..', 'views', 'layouts', 'main.ejs');
@@ -110,7 +111,7 @@ const getPlans = async (_req, res) => {
         res.json({ success: true, plans });
     }
     catch (error) {
-        console.error('Get plans error:', error);
+        logger_1.default.error('Get plans error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch plans',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -202,7 +203,7 @@ const initializePayment = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Initialize payment error:', error);
+        logger_1.default.error('Initialize payment error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to initialize payment',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -216,7 +217,7 @@ exports.initializePayment = initializePayment;
  */
 const handleWebhook = async (req, res) => {
     try {
-        console.log('🔔 PayFast ITN received:', JSON.stringify(req.body, null, 2));
+        logger_1.default.info('🔔 PayFast ITN received:', { JSON, : .stringify(req.body, null, 2) });
         const itnData = req.body;
         // Step 1: Verify the request came from PayFast (OPTIONAL - signature validation is more reliable)
         // Note: PayFast ITN may not always include referer header, so we prioritize signature validation
@@ -225,31 +226,31 @@ const handleWebhook = async (req, res) => {
             try {
                 const host = new URL(referer).hostname;
                 if (payfast_service_1.default.validatePayFastHost(host)) {
-                    console.log('✓ Request from valid PayFast host:', host);
+                    logger_1.default.info('✓ Request from valid PayFast host:', { host });
                 }
                 else {
-                    console.warn('⚠️  Request from non-PayFast host:', host, '- proceeding with signature validation');
+                    logger_1.default.warn('Request from non-PayFast host - proceeding with signature validation', { host });
                 }
             }
             catch (e) {
-                console.warn('⚠️  Could not parse referer/origin:', referer);
+                logger_1.default.warn('⚠️  Could not parse referer/origin:', { referer });
             }
         }
         else {
-            console.log('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation');
+            logger_1.default.info('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation');
         }
         // Step 2: Validate signature (PRIMARY security check)
         const receivedSignature = itnData.signature;
         delete itnData.signature; // Remove signature before validation
         if (!payfast_service_1.default.validateSignature(itnData, receivedSignature)) {
-            console.error('Invalid signature');
+            logger_1.default.error('Invalid signature');
             res.status(403).send('Invalid signature');
             return;
         }
         // Step 3: Verify payment with PayFast server
         const isValid = await payfast_service_1.default.verifyPaymentWithPayFast(itnData);
         if (!isValid) {
-            console.error('Payment verification failed');
+            logger_1.default.error('Payment verification failed');
             res.status(403).send('Payment verification failed');
             return;
         }
@@ -260,7 +261,7 @@ const handleWebhook = async (req, res) => {
             where: { transaction_id: m_payment_id }
         });
         if (!paymentLog) {
-            console.error('Payment log not found:', m_payment_id);
+            logger_1.default.error('Payment log not found:', { m_payment_id });
             res.status(404).send('Payment not found');
             return;
         }
@@ -283,7 +284,7 @@ const handleWebhook = async (req, res) => {
             // Find user
             const user = await User_1.User.findByPk(userId);
             if (!user) {
-                console.error('User not found:', userId);
+                logger_1.default.error('User not found:', { userId });
                 res.status(404).send('User not found');
                 return;
             }
@@ -305,7 +306,7 @@ const handleWebhook = async (req, res) => {
             user.subscription_status = User_1.SubscriptionStatus.ACTIVE;
             // Update user plan and sync quota (this ensures quota is correct)
             await (0, quota_utils_1.updateUserPlan)(user, planId, true); // true = reset usage on new subscription
-            console.log(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`);
+            logger_1.default.info(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`);
             // Send payment receipt email (non-blocking)
             if (subscription) {
                 const planName = PRICING_PLANS[planId]?.name || planId;
@@ -317,7 +318,7 @@ const handleWebhook = async (req, res) => {
                     billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
                     nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
                 }).catch((error) => {
-                    console.error('Failed to send payment receipt email:', error);
+                    logger_1.default.error('Failed to send payment receipt email:', { error: error instanceof Error ? error.message : String(error) });
                     // Don't fail webhook if email fails
                 });
             }
@@ -326,7 +327,7 @@ const handleWebhook = async (req, res) => {
         res.status(200).send('OK');
     }
     catch (error) {
-        console.error('Webhook error:', error);
+        logger_1.default.error('Webhook error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).send('Webhook processing failed');
     }
 };
@@ -342,7 +343,7 @@ const handleReturn = async (req, res) => {
         res.redirect(`${frontendUrl}/payment/success?${req.url.split('?')[1] || ''}`);
     }
     catch (error) {
-        console.error('Return handler error:', error);
+        logger_1.default.error('Return handler error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to process return' });
     }
 };
@@ -358,7 +359,7 @@ const handleCancel = async (req, res) => {
         res.redirect(`${frontendUrl}/payment/cancel?${req.url.split('?')[1] || ''}`);
     }
     catch (error) {
-        console.error('Cancel handler error:', error);
+        logger_1.default.error('Cancel handler error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({ error: 'Failed to process cancellation' });
     }
 };
@@ -391,7 +392,7 @@ const getSubscription = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get subscription error:', error);
+        logger_1.default.error('Get subscription error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch subscription',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -436,7 +437,7 @@ const cancelSubscription = async (req, res) => {
             cancellationDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
             accessUntil: subscription.ended_at?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
         }).catch((error) => {
-            console.error('Failed to send cancellation email:', error);
+            logger_1.default.error('Failed to send cancellation email:', { error: error instanceof Error ? error.message : String(error) });
             // Don't fail cancellation if email fails
         });
         res.json({
@@ -446,7 +447,7 @@ const cancelSubscription = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Cancel subscription error:', error);
+        logger_1.default.error('Cancel subscription error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to cancel subscription',
             message: error instanceof Error ? error.message : 'Unknown error'
@@ -467,7 +468,7 @@ const getConfig = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get config error:', error);
+        logger_1.default.error('Get config error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to get configuration',
             message: error instanceof Error ? error.message : 'Unknown error'

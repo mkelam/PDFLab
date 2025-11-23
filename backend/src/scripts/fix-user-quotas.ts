@@ -9,26 +9,27 @@
 import { sequelize } from '../config/database'
 import { User } from '../models/User'
 import { fixAllUserQuotas, getQuotaInfo } from '../utils/quota.utils'
+import logger from '../config/logger'
 
 async function main() {
   try {
-    console.log('🔧 PDFLab Quota Fix Script')
-    console.log('=' .repeat(50))
+    logger.info('🔧 PDFLab Quota Fix Script')
+    logger.info('=' .repeat(50))
 
     // Connect to database
-    console.log('\n📡 Connecting to database...')
+    logger.info('\n📡 Connecting to database...')
     await sequelize.authenticate()
-    console.log('✓ Database connected')
+    logger.info('✓ Database connected')
 
     // Get all users
     const users = await User.findAll()
-    console.log(`\n📊 Found ${users.length} users`)
+    logger.info(`\n📊 Found ${users.length} users`)
 
     // Show current state
-    console.log('\n📋 Current Quota Status:')
-    console.log('-'.repeat(80))
-    console.log('Email'.padEnd(30), 'Plan'.padEnd(15), 'Current Limit'.padEnd(15), 'Expected'.padEnd(15), 'Status')
-    console.log('-'.repeat(80))
+    logger.info('\n📋 Current Quota Status:')
+    logger.info('-'.repeat(80))
+    logger.info('Email'.padEnd(30), 'Plan'.padEnd(15), 'Current Limit'.padEnd(15), 'Expected'.padEnd(15), 'Status')
+    logger.info('-'.repeat(80))
 
     for (const user of users) {
       const info = getQuotaInfo(user)
@@ -46,22 +47,22 @@ async function main() {
     }
 
     // Ask for confirmation (in real script, you'd use readline)
-    console.log('\n⚠️  About to fix quotas for all users')
-    console.log('   This will update conversions_limit to match their plan')
+    logger.info('\n⚠️  About to fix quotas for all users')
+    logger.info('   This will update conversions_limit to match their plan')
 
     // Fix quotas
     const result = await fixAllUserQuotas()
 
-    console.log('\n✅ Quota Fix Complete!')
-    console.log(`   Fixed: ${result.fixed} users`)
-    console.log(`   Total: ${result.total} users`)
-    console.log(`   Unchanged: ${result.total - result.fixed} users`)
+    logger.info('\n✅ Quota Fix Complete!')
+    logger.info(`   Fixed: ${result.fixed} users`)
+    logger.info(`   Total: ${result.total} users`)
+    logger.info(`   Unchanged: ${result.total - result.fixed} users`)
 
     // Show updated state
-    console.log('\n📋 Updated Quota Status:')
-    console.log('-'.repeat(80))
-    console.log('Email'.padEnd(30), 'Plan'.padEnd(15), 'Limit'.padEnd(15), 'Used'.padEnd(10), 'Remaining')
-    console.log('-'.repeat(80))
+    logger.info('\n📋 Updated Quota Status:')
+    logger.info('-'.repeat(80))
+    logger.info('Email'.padEnd(30), 'Plan'.padEnd(15), 'Limit'.padEnd(15), 'Used'.padEnd(10), 'Remaining')
+    logger.info('-'.repeat(80))
 
     const updatedUsers = await User.findAll()
     for (const user of updatedUsers) {
@@ -78,10 +79,10 @@ async function main() {
       )
     }
 
-    console.log('\n🎉 All quotas are now synced!')
+    logger.info('\n🎉 All quotas are now synced!')
 
   } catch (error) {
-    console.error('\n❌ Error:', error)
+    logger.error('\n❌ Error:', { error: error instanceof Error ? error.message : String(error) })
     process.exit(1)
   } finally {
     await sequelize.close()

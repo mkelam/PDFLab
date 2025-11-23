@@ -17,6 +17,14 @@ router.use(admin_middleware_1.requireAdmin);
 // ==================== Health Monitoring (Read) ====================
 // Get overall system health (all admin roles can view)
 router.get('/health', (0, admin_middleware_1.requirePermission)('users.view'), system_admin_controller_1.getSystemHealth);
+// Get application flow health (end-to-end pipeline)
+router.get('/flow-health', (0, admin_middleware_1.requirePermission)('users.view'), system_admin_controller_1.getApplicationFlowHealth);
+// Get business metrics
+router.get('/business-metrics', (0, admin_middleware_1.requirePermission)('users.view'), system_admin_controller_1.getBusinessMetrics);
+// Get environment configuration validation
+router.get('/environment-config', (0, admin_middleware_1.requirePermission)('users.view'), system_admin_controller_1.getEnvironmentConfig);
+// Get recent error stream
+router.get('/recent-errors', (0, admin_middleware_1.requirePermission)('users.view'), system_admin_controller_1.getRecentErrors);
 // Get CloudConvert API health
 router.get('/cloudconvert', (0, admin_middleware_1.requirePermission)('users.view'), system_admin_controller_1.getCloudConvertHealth);
 // Get storage usage details

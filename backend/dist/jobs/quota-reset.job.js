@@ -1,9 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.manualQuotaReset = exports.initializeQuotaResetJob = exports.resetSubscriptionQuotas = exports.resetMonthlyQuotas = void 0;
 const cron_1 = require("cron");
 const models_1 = require("../models");
 const sequelize_1 = require("sequelize");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Monthly Quota Reset Job
  * Resets conversions_used to 0 for all users on the 1st of each month at midnight
@@ -14,7 +18,7 @@ const QUOTA_RESET_SCHEDULE = '0 0 1 * *'; // At 00:00 on day-of-month 1
  */
 const resetMonthlyQuotas = async () => {
     try {
-        console.log('[Quota Reset] Starting monthly quota reset...');
+        logger_1.default.info('[Quota Reset] Starting monthly quota reset...');
         const startTime = Date.now();
         // Reset conversions_used to 0 for all users
         const [affectedRows] = await models_1.User.update({ conversions_used: 0 }, {
@@ -25,9 +29,9 @@ const resetMonthlyQuotas = async () => {
             }
         });
         const duration = Date.now() - startTime;
-        console.log(`[Quota Reset] Monthly quota reset completed`);
-        console.log(`[Quota Reset] Users affected: ${affectedRows}`);
-        console.log(`[Quota Reset] Duration: ${duration}ms`);
+        logger_1.default.info(`[Quota Reset] Monthly quota reset completed`);
+        logger_1.default.info(`[Quota Reset] Users affected: ${affectedRows}`);
+        logger_1.default.info(`[Quota Reset] Duration: ${duration}ms`);
         // Log the reset event (optional - could store in a separate audit table)
         // await QuotaResetLog.create({
         //   reset_date: new Date(),
@@ -36,7 +40,7 @@ const resetMonthlyQuotas = async () => {
         // })
     }
     catch (error) {
-        console.error('[Quota Reset] Error during monthly quota reset:', error);
+        logger_1.default.error('[Quota Reset] Error during monthly quota reset:', { error: error instanceof Error ? error.message : String(error) });
         // In production, send alert to monitoring service (Sentry, Datadog, etc.)
         throw error;
     }
@@ -48,7 +52,7 @@ exports.resetMonthlyQuotas = resetMonthlyQuotas;
  */
 const resetSubscriptionQuotas = async () => {
     try {
-        console.log('[Quota Reset] Starting subscription-based quota reset...');
+        logger_1.default.info('[Quota Reset] Starting subscription-based quota reset...');
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         // Find users whose subscription started 30+ days ago and haven't been reset recently
@@ -74,10 +78,10 @@ const resetSubscriptionQuotas = async () => {
             });
             resetCount++;
         }
-        console.log(`[Quota Reset] Subscription-based quota reset completed for ${resetCount} users`);
+        logger_1.default.info(`[Quota Reset] Subscription-based quota reset completed for ${resetCount} users`);
     }
     catch (error) {
-        console.error('[Quota Reset] Error during subscription quota reset:', error);
+        logger_1.default.error('[Quota Reset] Error during subscription quota reset:', { error: error instanceof Error ? error.message : String(error) });
         throw error;
     }
 };
@@ -87,19 +91,19 @@ exports.resetSubscriptionQuotas = resetSubscriptionQuotas;
  */
 const initializeQuotaResetJob = () => {
     try {
-        console.log('[Quota Reset] Initializing monthly quota reset cron job...');
-        console.log(`[Quota Reset] Schedule: ${QUOTA_RESET_SCHEDULE} (1st of month at midnight)`);
+        logger_1.default.info('[Quota Reset] Initializing monthly quota reset cron job...');
+        logger_1.default.info(`[Quota Reset] Schedule: ${QUOTA_RESET_SCHEDULE} (1st of month at midnight)`);
         const cronJob = new cron_1.CronJob(QUOTA_RESET_SCHEDULE, exports.resetMonthlyQuotas, // Function to run
         null, // onComplete (optional)
         true, // Start the job immediately
         'America/New_York' // Timezone (adjust to your timezone)
         );
-        console.log('✓ Quota reset cron job initialized and scheduled');
-        console.log(`✓ Next reset: ${cronJob.nextDate().toISO()}`);
+        logger_1.default.info('✓ Quota reset cron job initialized and scheduled');
+        logger_1.default.info(`✓ Next reset: ${cronJob.nextDate().toISO()}`);
         return cronJob;
     }
     catch (error) {
-        console.error('✗ Failed to initialize quota reset cron job:', error);
+        logger_1.default.error('✗ Failed to initialize quota reset cron job:', { error: error instanceof Error ? error.message : String(error) });
         return null;
     }
 };
@@ -112,7 +116,7 @@ const manualQuotaReset = async (userId) => {
         if (userId) {
             // Reset specific user
             const [affectedRows] = await models_1.User.update({ conversions_used: 0 }, { where: { id: userId } });
-            console.log(`[Quota Reset] Manual reset for user ${userId}: ${affectedRows} row(s) affected`);
+            logger_1.default.info(`[Quota Reset] Manual reset for user ${userId}: ${affectedRows} row(s) affected`);
             return { success: true, affected: affectedRows };
         }
         else {
@@ -122,7 +126,7 @@ const manualQuotaReset = async (userId) => {
         }
     }
     catch (error) {
-        console.error('[Quota Reset] Manual reset failed:', error);
+        logger_1.default.error('[Quota Reset] Manual reset failed:', { error: error instanceof Error ? error.message : String(error) });
         return { success: false, affected: 0 };
     }
 };

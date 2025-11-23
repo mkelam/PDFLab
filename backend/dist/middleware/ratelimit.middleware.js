@@ -13,8 +13,8 @@ const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
  */
 exports.apiLimiter = (0, express_rate_limit_1.default)({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-    max: process.env.NODE_ENV === 'development'
-        ? 10000 // Very high limit for development
+    max: process.env.NODE_ENV === 'development' && process.env.TEST_ENV !== 'true'
+        ? 10000 // Very high limit for development (but not test mode)
         : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
     message: {
         error: 'Too many requests',
@@ -70,12 +70,12 @@ exports.uploadLimiter = (0, express_rate_limit_1.default)({
 /**
  * Authentication rate limiter
  * Prevents brute force attacks on login/register
- * 5 attempts per 15 minutes per IP (production)
- * 1000 attempts per 15 minutes (development)
+ * 5 attempts per 15 minutes per IP (production/test)
+ * 1000 attempts per 15 minutes (development only)
  */
 exports.authLimiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'development' ? 1000 : 5,
+    max: process.env.NODE_ENV === 'development' && process.env.TEST_ENV !== 'true' ? 1000 : 5,
     skipSuccessfulRequests: true,
     message: {
         error: 'Too many authentication attempts',

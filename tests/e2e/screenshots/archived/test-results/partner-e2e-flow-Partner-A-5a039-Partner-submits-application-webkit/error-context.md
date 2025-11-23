@@ -1,0 +1,92 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "PDFLabPartners" [ref=e5]:
+        - /url: /
+        - img [ref=e6]
+        - generic [ref=e9]: PDFLabPartners
+      - generic [ref=e10]:
+        - link "Home" [ref=e11]:
+          - /url: /
+          - img [ref=e12]
+          - text: Home
+        - link "Apply Now" [ref=e15]:
+          - /url: /apply
+        - link "Main Site" [ref=e16]:
+          - /url: https://pdflab.pro
+        - link "Pricing" [ref=e17]:
+          - /url: https://pdflab.pro/pricing
+        - link "Partner Login" [ref=e18]:
+          - /url: /login
+          - button "Partner Login" [ref=e19] [cursor=pointer]:
+            - img
+            - text: Partner Login
+  - main [ref=e20]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "Apply to PDFLab Partners" [level=1] [ref=e24]
+        - paragraph [ref=e25]: Join our partner program and earn up to 50% commission on every referral
+      - generic [ref=e26]:
+        - generic [ref=e28]: "1"
+        - generic [ref=e31]: "2"
+        - generic [ref=e34]: "3"
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: "Step 1: Your Platform & Audience"
+          - generic [ref=e39]: Tell us about your platform and audience
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - generic [ref=e43]: Email *
+              - textbox "Email *" [ref=e44]:
+                - /placeholder: your@email.com
+                - text: testpartner1763835979614@example.com
+            - generic [ref=e45]:
+              - generic [ref=e46]: Full Name *
+              - textbox "Full Name *" [ref=e47]:
+                - /placeholder: John Doe
+                - text: Jane Doe
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - generic [ref=e50]: Brand/Company Name (Optional)
+              - textbox "Brand/Company Name (Optional)" [ref=e51]:
+                - /placeholder: My Brand
+                - text: Test Brand
+            - generic [ref=e52]:
+              - generic [ref=e53]: Country (Optional)
+              - textbox "Country (Optional)" [ref=e54]:
+                - /placeholder: United States
+                - text: United States
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - generic [ref=e57]: Primary Platform *
+              - combobox [ref=e58] [cursor=pointer]:
+                - generic: YouTube
+                - img [ref=e59]
+              - combobox [ref=e61]
+            - generic [ref=e62]:
+              - generic [ref=e63]: Audience Size *
+              - combobox [ref=e64] [cursor=pointer]:
+                - generic: 100,000 - 500,000
+                - img [ref=e65]
+              - combobox [ref=e67]
+          - generic [ref=e68]:
+            - generic [ref=e69]: Audience Niche *
+            - combobox [ref=e70] [cursor=pointer]:
+              - generic: Content Creators
+              - img [ref=e71]
+            - combobox [ref=e73]
+          - generic [ref=e74]:
+            - generic [ref=e75]: Platform URL/Username *
+            - textbox "Platform URL/Username *" [active] [ref=e76]:
+              - /placeholder: "@yourchannel or https://youtube.com/@yourchannel"
+              - text: https://youtube.com/@janedoe1763835979614
+            - paragraph [ref=e77]: Share your platform URL, username, or handle
+          - button "Next Step" [ref=e79] [cursor=pointer]:
+            - text: Next Step
+            - img
+  - alert [ref=e80]
+```

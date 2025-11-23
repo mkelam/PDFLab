@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.optionalAuthMiddleware = exports.requireAuth = exports.optionalAuth = exports.requirePlan = exports.checkConversionQuota = exports.authMiddleware = void 0;
 const auth_utils_1 = require("../utils/auth.utils");
 const models_1 = require("../models");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Middleware to authenticate JWT token
  */
@@ -48,7 +52,7 @@ const authMiddleware = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Auth middleware error:', error);
+        logger_1.default.error('Auth middleware error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Authentication failed',
             message: 'An error occurred during authentication'
@@ -118,7 +122,7 @@ const checkConversionQuota = async (req, res, next) => {
         next();
     }
     catch (error) {
-        console.error('Quota check error:', error);
+        logger_1.default.error('Quota check error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Quota check failed',
             message: 'An error occurred while checking your quota'

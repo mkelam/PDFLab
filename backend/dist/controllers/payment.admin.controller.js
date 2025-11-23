@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retryFailedPayment = exports.getRevenueAnalytics = exports.getITNLogs = exports.processRefund = exports.getTransactionById = exports.getAllTransactions = exports.resumeSubscription = exports.pauseSubscription = exports.cancelSubscription = exports.updateSubscription = exports.getSubscriptionById = exports.getAllSubscriptions = void 0;
 const sequelize_1 = require("sequelize");
@@ -6,6 +9,7 @@ const database_1 = require("../config/database");
 const payment_log_model_1 = require("../models/payment-log.model");
 const User_1 = require("../models/User");
 const subscription_model_1 = require("../models/subscription.model");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Get all subscriptions with filters, search, and pagination
  * GET /api/admin/payments/subscriptions
@@ -85,7 +89,7 @@ const getAllSubscriptions = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get all subscriptions error:', error);
+        logger_1.default.error('Get all subscriptions error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch subscriptions',
@@ -128,7 +132,7 @@ const getSubscriptionById = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get subscription by ID error:', error);
+        logger_1.default.error('Get subscription by ID error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch subscription',
@@ -175,7 +179,7 @@ const updateSubscription = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Update subscription error:', error);
+        logger_1.default.error('Update subscription error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to update subscription',
@@ -235,7 +239,7 @@ const cancelSubscription = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Cancel subscription error:', error);
+        logger_1.default.error('Cancel subscription error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to cancel subscription',
@@ -278,7 +282,7 @@ const pauseSubscription = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Pause subscription error:', error);
+        logger_1.default.error('Pause subscription error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to pause subscription',
@@ -319,7 +323,7 @@ const resumeSubscription = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Resume subscription error:', error);
+        logger_1.default.error('Resume subscription error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to resume subscription',
@@ -408,7 +412,7 @@ const getAllTransactions = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get all transactions error:', error);
+        logger_1.default.error('Get all transactions error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch transactions',
@@ -451,7 +455,7 @@ const getTransactionById = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get transaction by ID error:', error);
+        logger_1.default.error('Get transaction by ID error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch transaction',
@@ -531,7 +535,7 @@ const processRefund = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Process refund error:', error);
+        logger_1.default.error('Process refund error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to process refund',
@@ -592,7 +596,7 @@ const getITNLogs = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get ITN logs error:', error);
+        logger_1.default.error('Get ITN logs error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch ITN logs',
@@ -705,7 +709,7 @@ const getRevenueAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get revenue analytics error:', error);
+        logger_1.default.error('Get revenue analytics error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch analytics',
@@ -756,7 +760,7 @@ const retryFailedPayment = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Retry failed payment error:', error);
+        logger_1.default.error('Retry failed payment error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to retry payment',

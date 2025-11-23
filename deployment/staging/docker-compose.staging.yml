@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # MySQL Database for Staging
+  mysql-staging:
+    image: mysql:8.0
+    container_name: pdflab-mysql-staging
+    restart: unless-stopped
+    ports:
+      - "3307:3306"  # Different from production (3306)
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-staging_root_pass_change_me}
+      MYSQL_DATABASE: pdflab_staging
+      MYSQL_USER: pdflab_staging
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-staging_pass_change_me}
+    volumes:
+      - mysql-staging-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache for Staging
+  redis-staging:
+    image: redis:7-alpine
+    container_name: pdflab-redis-staging
+    restart: unless-stopped
+    ports:
+      - "6380:6379"  # Different from production (6379)
+    volumes:
+      - redis-staging-data:/data
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API for Staging
+  backend-staging:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: pdflab-backend-staging
+    restart: unless-stopped
+    ports:
+      - "3007:3006"  # Different from production (3006)
+    environment:
+      NODE_ENV: staging
+      PORT: 3006
+      DB_HOST: mysql-staging
+      DB_PORT: 3306
+      DB_USER: pdflab_staging
+      DB_PASSWORD: ${MYSQL_PASSWORD:-staging_pass_change_me}
+      DB_NAME: pdflab_staging
+      REDIS_HOST: redis-staging
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-staging_jwt_secret_change_me}
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 30d
+      CLOUDCONVERT_API_KEY: ${CLOUDCONVERT_API_KEY}
+      CLOUDCONVERT_SANDBOX: false
+      PAYFAST_MERCHANT_ID: ${PAYFAST_MERCHANT_ID}
+      PAYFAST_MERCHANT_KEY: ${PAYFAST_MERCHANT_KEY}
+      PAYFAST_PASSPHRASE: ${PAYFAST_PASSPHRASE}
+      PAYFAST_MODE: sandbox
+      CORS_ORIGIN: http://staging.pdflab.pro,http://localhost:3001
+      STORAGE_PATH: /app/storage
+    volumes:
+      - ../../backend:/app
+      - /app/node_modules
+      - backend-staging-storage:/app/storage
+    depends_on:
+      mysql-staging:
+        condition: service_healthy
+      redis-staging:
+        condition: service_healthy
+    networks:
+      - pdflab-staging-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend for Staging
+  frontend-staging:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://staging.pdflab.pro:3007
+    container_name: pdflab-frontend-staging
+    restart: unless-stopped
+    ports:
+      - "3001:3000"  # Different from production (3000)
+    environment:
+      NODE_ENV: staging
+      NEXT_PUBLIC_API_URL: http://staging.pdflab.pro:3007
+    depends_on:
+      - backend-staging
+    networks:
+      - pdflab-staging-network
+
+volumes:
+  mysql-staging-data:
+    driver: local
+  redis-staging-data:
+    driver: local
+  backend-staging-storage:
+    driver: local
+
+networks:
+  pdflab-staging-network:
+    driver: bridge

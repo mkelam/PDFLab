@@ -3,6 +3,7 @@ import { ConversionJob, JobStatus } from '../models/ConversionJob'
 import { User } from '../models/User'
 import { Op } from 'sequelize'
 import { conversionQueue } from '../jobs/conversion.job'
+import logger from '../config/logger'
 
 /**
  * GET /api/admin/conversions
@@ -100,7 +101,7 @@ export const getAllConversionJobs = async (req: Request, res: Response): Promise
       }
     })
   } catch (error) {
-    console.error('Get all conversion jobs error:', error)
+    logger.error('Get all conversion jobs error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch conversion jobs',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -136,7 +137,7 @@ export const getConversionJobById = async (req: Request, res: Response): Promise
       job
     })
   } catch (error) {
-    console.error('Get conversion job error:', error)
+    logger.error('Get conversion job error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch job',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -195,7 +196,7 @@ export const retryConversionJob = async (req: Request, res: Response): Promise<v
       job
     })
   } catch (error) {
-    console.error('Retry job error:', error)
+    logger.error('Retry job error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to retry job',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -242,7 +243,7 @@ export const cancelConversionJob = async (req: Request, res: Response): Promise<
       job
     })
   } catch (error) {
-    console.error('Cancel job error:', error)
+    logger.error('Cancel job error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to cancel job',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -276,7 +277,7 @@ export const deleteConversionJob = async (req: Request, res: Response): Promise<
         const inputPath = path.join(process.cwd(), job.input_file)
         await fs.unlink(inputPath)
       } catch (err) {
-        console.log('Input file already deleted or not found')
+        logger.info('Input file already deleted or not found')
       }
     }
 
@@ -285,7 +286,7 @@ export const deleteConversionJob = async (req: Request, res: Response): Promise<
         const outputPath = path.join(process.cwd(), job.output_file)
         await fs.unlink(outputPath)
       } catch (err) {
-        console.log('Output file already deleted or not found')
+        logger.info('Output file already deleted or not found')
       }
     }
 
@@ -296,7 +297,7 @@ export const deleteConversionJob = async (req: Request, res: Response): Promise<
       message: 'Job deleted successfully'
     })
   } catch (error) {
-    console.error('Delete job error:', error)
+    logger.error('Delete job error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to delete job',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -362,7 +363,7 @@ export const bulkRetryJobs = async (req: Request, res: Response): Promise<void> 
       count: jobs.length
     })
   } catch (error) {
-    console.error('Bulk retry error:', error)
+    logger.error('Bulk retry error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to retry jobs',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -411,7 +412,7 @@ export const getQueueStatus = async (_req: Request, res: Response): Promise<void
       }
     })
   } catch (error) {
-    console.error('Get queue status error:', error)
+    logger.error('Get queue status error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       error: 'Failed to fetch queue status',
       message: error instanceof Error ? error.message : 'Unknown error'

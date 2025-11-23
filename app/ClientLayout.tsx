@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { TokenExpirationWarning } from "@/components/TokenExpirationWarning"
 import { Toaster } from "@/components/ui/toaster"
 import FeedbackBubble from "@/components/FeedbackBubble"
+import ErrorBoundary from "@/components/ErrorBoundary"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { SessionProvider } from "@/contexts/SessionContext"
 import { OnboardingProvider } from "@/contexts/OnboardingContext"
@@ -35,17 +36,19 @@ export default function ClientLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${montserrat.variable}`}>
-        <SessionProvider>
-          <AuthProvider>
-            <OnboardingProvider>
-              <div className="relative z-10">{children}</div>
-              <TokenExpirationWarning />
-              <Toaster />
-              <FeedbackBubble />
-            </OnboardingProvider>
-          </AuthProvider>
-        </SessionProvider>
-        <Analytics />
+        <ErrorBoundary>
+          <SessionProvider>
+            <AuthProvider>
+              <OnboardingProvider>
+                <div className="relative z-10">{children}</div>
+                <TokenExpirationWarning />
+                <Toaster />
+                <FeedbackBubble />
+              </OnboardingProvider>
+            </AuthProvider>
+          </SessionProvider>
+          <Analytics />
+        </ErrorBoundary>
       </body>
     </html>
   )

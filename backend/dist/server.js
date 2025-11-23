@@ -64,10 +64,10 @@ if (process.env.SENTRY_DSN) {
             return event;
         },
     });
-    console.log('✓ Sentry error tracking initialized');
+    logger_1.default.info('Sentry error tracking initialized');
 }
 else {
-    console.log('⚠ Sentry DSN not configured - error tracking disabled');
+    logger_1.default.warn('Sentry DSN not configured - error tracking disabled');
 }
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
@@ -81,6 +81,9 @@ const database_1 = require("./config/database");
 const redis_1 = require("./config/redis");
 const ratelimit_middleware_1 = require("./middleware/ratelimit.middleware");
 const guest_middleware_1 = require("./middleware/guest.middleware");
+const logger_1 = __importDefault(require("./config/logger"));
+const request_id_middleware_1 = require("./middleware/request-id.middleware");
+const http_logger_middleware_1 = require("./middleware/http-logger.middleware");
 // Import models to ensure they're registered with Sequelize
 require("./models/AdminAuditLog");
 require("./models/SystemHealthLog");
@@ -96,6 +99,7 @@ const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const conversion_admin_routes_1 = __importDefault(require("./routes/conversion.admin.routes"));
 const payment_admin_routes_1 = __importDefault(require("./routes/payment.admin.routes"));
 const system_admin_routes_1 = __importDefault(require("./routes/system.admin.routes"));
+const system_circuit_breaker_routes_1 = __importDefault(require("./routes/system.circuit-breaker.routes"));
 const analytics_admin_routes_1 = __importDefault(require("./routes/analytics.admin.routes"));
 const audit_admin_routes_1 = __importDefault(require("./routes/audit.admin.routes"));
 const analytics_routes_1 = __importDefault(require("./routes/analytics.routes"));
@@ -109,11 +113,16 @@ const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3001');
 // Trust proxy (required for rate limiting behind Nginx)
 app.set('trust proxy', true);
+// Request correlation ID (before all other middleware)
+app.use(request_id_middleware_1.requestIdMiddleware);
+// HTTP request logging
+app.use(http_logger_middleware_1.httpLoggerMiddleware); // Prometheus metrics collection (after request ID, before routes)app.use(metricsMiddleware)
+app.use(http_logger_middleware_1.httpLoggerMiddleware);
 // Sentry middleware (only if DSN is configured)
 // Note: Modern @sentry/node doesn't require explicit middleware
 // Sentry.init() automatically instruments Express
 if (process.env.SENTRY_DSN) {
-    console.log('✓ Sentry Express instrumentation active');
+    logger_1.default.info('Sentry Express instrumentation active');
 }
 // =====================
 // View Engine Setup
@@ -152,7 +161,7 @@ app.use((0, cors_1.default)({
             callback(null, true);
         }
         else {
-            console.warn(`[CORS] Blocked request from origin: ${origin}`);
+            logger_1.default.warn('CORS blocked request from origin', { origin });
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -218,6 +227,7 @@ app.get('/health', async (req, res) => {
     // Return JSON response
     res.status(statusCode).json(health);
 });
+// Metrics endpoint (before rate limiting for Prometheus scraping)app.use('/', metricsRoutes)
 // API routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/batch', batch_routes_1.default);
@@ -233,13 +243,14 @@ app.use('/api/admin', admin_routes_1.default);
 app.use('/api/admin', conversion_admin_routes_1.default);
 app.use('/api/admin/payments', payment_admin_routes_1.default);
 app.use('/api/admin/system', system_admin_routes_1.default);
+app.use('/api/admin/system', system_circuit_breaker_routes_1.default);
 app.use('/api/admin/analytics', analytics_admin_routes_1.default);
 app.use('/api/admin/audit-logs', audit_admin_routes_1.default);
 app.use('/api', conversion_routes_1.default);
 // Test routes (only in development/staging - NOT production)
 if (process.env.NODE_ENV !== 'production') {
     app.use('/api', test_routes_1.default);
-    console.log('✓ Sentry test routes enabled (development/staging only)');
+    logger_1.default.info('Sentry test routes enabled (development/staging only)');
 }
 // Root route
 app.get('/', async (req, res) => {
@@ -281,7 +292,15 @@ app.use((req, res) => {
 // Modern @sentry/node automatically captures unhandled errors
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error('Global error handler:', err);
+    logger_1.default.error('Global error handler', {
+        error: err.message,
+        stack: err.stack,
+        statusCode: err.statusCode,
+        requestId: req.id,
+        method: req.method,
+        url: req.url,
+        userId: req.user?.id
+    });
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Internal server error';
     res.status(statusCode).json({
@@ -297,7 +316,11 @@ app.use((err, req, res, next) => {
 // =====================
 const startServer = async () => {
     try {
-        console.log('🚀 Starting PDFLab Backend API...');
+        logger_1.default.info('PDFLab Backend Starting', {
+            environment: process.env.NODE_ENV,
+            port: PORT,
+            nodeVersion: process.version
+        });
         // Connect to database
         const dbConnected = await (0, database_1.testConnection)();
         if (!dbConnected) {
@@ -306,12 +329,12 @@ const startServer = async () => {
         // Sync database (create tables)
         // Temporarily disabled due to too many keys error - tables already exist
         // await syncDatabase(false) // Don't force recreate tables
-        console.log('✓ Using existing database tables (sync disabled)');
+        logger_1.default.info('Using existing database tables (sync disabled)');
         // Connect to Redis (optional for testing)
         const redisConnected = await (0, redis_1.connectRedis)();
         if (!redisConnected) {
-            console.warn('⚠ Redis not available - job queue disabled');
-            console.warn('⚠ PDF conversions will not work without Redis');
+            logger_1.default.warn('Redis not available - job queue disabled');
+            logger_1.default.warn('PDF conversions will not work without Redis');
         }
         else {
             // Initialize Bull queues first
@@ -322,57 +345,109 @@ const startServer = async () => {
             const { initializeCleanupWorker } = await Promise.resolve().then(() => __importStar(require('./jobs/cleanup.job')));
             initializeConversionWorker();
             initializeCleanupWorker();
-            console.log('✓ Job workers initialized');
+            logger_1.default.info('Job workers initialized');
         }
         // Initialize monthly quota reset cron job
         const { initializeQuotaResetJob } = await Promise.resolve().then(() => __importStar(require('./jobs/quota-reset.job')));
         const quotaResetJob = initializeQuotaResetJob();
         if (quotaResetJob) {
-            console.log('✓ Monthly quota reset scheduled');
+            logger_1.default.info('Monthly quota reset scheduled');
         }
         // Start Express server
         app.listen(PORT, () => {
-            console.log('✓ PDFLab API Server running');
-            console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`✓ Port: ${PORT}`);
-            console.log(`✓ Health check: http://localhost:${PORT}/health`);
-            console.log(`✓ API endpoint: http://localhost:${PORT}/api`);
+            logger_1.default.info('Server started successfully', {
+                port: PORT,
+                environment: process.env.NODE_ENV || 'development',
+                timestamp: new Date().toISOString(),
+                healthCheck: `http://localhost:${PORT}/health`,
+                apiEndpoint: `http://localhost:${PORT}/api`
+            });
         });
     }
     catch (error) {
-        console.error('✗ Failed to start server:', error);
+        logger_1.default.error('Failed to start server', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+        });
         process.exit(1);
     }
 };
-// Graceful shutdown
+// Graceful shutdown - ONLY called for SIGTERM/SIGINT
 const gracefulShutdown = async (signal) => {
-    console.log(`\n${signal} received. Starting graceful shutdown...`);
+    logger_1.default.info('Graceful shutdown initiated', { signal });
     try {
         // Close queues and Redis
         await (0, redis_1.closeQueues)();
         // Close database connection
         const { sequelize } = await Promise.resolve().then(() => __importStar(require('./config/database')));
         await sequelize.close();
-        console.log('✓ Database connection closed');
-        console.log('✓ Graceful shutdown completed');
+        logger_1.default.info('Database connection closed');
+        // Flush Sentry events
+        if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+            await Sentry.close(2000);
+        }
+        logger_1.default.info('Graceful shutdown completed');
         process.exit(0);
     }
     catch (error) {
-        console.error('✗ Error during shutdown:', error);
+        logger_1.default.error('Error during shutdown', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+        });
         process.exit(1);
     }
 };
-// Handle shutdown signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-// Handle uncaught exceptions
+// ONLY exit on intentional signals
+process.on('SIGTERM', () => {
+    logger_1.default.info('SIGTERM received, starting graceful shutdown');
+    gracefulShutdown('SIGTERM');
+});
+process.on('SIGINT', () => {
+    logger_1.default.info('SIGINT received, starting graceful shutdown');
+    gracefulShutdown('SIGINT');
+});
+// Handle uncaught exceptions WITHOUT killing the process
 process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    gracefulShutdown('UNCAUGHT_EXCEPTION');
+    logger_1.default.error('Uncaught Exception - Non-Fatal', {
+        error: error.message,
+        stack: error.stack,
+        name: error.name,
+        timestamp: new Date().toISOString()
+    });
+    // Report to Sentry
+    if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+        Sentry.captureException(error, {
+            level: 'error',
+            tags: {
+                source: 'uncaughtException',
+                fatal: 'false'
+            }
+        });
+    }
+    // DO NOT CALL process.exit()
+    // Let PM2 or Docker handle process restarts if truly needed
 });
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    gracefulShutdown('UNHANDLED_REJECTION');
+    logger_1.default.error('Unhandled Rejection - Non-Fatal', {
+        reason: String(reason),
+        promise: String(promise),
+        timestamp: new Date().toISOString()
+    });
+    // Report to Sentry
+    if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+        Sentry.captureException(new Error('Unhandled Promise Rejection'), {
+            level: 'error',
+            tags: {
+                source: 'unhandledRejection',
+                fatal: 'false'
+            },
+            extra: {
+                reason: String(reason),
+                promise: String(promise)
+            }
+        });
+    }
+    // DO NOT CALL process.exit()
 });
 // Start the server
 startServer();

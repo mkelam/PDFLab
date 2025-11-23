@@ -18,6 +18,8 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
     "test:sentry": "bash test-sentry-alerts.sh",
     "lint": "eslint src --ext .ts --fix",
     "lint:check": "eslint src --ext .ts",
@@ -89,6 +91,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
@@ -104,6 +107,7 @@
     "@types/opossum": "^8.1.9",
     "@types/passport-linkedin-oauth2": "^1.5.6",
     "@types/sanitize-html": "^2.16.0",
+    "@types/supertest": "^6.0.3",
     "@types/uuid": "^9.0.8",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -115,6 +119,7 @@
     "jest": "^29.7.0",
     "lint-staged": "^15.5.2",
     "prettier": "^3.6.2",
+    "supertest": "^7.1.4",
     "ts-jest": "^29.4.5",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"

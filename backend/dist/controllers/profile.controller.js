@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAccountStats = exports.deleteAccount = exports.changePassword = exports.updateProfile = exports.getProfile = void 0;
 const models_1 = require("../models");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Get user profile
  * @route GET /api/profile
@@ -38,7 +39,7 @@ const getProfile = async (req, res) => {
         res.json({ user });
     }
     catch (error) {
-        console.error('Get profile error:', error);
+        logger_1.default.error('Get profile error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch profile',
             message: error.message
@@ -109,7 +110,7 @@ const updateProfile = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Update profile error:', error);
+        logger_1.default.error('Update profile error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to update profile',
             message: error.message
@@ -153,7 +154,7 @@ const changePassword = async (req, res) => {
         res.json({ message: 'Password changed successfully' });
     }
     catch (error) {
-        console.error('Change password error:', error);
+        logger_1.default.error('Change password error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to change password',
             message: error.message
@@ -193,7 +194,7 @@ const deleteAccount = async (req, res) => {
         res.json({ message: 'Account deleted successfully' });
     }
     catch (error) {
-        console.error('Delete account error:', error);
+        logger_1.default.error('Delete account error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to delete account',
             message: error.message
@@ -260,7 +261,7 @@ const getAccountStats = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get stats error:', error);
+        logger_1.default.error('Get stats error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             error: 'Failed to fetch account statistics',
             message: error.message

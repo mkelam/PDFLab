@@ -4,27 +4,31 @@
  * Database Migration Runner
  * Runs the batch_jobs table migration
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = require("../config/database");
 const BatchJob_1 = require("../models/BatchJob");
+const logger_1 = __importDefault(require("../config/logger"));
 async function runMigration() {
     try {
-        console.log('🔄 Starting database migration...');
+        logger_1.default.info('🔄 Starting database migration...');
         // Test connection
         await database_1.sequelize.authenticate();
-        console.log('✓ Database connection established');
+        logger_1.default.info('✓ Database connection established');
         // Sync BatchJob model (creates table if not exists)
         await BatchJob_1.BatchJob.sync({ alter: false });
-        console.log('✓ BatchJob table created/verified');
+        logger_1.default.info('✓ BatchJob table created/verified');
         // Verify table was created
         const tableDescription = await database_1.sequelize.getQueryInterface().describeTable('batch_jobs');
-        console.log('\n📊 BatchJob Table Schema:');
-        console.log('Columns:', Object.keys(tableDescription).join(', '));
-        console.log('\n✅ Migration completed successfully!');
+        logger_1.default.info('\n📊 BatchJob Table Schema:');
+        logger_1.default.info('Columns:', { Object, : .keys(tableDescription) }).join(', ');
+        logger_1.default.info('\n✅ Migration completed successfully!');
         process.exit(0);
     }
     catch (error) {
-        console.error('❌ Migration failed:', error);
+        logger_1.default.error('❌ Migration failed:', { error: error instanceof Error ? error.message : String(error) });
         process.exit(1);
     }
 }

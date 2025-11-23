@@ -165,6 +165,14 @@ User.init({
         defaultValue: false,
         allowNull: false
     },
+    google_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true
+    },
+    linkedin_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true
+    },
     created_at: {
         type: sequelize_1.DataTypes.DATE,
         allowNull: false,

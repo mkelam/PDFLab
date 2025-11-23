@@ -8,6 +8,7 @@ import { SystemHealthLog, HealthStatus } from '../models/SystemHealthLog'
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
+import logger from '../config/logger'
 
 const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
@@ -80,7 +81,7 @@ export const getSystemHealth = async (_req: Request, res: Response): Promise<voi
         await calculateSize(storageDir)
       }
     } catch (err) {
-      console.error('Storage calculation error:', err)
+      logger.error('Storage calculation error:', { error: err instanceof Error ? err.message : String(err) })
     }
 
     // Determine overall status
@@ -164,7 +165,7 @@ export const getSystemHealth = async (_req: Request, res: Response): Promise<voi
       health
     })
   } catch (error: any) {
-    console.error('Get system health error:', error)
+    logger.error('Get system health error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch system health',
@@ -230,7 +231,7 @@ export const getCloudConvertHealth = async (req: Request, res: Response): Promis
       }
     })
   } catch (error: any) {
-    console.error('Get CloudConvert health error:', error)
+    logger.error('Get CloudConvert health error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch CloudConvert health',
@@ -267,7 +268,7 @@ export const getStorageHealth = async (req: Request, res: Response): Promise<voi
       }
     })
   } catch (error: any) {
-    console.error('Get storage health error:', error)
+    logger.error('Get storage health error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch storage health',
@@ -320,7 +321,7 @@ export const getErrorLogs = async (req: Request, res: Response): Promise<void> =
       }
     })
   } catch (error: any) {
-    console.error('Get error logs error:', error)
+    logger.error('Get error logs error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch error logs',
@@ -343,7 +344,7 @@ export const testConversion = async (req: Request, res: Response): Promise<void>
       note: 'This would create a test PDF→PPTX conversion job using a sample PDF file'
     })
   } catch (error: any) {
-    console.error('Test conversion error:', error)
+    logger.error('Test conversion error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to run test conversion',
@@ -366,7 +367,7 @@ export const clearCache = async (_req: Request, res: Response): Promise<void> =>
       message: 'Redis cache cleared successfully'
     })
   } catch (error: any) {
-    console.error('Clear cache error:', error)
+    logger.error('Clear cache error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to clear cache',
@@ -435,7 +436,7 @@ export const cleanupStorage = async (req: Request, res: Response): Promise<void>
       }
     })
   } catch (error: any) {
-    console.error('Cleanup storage error:', error)
+    logger.error('Cleanup storage error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to cleanup storage',
@@ -592,7 +593,7 @@ export const getApplicationFlowHealth = async (_req: Request, res: Response): Pr
         await calculateSize(storageDir)
       }
     } catch (err) {
-      console.error('Storage calculation error:', err)
+      logger.error('Storage calculation error:', { error: err instanceof Error ? err.message : String(err) })
     }
 
     const storageGB = totalSize / (1024 * 1024 * 1024)
@@ -676,7 +677,7 @@ export const getApplicationFlowHealth = async (_req: Request, res: Response): Pr
       }
     })
   } catch (error: any) {
-    console.error('Get application flow health error:', error)
+    logger.error('Get application flow health error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch application flow health',
@@ -783,7 +784,7 @@ export const getBusinessMetrics = async (_req: Request, res: Response): Promise<
       }
     })
   } catch (error: any) {
-    console.error('Get business metrics error:', error)
+    logger.error('Get business metrics error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch business metrics',
@@ -862,7 +863,7 @@ export const getEnvironmentConfig = async (_req: Request, res: Response): Promis
       }
     })
   } catch (error: any) {
-    console.error('Get environment config error:', error)
+    logger.error('Get environment config error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch environment configuration',
@@ -911,7 +912,7 @@ export const getRecentErrors = async (_req: Request, res: Response): Promise<voi
       errors: formattedErrors
     })
   } catch (error: any) {
-    console.error('Get recent errors error:', error)
+    logger.error('Get recent errors error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch recent errors',

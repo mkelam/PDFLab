@@ -6,6 +6,7 @@ import archiver from 'archiver'
 import { BatchJob, BatchOperationType, BatchStatus, ConversionJob, ConversionType, JobStatus } from '../models'
 import { conversionQueue } from '../config/redis'
 import { PLAN_QUOTAS } from '../utils/quota.utils'
+import logger from '../config/logger'
 
 // Helper function to get storage path
 const getStoragePath = (): string => {
@@ -408,7 +409,7 @@ export const downloadBatchZip = async (req: Request, res: Response): Promise<voi
 
     res.download(zipPath, fileName, (err) => {
       if (err) {
-        console.error('Download error:', err)
+        logger.error('Download error:', { error: err instanceof Error ? err.message : String(err) })
         if (!res.headersSent) {
           res.status(500).json({
             error: 'Download failed',

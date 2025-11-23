@@ -1,6 +1,7 @@
 import { CronJob } from 'cron'
 import { User } from '../models'
 import { Op} from 'sequelize'
+import logger from '../config/logger'
 
 /**
  * Monthly Quota Reset Job
@@ -14,7 +15,7 @@ const QUOTA_RESET_SCHEDULE = '0 0 1 * *' // At 00:00 on day-of-month 1
  */
 export const resetMonthlyQuotas = async (): Promise<void> => {
   try {
-    console.log('[Quota Reset] Starting monthly quota reset...')
+    logger.info('[Quota Reset] Starting monthly quota reset...')
 
     const startTime = Date.now()
 
@@ -32,9 +33,9 @@ export const resetMonthlyQuotas = async (): Promise<void> => {
 
     const duration = Date.now() - startTime
 
-    console.log(`[Quota Reset] Monthly quota reset completed`)
-    console.log(`[Quota Reset] Users affected: ${affectedRows}`)
-    console.log(`[Quota Reset] Duration: ${duration}ms`)
+    logger.info(`[Quota Reset] Monthly quota reset completed`)
+    logger.info(`[Quota Reset] Users affected: ${affectedRows}`)
+    logger.info(`[Quota Reset] Duration: ${duration}ms`)
 
     // Log the reset event (optional - could store in a separate audit table)
     // await QuotaResetLog.create({
@@ -43,7 +44,7 @@ export const resetMonthlyQuotas = async (): Promise<void> => {
     //   duration_ms: duration
     // })
   } catch (error) {
-    console.error('[Quota Reset] Error during monthly quota reset:', error)
+    logger.error('[Quota Reset] Error during monthly quota reset:', { error: error instanceof Error ? error.message : String(error) })
     // In production, send alert to monitoring service (Sentry, Datadog, etc.)
     throw error
   }
@@ -55,7 +56,7 @@ export const resetMonthlyQuotas = async (): Promise<void> => {
  */
 export const resetSubscriptionQuotas = async (): Promise<void> => {
   try {
-    console.log('[Quota Reset] Starting subscription-based quota reset...')
+    logger.info('[Quota Reset] Starting subscription-based quota reset...')
 
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -86,9 +87,9 @@ export const resetSubscriptionQuotas = async (): Promise<void> => {
       resetCount++
     }
 
-    console.log(`[Quota Reset] Subscription-based quota reset completed for ${resetCount} users`)
+    logger.info(`[Quota Reset] Subscription-based quota reset completed for ${resetCount} users`)
   } catch (error) {
-    console.error('[Quota Reset] Error during subscription quota reset:', error)
+    logger.error('[Quota Reset] Error during subscription quota reset:', { error: error instanceof Error ? error.message : String(error) })
     throw error
   }
 }
@@ -98,8 +99,8 @@ export const resetSubscriptionQuotas = async (): Promise<void> => {
  */
 export const initializeQuotaResetJob = (): CronJob | null => {
   try {
-    console.log('[Quota Reset] Initializing monthly quota reset cron job...')
-    console.log(`[Quota Reset] Schedule: ${QUOTA_RESET_SCHEDULE} (1st of month at midnight)`)
+    logger.info('[Quota Reset] Initializing monthly quota reset cron job...')
+    logger.info(`[Quota Reset] Schedule: ${QUOTA_RESET_SCHEDULE} (1st of month at midnight)`)
 
     const cronJob = new CronJob(
       QUOTA_RESET_SCHEDULE,
@@ -109,12 +110,12 @@ export const initializeQuotaResetJob = (): CronJob | null => {
       'America/New_York' // Timezone (adjust to your timezone)
     )
 
-    console.log('✓ Quota reset cron job initialized and scheduled')
-    console.log(`✓ Next reset: ${cronJob.nextDate().toISO()}`)
+    logger.info('✓ Quota reset cron job initialized and scheduled')
+    logger.info(`✓ Next reset: ${cronJob.nextDate().toISO()}`)
 
     return cronJob
   } catch (error) {
-    console.error('✗ Failed to initialize quota reset cron job:', error)
+    logger.error('✗ Failed to initialize quota reset cron job:', { error: error instanceof Error ? error.message : String(error) })
     return null
   }
 }
@@ -131,7 +132,7 @@ export const manualQuotaReset = async (userId?: string): Promise<{ success: bool
         { where: { id: userId } }
       )
 
-      console.log(`[Quota Reset] Manual reset for user ${userId}: ${affectedRows} row(s) affected`)
+      logger.info(`[Quota Reset] Manual reset for user ${userId}: ${affectedRows} row(s) affected`)
 
       return { success: true, affected: affectedRows }
     } else {
@@ -140,7 +141,7 @@ export const manualQuotaReset = async (userId?: string): Promise<{ success: bool
       return { success: true, affected: -1 } // -1 indicates all users
     }
   } catch (error) {
-    console.error('[Quota Reset] Manual reset failed:', error)
+    logger.error('[Quota Reset] Manual reset failed:', { error: error instanceof Error ? error.message : String(error) })
     return { success: false, affected: 0 }
   }
 }

@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFeatureAnalytics = exports.getRevenueAnalytics = exports.getConversionAnalytics = exports.getUserAnalytics = exports.getAnalyticsOverview = void 0;
 const sequelize_1 = require("sequelize");
@@ -6,6 +9,7 @@ const database_1 = require("../config/database");
 const User_1 = require("../models/User");
 const ConversionJob_1 = require("../models/ConversionJob");
 const subscription_model_1 = require("../models/subscription.model");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Get analytics overview
  * GET /api/admin/analytics/overview
@@ -100,7 +104,7 @@ const getAnalyticsOverview = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get analytics overview error:', error);
+        logger_1.default.error('Get analytics overview error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch analytics overview',
@@ -160,7 +164,7 @@ const getUserAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get user analytics error:', error);
+        logger_1.default.error('Get user analytics error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch user analytics',
@@ -245,7 +249,7 @@ const getConversionAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get conversion analytics error:', error);
+        logger_1.default.error('Get conversion analytics error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch conversion analytics',
@@ -324,7 +328,7 @@ const getRevenueAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get revenue analytics error:', error);
+        logger_1.default.error('Get revenue analytics error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch revenue analytics',
@@ -370,7 +374,7 @@ const getFeatureAnalytics = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get feature analytics error:', error);
+        logger_1.default.error('Get feature analytics error:', { error: error instanceof Error ? error.message : String(error) });
         res.status(500).json({
             success: false,
             message: 'Failed to fetch feature analytics',

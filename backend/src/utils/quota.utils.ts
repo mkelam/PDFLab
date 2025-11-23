@@ -4,6 +4,7 @@
  */
 
 import { User, UserPlan } from '../models/User'
+import logger from '../config/logger'
 
 // Plan quota configuration (source of truth)
 export const PLAN_QUOTAS = {
@@ -37,7 +38,7 @@ export async function syncUserQuota(user: User): Promise<void> {
   const planQuota = PLAN_QUOTAS[user.plan]
 
   if (!planQuota) {
-    console.error(`⚠️  Unknown plan: ${user.plan}`)
+    logger.error(`⚠️  Unknown plan: ${user.plan}`)
     return
   }
 
@@ -50,7 +51,7 @@ export async function syncUserQuota(user: User): Promise<void> {
 
   await user.save()
 
-  console.log(`✓ Quota synced for user ${user.email} - Plan: ${user.plan}, Limit: ${planQuota.conversions_limit === -1 ? 'Unlimited' : planQuota.conversions_limit}`)
+  logger.info(`✓ Quota synced for user ${user.email} - Plan: ${user.plan}, { Limit: ${planQuota.conversions_limit === -1 ? 'Unlimited' : planQuota.conversions_limit}` })
 }
 
 /**
@@ -70,7 +71,7 @@ export async function updateUserPlan(user: User, newPlan: UserPlan, resetUsage: 
     await user.save()
   }
 
-  console.log(`✓ User ${user.email} upgraded: ${oldPlan} → ${newPlan}`)
+  logger.info(`✓ User ${user.email} upgraded: ${oldPlan} → ${newPlan}`)
 }
 
 /**
@@ -85,7 +86,7 @@ export async function fixAllUserQuotas(): Promise<{ fixed: number; total: number
     const expectedQuota = PLAN_QUOTAS[user.plan]?.conversions_limit
 
     if (expectedQuota !== undefined && user.conversions_limit !== expectedQuota) {
-      console.log(`🔧 Fixing ${user.email}: ${user.plan} plan should have ${expectedQuota === -1 ? 'unlimited' : expectedQuota} conversions, but has ${user.conversions_limit}`)
+      logger.info(`🔧 Fixing ${user.email}: ${user.plan} plan should have ${expectedQuota === -1 ? 'unlimited' : expectedQuota} conversions, { but has ${user.conversions_limit}` })
 
       user.conversions_limit = expectedQuota
       await user.save()
@@ -93,7 +94,7 @@ export async function fixAllUserQuotas(): Promise<{ fixed: number; total: number
     }
   }
 
-  console.log(`✓ Fixed ${fixed}/${users.length} users`)
+  logger.info(`✓ Fixed ${fixed}/${users.length} users`)
   return { fixed, total: users.length }
 }
 

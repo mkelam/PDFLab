@@ -7,6 +7,7 @@ exports.GuestSessionService = void 0;
 const uuid_1 = require("uuid");
 const crypto_1 = __importDefault(require("crypto"));
 const redis_1 = require("../config/redis");
+const constants_1 = require("../config/constants");
 class GuestSessionService {
     /**
      * Generate a new guest session ID
@@ -72,7 +73,7 @@ class GuestSessionService {
         const ttl = await redis_1.redisClient.ttl(ipKey);
         const resetAt = new Date(Date.now() + (ttl > 0 ? ttl * 1000 : this.QUOTA_TTL * 1000));
         return {
-            allowed: conversionsUsed < this.MAX_CONVERSIONS,
+            allowed: conversionsUsed < constants_1.GUEST_LIMITS.MAX_CONVERSIONS,
             conversionsUsed,
             resetAt
         };
@@ -100,7 +101,7 @@ class GuestSessionService {
             return { allowed: true, conversionsUsed: 0 };
         }
         return {
-            allowed: session.conversionsUsed < this.MAX_CONVERSIONS,
+            allowed: session.conversionsUsed < constants_1.GUEST_LIMITS.MAX_CONVERSIONS,
             conversionsUsed: session.conversionsUsed
         };
     }
@@ -126,7 +127,7 @@ class GuestSessionService {
         if (!ipQuota.allowed) {
             return {
                 allowed: false,
-                reason: `Guest conversion limit reached. You can convert again in ${Math.ceil((ipQuota.resetAt.getTime() - Date.now()) / (60 * 60 * 1000))} hours, or create a free account for 3 conversions per month.`,
+                reason: `Guest conversion limit reached. You can convert again in ${Math.ceil((ipQuota.resetAt.getTime() - Date.now()) / (60 * 60 * 1000))} hours, or create a free account for ${constants_1.USER_PLAN_LIMITS.free.MAX_CONVERSIONS} conversions per month.`,
                 resetAt: ipQuota.resetAt
             };
         }
@@ -152,7 +153,7 @@ class GuestSessionService {
         if (!sessionQuota.allowed) {
             return {
                 allowed: false,
-                reason: 'Guest conversion limit reached. Create a free account for 3 conversions per month.',
+                reason: `You've used all ${constants_1.GUEST_LIMITS.MAX_CONVERSIONS} free guest conversions. Sign up for ${constants_1.USER_PLAN_LIMITS.free.MAX_CONVERSIONS} conversions per month!`,
                 session
             };
         }
@@ -195,7 +196,5 @@ exports.GuestSessionService = GuestSessionService;
 GuestSessionService.SESSION_TTL = 7 * 24 * 60 * 60; // seconds
 // Conversion quota TTL: 24 hours (reset daily)
 GuestSessionService.QUOTA_TTL = 24 * 60 * 60; // seconds
-// Maximum conversions per guest session
-GuestSessionService.MAX_CONVERSIONS = 10; // Temporarily increased for testing
 exports.default = GuestSessionService;
 //# sourceMappingURL=guest-session.service.js.map

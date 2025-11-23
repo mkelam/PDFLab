@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { sequelize } from '../config/database'
 import { QueryTypes } from 'sequelize'
+import logger from '../config/logger'
 
 /**
  * Get complete monitoring dashboard data
@@ -89,7 +90,7 @@ export const getMonitoringDashboard = async (req: Request, res: Response) => {
       }
     })
   } catch (error: any) {
-    console.error('Error fetching monitoring dashboard:', error)
+    logger.error('Error fetching monitoring dashboard:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch monitoring dashboard',
@@ -144,7 +145,7 @@ export const getHealthChecks = async (req: Request, res: Response) => {
       }
     })
   } catch (error: any) {
-    console.error('Error fetching health checks:', error)
+    logger.error('Error fetching health checks:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch health checks',
@@ -195,7 +196,7 @@ export const getDriftChecks = async (req: Request, res: Response) => {
       }
     })
   } catch (error: any) {
-    console.error('Error fetching drift checks:', error)
+    logger.error('Error fetching drift checks:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch drift checks',
@@ -250,7 +251,7 @@ export const getDeploymentValidations = async (req: Request, res: Response) => {
       }
     })
   } catch (error: any) {
-    console.error('Error fetching deployment validations:', error)
+    logger.error('Error fetching deployment validations:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch deployment validations',
@@ -308,7 +309,7 @@ export const getMonitoringAlerts = async (req: Request, res: Response) => {
       }
     })
   } catch (error: any) {
-    console.error('Error fetching monitoring alerts:', error)
+    logger.error('Error fetching monitoring alerts:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch monitoring alerts',
@@ -343,7 +344,7 @@ export const acknowledgeAlert = async (req: Request, res: Response) => {
       message: 'Alert acknowledged successfully'
     })
   } catch (error: any) {
-    console.error('Error acknowledging alert:', error)
+    logger.error('Error acknowledging alert:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to acknowledge alert',
@@ -375,7 +376,7 @@ export const resolveAlert = async (req: Request, res: Response) => {
       message: 'Alert resolved successfully'
     })
   } catch (error: any) {
-    console.error('Error resolving alert:', error)
+    logger.error('Error resolving alert:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to resolve alert',
@@ -425,7 +426,7 @@ export const getMetricsTrend = async (req: Request, res: Response) => {
       data: trend
     })
   } catch (error: any) {
-    console.error('Error fetching metrics trend:', error)
+    logger.error('Error fetching metrics trend:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch metrics trend',
@@ -488,7 +489,7 @@ export const getServiceUptime = async (req: Request, res: Response) => {
       data: uptime
     })
   } catch (error: any) {
-    console.error('Error fetching service uptime:', error)
+    logger.error('Error fetching service uptime:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
       success: false,
       message: 'Failed to fetch service uptime',

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { AuditService } from '../services/audit.service'
+import logger from '../config/logger'
 
 /**
  * Middleware to automatically log all admin actions
@@ -57,7 +58,7 @@ export const auditLogMiddleware = (req: Request, res: Response, next: NextFuncti
         }
       } catch (error) {
         // Log error but don't fail the request
-        console.error('Audit logging failed:', error)
+        logger.error('Audit logging failed:', { error: error instanceof Error ? error.message : String(error) })
       }
     })
 

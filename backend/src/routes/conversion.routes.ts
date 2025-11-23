@@ -20,8 +20,8 @@ const router = Router()
 // Upload and start conversion (supports both authenticated and guest users)
 router.post(
   '/upload',
-  uploadLimiter,
   optionalAuthMiddleware, // Auth is optional - allows guests
+  uploadLimiter,
   validateGuestQuota, // Check guest quota if not authenticated
   trackQuotaReached, // Track when guests hit quota limit
   checkConversionQuota, // Check user quota if authenticated
@@ -57,6 +57,7 @@ router.post(
 // Merge multiple PDFs
 router.post(
   '/merge',
+  authMiddleware,
   uploadLimiter,
   checkConversionQuota,
   uploadMultipleMiddleware.array('files', 10),
@@ -75,8 +76,5 @@ router.get('/download-batch', downloadLimiter, optionalAuthMiddleware, downloadB
 
 // Get conversion history (requires authentication)
 router.get('/history', authMiddleware, getConversionHistory)
-
-// Merge PDFs requires authentication
-router.use('/merge', authMiddleware)
 
 export default router
