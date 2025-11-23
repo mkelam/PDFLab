@@ -9,18 +9,42 @@ export const redisClient = createClient({
   socket: {
     host: process.env['REDIS_HOST'] || 'localhost',
     port: parseInt(process.env['REDIS_PORT'] || '6379'),
-    connectTimeout: 5000, // 5 second timeout
-    reconnectStrategy: false // Disable automatic reconnection
+    connectTimeout: 15000, // Increased from 5000ms to 15000ms
+    reconnectStrategy: (retries: number) => {
+      // Max 10 retries
+      if (retries > 10) {
+        console.error('Redis reconnection failed after 10 attempts')
+        return new Error('Max Redis reconnection retries reached')
+      }
+
+      // Exponential backoff: 100ms, 200ms, 400ms... up to 3000ms
+      const delay = Math.min(retries * 100, 3000)
+      console.warn(`Redis reconnecting in ${delay}ms (attempt ${retries}/10)`)
+      return delay
+    }
   },
   password: process.env['REDIS_PASSWORD'] || undefined
 })
 
-redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err)
-})
-
+// Connection event handlers
 redisClient.on('connect', () => {
   console.log('✓ Redis client connected')
+})
+
+redisClient.on('ready', () => {
+  console.log('✓ Redis client ready')
+})
+
+redisClient.on('error', (err) => {
+  console.error('Redis client error:', err.message)
+})
+
+redisClient.on('reconnecting', () => {
+  console.warn('Redis client reconnecting...')
+})
+
+redisClient.on('end', () => {
+  console.warn('Redis client connection closed')
 })
 
 // Initialize Redis connection with timeout
