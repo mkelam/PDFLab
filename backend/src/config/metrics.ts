@@ -163,6 +163,22 @@ export const redisCommandDuration = new client.Histogram({
   buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]
 })
 
+// =====================
+// Circuit Breaker Metrics
+// =====================
+
+export const circuitBreakerState = new client.Gauge({
+  name: 'pdflab_circuit_breaker_state',
+  help: 'Circuit breaker state (0=closed, 1=open, 2=half-open)',
+  labelNames: ['name']
+})
+
+export const circuitBreakerCalls = new client.Counter({
+  name: 'pdflab_circuit_breaker_calls_total',
+  help: 'Total circuit breaker calls',
+  labelNames: ['name', 'result'] // result: success, failure, timeout, reject
+})
+
 // Register all custom metrics
 register.registerMetric(httpRequestDuration)
 register.registerMetric(httpRequestTotal)
@@ -182,6 +198,8 @@ register.registerMetric(storageUsed)
 register.registerMetric(databaseQueryDuration)
 register.registerMetric(databaseConnections)
 register.registerMetric(redisCommandDuration)
+register.registerMetric(circuitBreakerState)
+register.registerMetric(circuitBreakerCalls)
 
 /**
  * Helper function to record HTTP request metrics

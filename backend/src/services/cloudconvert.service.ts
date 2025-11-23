@@ -3,6 +3,10 @@ import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 import AdmZip from 'adm-zip'
+import CircuitBreaker from 'opossum'
+import logger from '../config/logger'
+import { createCircuitBreaker, getCircuitBreakerStats } from '../utils/circuit-breaker.factory'
+import { cloudConvertConfig } from '../config/circuit-breaker'
 
 dotenv.config()
 
@@ -26,10 +30,163 @@ export interface ConversionOptions {
 }
 
 export class CloudConvertService {
+  private convertBreaker: CircuitBreaker<[ConversionOptions], {
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    error?: string
+  }>
+  private mergePDFsBreaker: CircuitBreaker<[string[], string], {
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    error?: string
+  }>
+  private compressPDFBreaker: CircuitBreaker<[string, string, 'good' | 'recommended' | 'extreme'], {
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    originalSize?: number
+    compressedSize?: number
+    compressionRatio?: number
+    error?: string
+  }>
+  private downloadBreaker: CircuitBreaker<[string], Buffer>
+
+  constructor() {
+    // Wrap convertFile in circuit breaker
+    this.convertBreaker = createCircuitBreaker(
+      this._convertFileInternal.bind(this),
+      'cloudconvert-convert',
+      cloudConvertConfig
+    )
+
+    // Wrap mergePDFs in circuit breaker
+    this.mergePDFsBreaker = createCircuitBreaker(
+      this._mergePDFsInternal.bind(this),
+      'cloudconvert-merge',
+      cloudConvertConfig
+    )
+
+    // Wrap compressPDF in circuit breaker
+    this.compressPDFBreaker = createCircuitBreaker(
+      this._compressPDFInternal.bind(this),
+      'cloudconvert-compress',
+      cloudConvertConfig
+    )
+
+    // Wrap downloadConvertedFile in circuit breaker
+    this.downloadBreaker = createCircuitBreaker(
+      this._downloadFileInternal.bind(this),
+      'cloudconvert-download',
+      cloudConvertConfig
+    )
+
+    // Set up fallback for convert failures
+    this.convertBreaker.fallback((params) => {
+      logger.error('CloudConvert convert circuit breaker triggered fallback', {
+        operation: 'convert',
+        sourceFormat: params.inputFormat,
+        targetFormat: params.outputFormat
+      })
+
+      return {
+        success: false,
+        error: 'CloudConvert service unavailable. Please try again later.'
+      }
+    })
+
+    // Set up fallback for merge failures
+    this.mergePDFsBreaker.fallback((inputFiles, outputPath) => {
+      logger.error('CloudConvert merge circuit breaker triggered fallback', {
+        operation: 'merge',
+        fileCount: inputFiles.length
+      })
+
+      return {
+        success: false,
+        error: 'CloudConvert merge service unavailable. Please try again later.'
+      }
+    })
+
+    // Set up fallback for compress failures
+    this.compressPDFBreaker.fallback((inputFile, outputFile, level) => {
+      logger.error('CloudConvert compress circuit breaker triggered fallback', {
+        operation: 'compress',
+        compressionLevel: level
+      })
+
+      return {
+        success: false,
+        error: 'CloudConvert compression service unavailable. Please try again later.'
+      }
+    })
+
+    // Set up fallback for download failures
+    this.downloadBreaker.fallback((url) => {
+      logger.error('CloudConvert download circuit breaker triggered fallback', {
+        operation: 'download',
+        url
+      })
+
+      throw new Error('CloudConvert download service unavailable. Please try again later.')
+    })
+  }
+
+  // PUBLIC METHODS (call circuit breaker)
+
   /**
-   * Convert PDF to specified format using CloudConvert API
+   * Convert PDF to specified format using CloudConvert API (with circuit breaker)
    */
   async convertFile(options: ConversionOptions): Promise<{
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    error?: string
+  }> {
+    return this.convertBreaker.fire(options)
+  }
+
+  /**
+   * Merge multiple PDFs into one (with circuit breaker)
+   */
+  async mergePDFs(inputFiles: string[], outputPath: string): Promise<{
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    error?: string
+  }> {
+    return this.mergePDFsBreaker.fire(inputFiles, outputPath)
+  }
+
+  /**
+   * Compress PDF file to reduce file size (with circuit breaker)
+   */
+  async compressPDF(inputFilePath: string, outputFilePath: string, compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'): Promise<{
+    success: boolean
+    outputPath?: string
+    jobId?: string
+    originalSize?: number
+    compressedSize?: number
+    compressionRatio?: number
+    error?: string
+  }> {
+    return this.compressPDFBreaker.fire(inputFilePath, outputFilePath, compressionLevel)
+  }
+
+  /**
+   * Download converted file with timeout and retry logic (with circuit breaker)
+   */
+  async downloadConvertedFile(outputUrl: string): Promise<Buffer> {
+    return this.downloadBreaker.fire(outputUrl)
+  }
+
+  // PRIVATE METHODS (wrapped by circuit breaker)
+
+  /**
+   * Internal convert method (wrapped by circuit breaker)
+   */
+  private async _convertFileInternal(options: ConversionOptions): Promise<{
     success: boolean
     outputPath?: string
     jobId?: string
@@ -120,7 +277,7 @@ export class CloudConvertService {
         })
       })
 
-      console.log(`CloudConvert job created: ${job.id}`)
+      logger.info(`CloudConvert job created: ${job.id}`)
 
       // Upload the input file
       const uploadTask = job.tasks.find(task => task.name === 'upload-file')
@@ -131,12 +288,12 @@ export class CloudConvertService {
       const inputStream = fs.createReadStream(inputFilePath)
       await cloudConvertClient.tasks.upload(uploadTask, inputStream)
 
-      console.log(`File uploaded to CloudConvert: ${inputFilePath}`)
+      logger.info(`File uploaded to CloudConvert: ${inputFilePath}`)
 
       // Wait for job completion (or rely on webhook)
       job = await cloudConvertClient.jobs.wait(job.id)
 
-      console.log(`CloudConvert job completed: ${job.id}`)
+      logger.info(`CloudConvert job completed: ${job.id}`)
 
       // Download the converted file(s)
       const exportTask = job.tasks.find(task => task.name === 'export-file')
@@ -149,7 +306,7 @@ export class CloudConvertService {
       // For image conversions with multiple pages, CloudConvert returns multiple files
       // We need to download all of them and create a ZIP
       if ((outputFormat === 'png' || outputFormat === 'jpg') && files.length > 1) {
-        console.log(`Converting multi-page PDF to images: ${files.length} files`)
+        logger.info(`Converting multi-page PDF to images: ${files.length} files`)
 
         // Create temporary directory for individual images
         const tempDir = path.join(path.dirname(outputFilePath), 'temp')
@@ -175,7 +332,7 @@ export class CloudConvertService {
           fs.writeFileSync(tempFilePath, buffer)
 
           downloadedFiles.push(tempFilePath)
-          console.log(`Downloaded image ${i + 1}/${files.length}: ${tempFilePath}`)
+          logger.info(`Downloaded image ${i + 1}/${files.length}: ${tempFilePath}`)
         }
 
         // Create ZIP archive with all images
@@ -190,7 +347,7 @@ export class CloudConvertService {
         const outputDir = path.dirname(outputFilePath)
         const zipPath = path.join(outputDir, `${fileBaseName}-images.zip`)
         zip.writeZip(zipPath)
-        console.log(`Created ZIP archive: ${zipPath}`)
+        logger.info(`Created ZIP archive: ${zipPath}`)
 
         // Clean up temporary files
         for (const filePath of downloadedFiles) {
@@ -198,7 +355,7 @@ export class CloudConvertService {
         }
         fs.rmdirSync(tempDir)
 
-        console.log(`Converted files archived: ${zipPath}`)
+        logger.info(`Converted files archived: ${zipPath}`)
 
         return {
           success: true,
@@ -218,7 +375,7 @@ export class CloudConvertService {
         const buffer = await this.downloadConvertedFile(fileUrl)
         fs.writeFileSync(outputFilePath, buffer)
 
-        console.log(`Converted file downloaded: ${outputFilePath}`)
+        logger.info(`Converted file downloaded: ${outputFilePath}`)
       }
 
       return {
@@ -227,7 +384,7 @@ export class CloudConvertService {
         jobId: job.id
       }
     } catch (error: any) {
-      console.error('CloudConvert conversion error:', error)
+      logger.error('CloudConvert conversion error:', { error: error instanceof Error ? error.message : String(error) })
       return {
         success: false,
         error: error.message || 'Unknown error during conversion'
@@ -236,9 +393,9 @@ export class CloudConvertService {
   }
 
   /**
-   * Merge multiple PDFs into one
+   * Internal merge method (wrapped by circuit breaker)
    */
-  async mergePDFs(inputFiles: string[], outputPath: string): Promise<{
+  private async _mergePDFsInternal(inputFiles: string[], outputPath: string): Promise<{
     success: boolean
     outputPath?: string
     jobId?: string
@@ -286,7 +443,7 @@ export class CloudConvertService {
         }
       })
 
-      console.log(`CloudConvert merge job created: ${job.id}`)
+      logger.info(`CloudConvert merge job created: ${job.id}`)
 
       // Upload all files
       for (let i = 0; i < inputFiles.length; i++) {
@@ -297,13 +454,13 @@ export class CloudConvertService {
 
         const inputStream = fs.createReadStream(inputFiles[i])
         await cloudConvertClient.tasks.upload(uploadTask, inputStream)
-        console.log(`File ${i + 1}/${inputFiles.length} uploaded`)
+        logger.info(`File ${i + 1}/${inputFiles.length} uploaded`)
       }
 
       // Wait for job completion
       job = await cloudConvertClient.jobs.wait(job.id)
 
-      console.log(`CloudConvert merge job completed: ${job.id}`)
+      logger.info(`CloudConvert merge job completed: ${job.id}`)
 
       // Download merged file
       const exportTask = job.tasks.find(task => task.name === 'export-file')
@@ -322,7 +479,7 @@ export class CloudConvertService {
       const buffer = await this.downloadConvertedFile(fileUrl)
       fs.writeFileSync(outputPath, buffer)
 
-      console.log(`Merged PDF downloaded: ${outputPath}`)
+      logger.info(`Merged PDF downloaded: ${outputPath}`)
 
       return {
         success: true,
@@ -330,7 +487,7 @@ export class CloudConvertService {
         jobId: job.id
       }
     } catch (error: any) {
-      console.error('CloudConvert merge error:', error)
+      logger.error('CloudConvert merge error:', { error: error instanceof Error ? error.message : String(error) })
       return {
         success: false,
         error: error.message || 'Unknown error during PDF merge'
@@ -353,14 +510,14 @@ export class CloudConvertService {
   }
 
   /**
-   * Compress PDF file to reduce file size
+   * Internal compress method (wrapped by circuit breaker)
    *
    * Compression Levels:
    * - 'good': Best quality, moderate compression (~20-30% reduction) - Uses CloudConvert 'print' profile
    * - 'recommended': Balanced quality & file size (~40-60% reduction) - Uses CloudConvert 'web' profile
    * - 'extreme': Maximum compression, lower quality (~60-80% reduction) - Uses CloudConvert 'max' profile
    */
-  async compressPDF(inputFilePath: string, outputFilePath: string, compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'): Promise<{
+  private async _compressPDFInternal(inputFilePath: string, outputFilePath: string, compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'): Promise<{
     success: boolean
     outputPath?: string
     jobId?: string
@@ -407,7 +564,7 @@ export class CloudConvertService {
         }
       })
 
-      console.log(`CloudConvert compression job created: ${job.id}`)
+      logger.info(`CloudConvert compression job created: ${job.id}`)
 
       // Upload the input file
       const uploadTask = job.tasks.find(task => task.name === 'upload-file')
@@ -418,12 +575,12 @@ export class CloudConvertService {
       const inputStream = fs.createReadStream(inputFilePath)
       await cloudConvertClient.tasks.upload(uploadTask, inputStream)
 
-      console.log(`File uploaded to CloudConvert for compression: ${inputFilePath}`)
+      logger.info(`File uploaded to CloudConvert for compression: ${inputFilePath}`)
 
       // Wait for job completion
       job = await cloudConvertClient.jobs.wait(job.id)
 
-      console.log(`CloudConvert compression job completed: ${job.id}`)
+      logger.info(`CloudConvert compression job completed: ${job.id}`)
 
       // Download the compressed file
       const exportTask = job.tasks.find(task => task.name === 'export-file')
@@ -442,7 +599,7 @@ export class CloudConvertService {
       const buffer = await this.downloadConvertedFile(fileUrl)
       fs.writeFileSync(outputFilePath, buffer)
 
-      console.log(`Compressed PDF downloaded: ${outputFilePath}`)
+      logger.info(`Compressed PDF downloaded: ${outputFilePath}`)
 
       // Calculate compression stats
       const compressedSize = fs.statSync(outputFilePath).size
@@ -457,7 +614,7 @@ export class CloudConvertService {
         compressionRatio
       }
     } catch (error: any) {
-      console.error('CloudConvert compression error:', error)
+      logger.error('CloudConvert compression error:', { error: error instanceof Error ? error.message : String(error) })
       return {
         success: false,
         error: error.message || 'Unknown error during PDF compression'
@@ -466,18 +623,18 @@ export class CloudConvertService {
   }
 
   /**
-   * Download converted file with timeout and retry logic
+   * Internal download method (wrapped by circuit breaker)
    *
    * @param outputUrl - URL of the file to download
    * @returns Buffer containing the downloaded file
    */
-  async downloadConvertedFile(outputUrl: string): Promise<Buffer> {
+  private async _downloadFileInternal(outputUrl: string): Promise<Buffer> {
     const maxRetries = 3
     const timeout = 300000  // 5 minutes (increased from 30s)
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Downloading converted file (attempt ${attempt}/${maxRetries})`, {
+        logger.info(`Downloading converted file (attempt ${attempt}/${maxRetries})`, {
           url: outputUrl,
           timeout: timeout
         })
@@ -529,7 +686,7 @@ export class CloudConvertService {
 
         // Exponential backoff: 2s, 4s, 6s
         const delay = attempt * 2000
-        console.log(`Retrying download in ${delay}ms...`)
+        logger.info(`Retrying download in ${delay}ms...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
@@ -581,6 +738,18 @@ export class CloudConvertService {
         success: false,
         error: error.message || 'Failed to cancel job'
       }
+    }
+  }
+
+  /**
+   * Get circuit breaker statistics for monitoring
+   */
+  getCircuitBreakerStats() {
+    return {
+      convert: getCircuitBreakerStats(this.convertBreaker),
+      merge: getCircuitBreakerStats(this.mergePDFsBreaker),
+      compress: getCircuitBreakerStats(this.compressPDFBreaker),
+      download: getCircuitBreakerStats(this.downloadBreaker)
     }
   }
 }

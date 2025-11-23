@@ -68,6 +68,7 @@ import adminRoutes from './routes/admin.routes'
 import conversionAdminRoutes from './routes/conversion.admin.routes'
 import paymentAdminRoutes from './routes/payment.admin.routes'
 import systemAdminRoutes from './routes/system.admin.routes'
+import circuitBreakerRoutes from './routes/system.circuit-breaker.routes'
 import analyticsAdminRoutes from './routes/analytics.admin.routes'
 import auditAdminRoutes from './routes/audit.admin.routes'
 import analyticsRoutes from './routes/analytics.routes'
@@ -242,6 +243,7 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/admin', conversionAdminRoutes)
 app.use('/api/admin/payments', paymentAdminRoutes)
 app.use('/api/admin/system', systemAdminRoutes)
+app.use('/api/admin/system', circuitBreakerRoutes)
 app.use('/api/admin/analytics', analyticsAdminRoutes)
 app.use('/api/admin/audit-logs', auditAdminRoutes)
 app.use('/api', conversionRoutes)
