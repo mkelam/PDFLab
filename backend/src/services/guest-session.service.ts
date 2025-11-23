@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import crypto from 'crypto'
 import { redisClient } from '../config/redis'
+import { GUEST_LIMITS, USER_PLAN_LIMITS } from '../config/constants'
 
 /**
  * Guest Session Service
@@ -22,9 +23,6 @@ export class GuestSessionService {
 
   // Conversion quota TTL: 24 hours (reset daily)
   private static readonly QUOTA_TTL = 24 * 60 * 60 // seconds
-
-  // Maximum conversions per guest session
-  private static readonly MAX_CONVERSIONS = 10 // Temporarily increased for testing
 
   /**
    * Generate a new guest session ID
@@ -115,7 +113,7 @@ export class GuestSessionService {
     const resetAt = new Date(Date.now() + (ttl > 0 ? ttl * 1000 : this.QUOTA_TTL * 1000))
 
     return {
-      allowed: conversionsUsed < this.MAX_CONVERSIONS,
+      allowed: conversionsUsed < GUEST_LIMITS.MAX_CONVERSIONS,
       conversionsUsed,
       resetAt
     }
@@ -151,7 +149,7 @@ export class GuestSessionService {
     }
 
     return {
-      allowed: session.conversionsUsed < this.MAX_CONVERSIONS,
+      allowed: session.conversionsUsed < GUEST_LIMITS.MAX_CONVERSIONS,
       conversionsUsed: session.conversionsUsed
     }
   }
@@ -192,7 +190,7 @@ export class GuestSessionService {
         allowed: false,
         reason: `Guest conversion limit reached. You can convert again in ${Math.ceil(
           (ipQuota.resetAt.getTime() - Date.now()) / (60 * 60 * 1000)
-        )} hours, or create a free account for 3 conversions per month.`,
+        )} hours, or create a free account for ${USER_PLAN_LIMITS.free.MAX_CONVERSIONS} conversions per month.`,
         resetAt: ipQuota.resetAt
       }
     }
@@ -221,7 +219,7 @@ export class GuestSessionService {
     if (!sessionQuota.allowed) {
       return {
         allowed: false,
-        reason: 'Guest conversion limit reached. Create a free account for 3 conversions per month.',
+        reason: `You've used all ${GUEST_LIMITS.MAX_CONVERSIONS} free guest conversions. Sign up for ${USER_PLAN_LIMITS.free.MAX_CONVERSIONS} conversions per month!`,
         session
       }
     }

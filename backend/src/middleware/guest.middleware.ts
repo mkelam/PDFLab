@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import GuestSessionService from '../services/guest-session.service'
+import { GUEST_LIMITS, USER_PLAN_LIMITS } from '../config/constants'
 
 /**
  * Guest session middleware
@@ -135,15 +136,32 @@ export const validateGuestQuota = async (
         : 24
 
       res.status(429).json({
-        error: 'Daily limit reached',
-        message: "You've used your free guest conversion! ✨",
+        error: 'Guest quota exceeded',
+        message: validation.reason,
         resetAt: validation.resetAt,
         hoursUntilReset,
+        conversions_used: GUEST_LIMITS.MAX_CONVERSIONS,
+        conversions_limit: GUEST_LIMITS.MAX_CONVERSIONS,
+        upgrade_required: true,
+        upgrade_benefits: {
+          free_account: {
+            conversions: USER_PLAN_LIMITS.free.MAX_CONVERSIONS,
+            file_size_mb: USER_PLAN_LIMITS.free.MAX_FILE_SIZE_MB,
+            retention_days: USER_PLAN_LIMITS.free.FILE_RETENTION_DAYS,
+            price: 'Free'
+          },
+          starter_plan: {
+            conversions: USER_PLAN_LIMITS.starter.MAX_CONVERSIONS,
+            file_size_mb: USER_PLAN_LIMITS.starter.MAX_FILE_SIZE_MB,
+            retention_days: USER_PLAN_LIMITS.starter.FILE_RETENTION_DAYS,
+            price: '$9.99/month'
+          }
+        },
         options: [
           {
             id: 'signup',
-            title: 'Get 3 free conversions/month',
-            description: '+ 7-day file storage + larger files (10MB)',
+            title: `Get ${USER_PLAN_LIMITS.free.MAX_CONVERSIONS} free conversions/month`,
+            description: `+ ${USER_PLAN_LIMITS.free.FILE_RETENTION_DAYS}-day file storage + larger files (${USER_PLAN_LIMITS.free.MAX_FILE_SIZE_MB}MB)`,
             cta: 'Create Free Account',
             url: '/signup',
             primary: true
