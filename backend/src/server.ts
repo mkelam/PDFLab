@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 // Load environment variables FIRST (needed for Sentry DSN)
 dotenv.config()
 
+// Import logger EARLY (needed for Sentry initialization)
+import logger from './config/logger'
+
 // Initialize Sentry (only if DSN is configured)
 if (process.env.SENTRY_DSN) {
   Sentry.init({
@@ -48,7 +51,6 @@ import { testConnection, syncDatabase } from './config/database'
 import { connectRedis, closeQueues } from './config/redis'
 import { apiLimiter } from './middleware/ratelimit.middleware'
 import { initializeGuestSession } from './middleware/guest.middleware'
-import logger from './config/logger'
 import { requestIdMiddleware } from './middleware/request-id.middleware'
 import { httpLoggerMiddleware } from './middleware/http-logger.middleware'
 

@@ -51,7 +51,7 @@ export async function syncUserQuota(user: User): Promise<void> {
 
   await user.save()
 
-  logger.info(`✓ Quota synced for user ${user.email} - Plan: ${user.plan}, { Limit: ${planQuota.conversions_limit === -1 ? 'Unlimited' : planQuota.conversions_limit}` })
+  logger.info(`✓ Quota synced for user ${user.email} - Plan: ${user.plan}, Limit: ${planQuota.conversions_limit === -1 ? 'Unlimited' : planQuota.conversions_limit}`)
 }
 
 /**
@@ -86,7 +86,7 @@ export async function fixAllUserQuotas(): Promise<{ fixed: number; total: number
     const expectedQuota = PLAN_QUOTAS[user.plan]?.conversions_limit
 
     if (expectedQuota !== undefined && user.conversions_limit !== expectedQuota) {
-      logger.info(`🔧 Fixing ${user.email}: ${user.plan} plan should have ${expectedQuota === -1 ? 'unlimited' : expectedQuota} conversions, { but has ${user.conversions_limit}` })
+      logger.info(`🔧 Fixing ${user.email}: ${user.plan} plan should have ${expectedQuota === -1 ? 'unlimited' : expectedQuota} conversions, but has ${user.conversions_limit}`)
 
       user.conversions_limit = expectedQuota
       await user.save()

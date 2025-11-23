@@ -32,7 +32,7 @@ class EmailService {
     // Only initialize if SMTP credentials are provided
     if (emailConfig.auth.user && emailConfig.auth.pass) {
       this.transporter = nodemailer.createTransport(emailConfig)
-      logger.info('✓ Email service initialized with SMTP:', { emailConfig.host })
+      logger.info('✓ Email service initialized with SMTP:', { host: emailConfig.host })
     } else {
       logger.warn('⚠ Email service not configured - missing SMTP credentials')
       logger.warn('  Emails will be logged to console only (development mode)')

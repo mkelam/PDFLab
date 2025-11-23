@@ -119,7 +119,7 @@ export const validateGuestQuota = async (
     const sessionId = req.guestSession?.sessionId || null
     const ipAddress = getClientIp(req)
 
-    logger.info('[Guest Quota] Validating:', { { sessionId, ipAddress } })
+    logger.info('[Guest Quota] Validating:', { sessionId, ipAddress })
 
     // Validate conversion eligibility
     const validation = await GuestSessionService.validateConversion(
@@ -130,7 +130,7 @@ export const validateGuestQuota = async (
     logger.info('[Guest Quota] Validation result:', { validation })
 
     if (!validation.allowed) {
-      logger.info('[Guest Quota] Blocked:', { validation.reason })
+      logger.info('[Guest Quota] Blocked:', { reason: validation.reason })
 
       const hoursUntilReset = validation.resetAt
         ? Math.ceil((validation.resetAt.getTime() - Date.now()) / (60 * 60 * 1000))
