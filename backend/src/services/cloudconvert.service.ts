@@ -2,8 +2,6 @@ import CloudConvert from 'cloudconvert'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
-import https from 'https'
-import http from 'http'
 import AdmZip from 'adm-zip'
 
 dotenv.config()
@@ -159,7 +157,7 @@ export class CloudConvertService {
           fs.mkdirSync(tempDir, { recursive: true })
         }
 
-        // Download all image files
+        // Download all image files using new method with timeout and retry
         const downloadedFiles: string[] = []
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
@@ -172,29 +170,9 @@ export class CloudConvertService {
           // Use original filename in temp files: presentation-page-1.jpg
           const tempFilePath = path.join(tempDir, `${fileBaseName}-page-${i + 1}.${outputFormat}`)
 
-          await new Promise<void>((resolve, reject) => {
-            const protocol = fileUrl.startsWith('https:') ? https : http
-            const writeStream = fs.createWriteStream(tempFilePath)
-
-            protocol.get(fileUrl, (response) => {
-              if (response.statusCode !== 200) {
-                reject(new Error(`Download failed with status ${response.statusCode}`))
-                return
-              }
-
-              response.pipe(writeStream)
-
-              writeStream.on('finish', () => {
-                writeStream.close()
-                resolve()
-              })
-
-              writeStream.on('error', (err) => {
-                fs.unlink(tempFilePath, () => {})
-                reject(err)
-              })
-            }).on('error', reject)
-          })
+          // Download using new method with timeout and retry logic
+          const buffer = await this.downloadConvertedFile(fileUrl)
+          fs.writeFileSync(tempFilePath, buffer)
 
           downloadedFiles.push(tempFilePath)
           console.log(`Downloaded image ${i + 1}/${files.length}: ${tempFilePath}`)
@@ -236,30 +214,9 @@ export class CloudConvertService {
           throw new Error('File URL not found in export result')
         }
 
-        // Download file from URL
-        await new Promise<void>((resolve, reject) => {
-          const protocol = fileUrl.startsWith('https:') ? https : http
-          const writeStream = fs.createWriteStream(outputFilePath)
-
-          protocol.get(fileUrl, (response) => {
-            if (response.statusCode !== 200) {
-              reject(new Error(`Download failed with status ${response.statusCode}`))
-              return
-            }
-
-            response.pipe(writeStream)
-
-            writeStream.on('finish', () => {
-              writeStream.close()
-              resolve()
-            })
-
-            writeStream.on('error', (err) => {
-              fs.unlink(outputFilePath, () => {}) // Delete incomplete file
-              reject(err)
-            })
-          }).on('error', reject)
-        })
+        // Download file using new method with timeout and retry logic
+        const buffer = await this.downloadConvertedFile(fileUrl)
+        fs.writeFileSync(outputFilePath, buffer)
 
         console.log(`Converted file downloaded: ${outputFilePath}`)
       }
@@ -361,30 +318,9 @@ export class CloudConvertService {
         throw new Error('File URL not found in export result')
       }
 
-      // Download file from URL
-      await new Promise<void>((resolve, reject) => {
-        const protocol = fileUrl.startsWith('https:') ? https : http
-        const writeStream = fs.createWriteStream(outputPath)
-
-        protocol.get(fileUrl, (response) => {
-          if (response.statusCode !== 200) {
-            reject(new Error(`Download failed with status ${response.statusCode}`))
-            return
-          }
-
-          response.pipe(writeStream)
-
-          writeStream.on('finish', () => {
-            writeStream.close()
-            resolve()
-          })
-
-          writeStream.on('error', (err) => {
-            fs.unlink(outputPath, () => {}) // Delete incomplete file
-            reject(err)
-          })
-        }).on('error', reject)
-      })
+      // Download file using new method with timeout and retry logic
+      const buffer = await this.downloadConvertedFile(fileUrl)
+      fs.writeFileSync(outputPath, buffer)
 
       console.log(`Merged PDF downloaded: ${outputPath}`)
 
@@ -502,30 +438,9 @@ export class CloudConvertService {
         throw new Error('File URL not found in export result')
       }
 
-      // Download compressed file
-      await new Promise<void>((resolve, reject) => {
-        const protocol = fileUrl.startsWith('https:') ? https : http
-        const writeStream = fs.createWriteStream(outputFilePath)
-
-        protocol.get(fileUrl, (response) => {
-          if (response.statusCode !== 200) {
-            reject(new Error(`Download failed with status ${response.statusCode}`))
-            return
-          }
-
-          response.pipe(writeStream)
-
-          writeStream.on('finish', () => {
-            writeStream.close()
-            resolve()
-          })
-
-          writeStream.on('error', (err) => {
-            fs.unlink(outputFilePath, () => {})
-            reject(err)
-          })
-        }).on('error', reject)
-      })
+      // Download compressed file using new method with timeout and retry logic
+      const buffer = await this.downloadConvertedFile(fileUrl)
+      fs.writeFileSync(outputFilePath, buffer)
 
       console.log(`Compressed PDF downloaded: ${outputFilePath}`)
 
@@ -548,6 +463,78 @@ export class CloudConvertService {
         error: error.message || 'Unknown error during PDF compression'
       }
     }
+  }
+
+  /**
+   * Download converted file with timeout and retry logic
+   *
+   * @param outputUrl - URL of the file to download
+   * @returns Buffer containing the downloaded file
+   */
+  async downloadConvertedFile(outputUrl: string): Promise<Buffer> {
+    const maxRetries = 3
+    const timeout = 300000  // 5 minutes (increased from 30s)
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Downloading converted file (attempt ${attempt}/${maxRetries})`, {
+          url: outputUrl,
+          timeout: timeout
+        })
+
+        // Create abort controller for timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+        const response = await fetch(outputUrl, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'PDFLab/1.3.0'
+          }
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          throw new Error(`Download failed: ${response.status} ${response.statusText}`)
+        }
+
+        const buffer = await response.arrayBuffer()
+
+        console.log('File downloaded successfully', {
+          size: buffer.byteLength,
+          sizeMB: (buffer.byteLength / 1024 / 1024).toFixed(2),
+          attempt,
+          url: outputUrl
+        })
+
+        return Buffer.from(buffer)
+
+      } catch (error: any) {
+        console.warn(`Download attempt ${attempt} failed`, {
+          error: error.message,
+          attempt,
+          maxRetries,
+          url: outputUrl
+        })
+
+        // If this was the last attempt, throw
+        if (attempt === maxRetries) {
+          console.error(`Download failed after ${maxRetries} attempts`, {
+            error: error.message,
+            url: outputUrl
+          })
+          throw new Error(`Download failed after ${maxRetries} attempts: ${error.message}`)
+        }
+
+        // Exponential backoff: 2s, 4s, 6s
+        const delay = attempt * 2000
+        console.log(`Retrying download in ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+
+    throw new Error('Download failed: reached end of retry loop')
   }
 
   /**
