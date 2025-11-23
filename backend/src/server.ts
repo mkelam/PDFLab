@@ -31,9 +31,9 @@ if (process.env.SENTRY_DSN) {
       return event
     },
   })
-  console.log('✓ Sentry error tracking initialized')
+  logger.info('Sentry error tracking initialized')
 } else {
-  console.log('⚠ Sentry DSN not configured - error tracking disabled')
+  logger.warn('Sentry DSN not configured - error tracking disabled')
 }
 
 import express, { Request, Response, NextFunction } from 'express'
@@ -48,6 +48,9 @@ import { testConnection, syncDatabase } from './config/database'
 import { connectRedis, closeQueues } from './config/redis'
 import { apiLimiter } from './middleware/ratelimit.middleware'
 import { initializeGuestSession } from './middleware/guest.middleware'
+import logger from './config/logger'
+import { requestIdMiddleware } from './middleware/request-id.middleware'
+import { httpLoggerMiddleware } from './middleware/http-logger.middleware'
 
 // Import models to ensure they're registered with Sequelize
 import './models/AdminAuditLog'
@@ -82,11 +85,17 @@ const PORT = parseInt(process.env.PORT || '3001')
 // Trust proxy (required for rate limiting behind Nginx)
 app.set('trust proxy', true)
 
+// Request correlation ID (before all other middleware)
+app.use(requestIdMiddleware)
+
+// HTTP request logging
+app.use(httpLoggerMiddleware)
+
 // Sentry middleware (only if DSN is configured)
 // Note: Modern @sentry/node doesn't require explicit middleware
 // Sentry.init() automatically instruments Express
 if (process.env.SENTRY_DSN) {
-  console.log('✓ Sentry Express instrumentation active')
+  logger.info('Sentry Express instrumentation active')
 }
 
 // =====================
@@ -133,7 +142,7 @@ app.use(
       if (corsOrigins.includes(origin)) {
         callback(null, true)
       } else {
-        console.warn(`[CORS] Blocked request from origin: ${origin}`)
+        logger.warn('CORS blocked request from origin', { origin })
         callback(new Error('Not allowed by CORS'))
       }
     },
@@ -234,7 +243,7 @@ app.use('/api', conversionRoutes)
 // Test routes (only in development/staging - NOT production)
 if (process.env.NODE_ENV !== 'production') {
   app.use('/api', testRoutes)
-  console.log('✓ Sentry test routes enabled (development/staging only)')
+  logger.info('Sentry test routes enabled (development/staging only)')
 }
 
 // Root route
@@ -281,7 +290,15 @@ app.use((req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Global error handler:', err)
+  logger.error('Global error handler', {
+    error: err.message,
+    stack: err.stack,
+    statusCode: err.statusCode,
+    requestId: req.id,
+    method: req.method,
+    url: req.url,
+    userId: (req as any).user?.id
+  })
 
   const statusCode = err.statusCode || 500
   const message = err.message || 'Internal server error'
@@ -301,7 +318,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 const startServer = async () => {
   try {
-    console.log('🚀 Starting PDFLab Backend API...')
+    logger.info('PDFLab Backend Starting', {
+      environment: process.env.NODE_ENV,
+      port: PORT,
+      nodeVersion: process.version
+    })
 
     // Connect to database
     const dbConnected = await testConnection()
@@ -312,13 +333,13 @@ const startServer = async () => {
     // Sync database (create tables)
     // Temporarily disabled due to too many keys error - tables already exist
     // await syncDatabase(false) // Don't force recreate tables
-    console.log('✓ Using existing database tables (sync disabled)')
+    logger.info('Using existing database tables (sync disabled)')
 
     // Connect to Redis (optional for testing)
     const redisConnected = await connectRedis()
     if (!redisConnected) {
-      console.warn('⚠ Redis not available - job queue disabled')
-      console.warn('⚠ PDF conversions will not work without Redis')
+      logger.warn('Redis not available - job queue disabled')
+      logger.warn('PDF conversions will not work without Redis')
     } else {
       // Initialize Bull queues first
       const { initializeQueues } = await import('./config/redis')
@@ -331,33 +352,38 @@ const startServer = async () => {
       initializeConversionWorker()
       initializeCleanupWorker()
 
-      console.log('✓ Job workers initialized')
+      logger.info('Job workers initialized')
     }
 
     // Initialize monthly quota reset cron job
     const { initializeQuotaResetJob } = await import('./jobs/quota-reset.job')
     const quotaResetJob = initializeQuotaResetJob()
     if (quotaResetJob) {
-      console.log('✓ Monthly quota reset scheduled')
+      logger.info('Monthly quota reset scheduled')
     }
 
     // Start Express server
     app.listen(PORT, () => {
-      console.log('✓ PDFLab API Server running')
-      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`)
-      console.log(`✓ Port: ${PORT}`)
-      console.log(`✓ Health check: http://localhost:${PORT}/health`)
-      console.log(`✓ API endpoint: http://localhost:${PORT}/api`)
+      logger.info('Server started successfully', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString(),
+        healthCheck: `http://localhost:${PORT}/health`,
+        apiEndpoint: `http://localhost:${PORT}/api`
+      })
     })
   } catch (error) {
-    console.error('✗ Failed to start server:', error)
+    logger.error('Failed to start server', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     process.exit(1)
   }
 }
 
 // Graceful shutdown - ONLY called for SIGTERM/SIGINT
 const gracefulShutdown = async (signal: string) => {
-  console.log(`\n${signal} received. Starting graceful shutdown...`)
+  logger.info('Graceful shutdown initiated', { signal })
 
   try {
     // Close queues and Redis
@@ -366,35 +392,38 @@ const gracefulShutdown = async (signal: string) => {
     // Close database connection
     const { sequelize } = await import('./config/database')
     await sequelize.close()
-    console.log('✓ Database connection closed')
+    logger.info('Database connection closed')
 
     // Flush Sentry events
     if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
       await Sentry.close(2000)
     }
 
-    console.log('✓ Graceful shutdown completed')
+    logger.info('Graceful shutdown completed')
     process.exit(0)
   } catch (error) {
-    console.error('✗ Error during shutdown:', error)
+    logger.error('Error during shutdown', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     process.exit(1)
   }
 }
 
 // ONLY exit on intentional signals
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, starting graceful shutdown')
+  logger.info('SIGTERM received, starting graceful shutdown')
   gracefulShutdown('SIGTERM')
 })
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, starting graceful shutdown')
+  logger.info('SIGINT received, starting graceful shutdown')
   gracefulShutdown('SIGINT')
 })
 
 // Handle uncaught exceptions WITHOUT killing the process
 process.on('uncaughtException', (error: Error) => {
-  console.error('Uncaught Exception - Non-Fatal', {
+  logger.error('Uncaught Exception - Non-Fatal', {
     error: error.message,
     stack: error.stack,
     name: error.name,
@@ -417,7 +446,7 @@ process.on('uncaughtException', (error: Error) => {
 })
 
 process.on('unhandledRejection', (reason: unknown, promise: Promise<any>) => {
-  console.error('Unhandled Rejection - Non-Fatal', {
+  logger.error('Unhandled Rejection - Non-Fatal', {
     reason: String(reason),
     promise: String(promise),
     timestamp: new Date().toISOString()

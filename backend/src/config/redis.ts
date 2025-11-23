@@ -1,6 +1,7 @@
 import { createClient } from 'redis'
 import Bull from 'bull'
 import dotenv from 'dotenv'
+import logger from './logger'
 
 dotenv.config()
 
@@ -13,13 +14,13 @@ export const redisClient = createClient({
     reconnectStrategy: (retries: number) => {
       // Max 10 retries
       if (retries > 10) {
-        console.error('Redis reconnection failed after 10 attempts')
+        logger.error('Redis reconnection failed after maximum attempts', { retries })
         return new Error('Max Redis reconnection retries reached')
       }
 
       // Exponential backoff: 100ms, 200ms, 400ms... up to 3000ms
       const delay = Math.min(retries * 100, 3000)
-      console.warn(`Redis reconnecting in ${delay}ms (attempt ${retries}/10)`)
+      logger.warn('Redis reconnecting', { delay, retries, maxRetries: 10 })
       return delay
     }
   },
@@ -28,23 +29,26 @@ export const redisClient = createClient({
 
 // Connection event handlers
 redisClient.on('connect', () => {
-  console.log('✓ Redis client connected')
+  logger.info('Redis client connected', {
+    host: process.env['REDIS_HOST'] || 'localhost',
+    port: process.env['REDIS_PORT'] || '6379'
+  })
 })
 
 redisClient.on('ready', () => {
-  console.log('✓ Redis client ready')
+  logger.info('Redis client ready')
 })
 
 redisClient.on('error', (err) => {
-  console.error('Redis client error:', err.message)
+  logger.error('Redis client error', { error: err.message })
 })
 
 redisClient.on('reconnecting', () => {
-  console.warn('Redis client reconnecting...')
+  logger.warn('Redis client reconnecting')
 })
 
 redisClient.on('end', () => {
-  console.warn('Redis client connection closed')
+  logger.warn('Redis client connection closed')
 })
 
 // Initialize Redis connection with timeout
@@ -59,7 +63,11 @@ export const connectRedis = async (): Promise<boolean> => {
     ])
     return true
   } catch (error) {
-    console.error('✗ Failed to connect to Redis:', error instanceof Error ? error.message : error)
+    logger.error('Failed to connect to Redis', {
+      error: error instanceof Error ? error.message : String(error),
+      host: process.env['REDIS_HOST'],
+      port: process.env['REDIS_PORT']
+    })
     // Ensure client is fully disconnected to prevent background retries
     try {
       await redisClient.disconnect()
@@ -101,27 +109,27 @@ export const getConversionQueue = (): Bull.Queue | null => {
 
     // Setup event listeners
     _conversionQueue.on('error', (error) => {
-      console.error('Conversion Queue Error:', error)
+      logger.error('Conversion Queue Error', { error: error.message })
     })
 
     _conversionQueue.on('waiting', (jobId) => {
-      console.log(`Job ${jobId} is waiting`)
+      logger.debug('Job waiting in queue', { jobId })
     })
 
     _conversionQueue.on('active', (job) => {
-      console.log(`Job ${job.id} started processing`)
+      logger.info('Job started processing', { jobId: job.id })
     })
 
     _conversionQueue.on('completed', (job, result) => {
-      console.log(`Job ${job.id} completed successfully:`, result)
+      logger.info('Job completed successfully', { jobId: job.id, result })
     })
 
     _conversionQueue.on('failed', (job, error) => {
-      console.error(`Job ${job?.id} failed:`, error.message)
+      logger.error('Job failed', { jobId: job?.id, error: error.message })
     })
 
     _conversionQueue.on('stalled', (job) => {
-      console.warn(`Job ${job.id} stalled`)
+      logger.warn('Job stalled', { jobId: job.id })
     })
   }
   return _conversionQueue
@@ -139,11 +147,11 @@ export const getCleanupQueue = (): Bull.Queue | null => {
     })
 
     _cleanupQueue.on('error', (error) => {
-      console.error('Cleanup Queue Error:', error)
+      logger.error('Cleanup Queue Error', { error: error.message })
     })
 
     _cleanupQueue.on('completed', (job) => {
-      console.log(`Cleanup job ${job.id} completed`)
+      logger.info('Cleanup job completed', { jobId: job.id })
     })
   }
   return _cleanupQueue
@@ -200,10 +208,10 @@ export const emailQueue = new Proxy({} as Bull.Queue, {
 
 // Force initialize all queues (call after Redis connects)
 export const initializeQueues = (): void => {
-  console.log('🔧 Initializing Bull queues...')
+  logger.info('Initializing Bull queues')
 
   if (!_conversionQueue) {
-    console.log('  Creating conversion queue...')
+    logger.debug('Creating conversion queue')
     _conversionQueue = new Bull('pdf-conversion', {
       redis: redisConfig,
       defaultJobOptions: {
@@ -219,15 +227,15 @@ export const initializeQueues = (): void => {
     })
 
     _conversionQueue.on('error', (error) => {
-      console.error('Conversion Queue Error:', error)
+      logger.error('Conversion Queue Error', { error: error.message })
     })
-    console.log('  ✓ Conversion queue created')
+    logger.info('Conversion queue created')
   } else {
-    console.log('  ℹ Conversion queue already exists')
+    logger.debug('Conversion queue already exists')
   }
 
   if (!_cleanupQueue) {
-    console.log('  Creating cleanup queue...')
+    logger.debug('Creating cleanup queue')
     _cleanupQueue = new Bull('file-cleanup', {
       redis: redisConfig,
       defaultJobOptions: {
@@ -238,14 +246,14 @@ export const initializeQueues = (): void => {
     })
 
     _cleanupQueue.on('error', (error) => {
-      console.error('Cleanup Queue Error:', error)
+      logger.error('Cleanup Queue Error', { error: error.message })
     })
-    console.log('  ✓ Cleanup queue created')
+    logger.info('Cleanup queue created')
   } else {
-    console.log('  ℹ Cleanup queue already exists')
+    logger.debug('Cleanup queue already exists')
   }
 
-  console.log('✓ Bull queues initialized')
+  logger.info('Bull queues initialized')
 }
 
 // Graceful shutdown
@@ -257,5 +265,5 @@ export const closeQueues = async (): Promise<void> => {
   if (redisClient.isOpen) {
     await redisClient.quit()
   }
-  console.log('✓ All queues and Redis connection closed')
+  logger.info('All queues and Redis connection closed')
 }
