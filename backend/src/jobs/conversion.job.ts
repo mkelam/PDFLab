@@ -3,6 +3,7 @@ import path from 'path'
 import { getConversionQueue, getCleanupQueue } from '../config/redis'
 import { cloudConvertService } from '../services/cloudconvert.service'
 import { ConversionJob, JobStatus, User, UsageLog } from '../models'
+import logger from '../config/logger'
 
 // Helper function to get absolute storage path
 const getStoragePath = (): string => {
@@ -38,19 +39,32 @@ export const initializeConversionWorker = () => {
   const cleanupQueue = getCleanupQueue()
 
   if (!conversionQueue || !cleanupQueue) {
-    console.warn('⚠ Cannot initialize conversion worker - Redis not available')
+    logger.warn('⚠ Cannot initialize conversion worker - Redis not available')
     return
   }
 
-  console.log('✓ Initializing conversion worker...')
+  logger.info('✓ Initializing conversion worker...')
 
   /**
    * Process conversion jobs from the queue
+   * Concurrency: 3 workers (safe for 4GB VPS)
+   * Memory calculation: 3 workers × 100MB = 300MB (safe for 1GB backend limit)
+   * Configurable via WORKER_CONCURRENCY environment variable
    */
-  conversionQueue.process(5, async (job: Job<ConversionJobData>) => {
+  const concurrency = process.env.WORKER_CONCURRENCY
+    ? parseInt(process.env.WORKER_CONCURRENCY)
+    : 3  // Safe for 4GB VPS (reduced from 5)
+
+  logger.info('Starting conversion queue', {
+    maxConcurrency: concurrency,
+    vpsRAM: '4GB',
+    estimatedMemoryPerJob: '~100MB'
+  })
+
+  conversionQueue.process(concurrency, async (job: Job<ConversionJobData>) => {
   const { job_id, user_id, input_file, output_format, conversion_type, options } = job.data
 
-  console.log(`[Conversion Worker] Processing job ${job_id} for user ${user_id}`)
+  logger.info(`[Conversion Worker] Processing job ${job_id} for user ${user_id}`)
 
   const startTime = Date.now()
 
@@ -101,13 +115,13 @@ export const initializeConversionWorker = () => {
     const outputFile = path.join(outputDir, outputFileName)
 
     // 3. Call CloudConvert service
-    console.log(`[Conversion Worker] Starting CloudConvert for job ${job_id}`)
+    logger.info(`[Conversion Worker] Starting CloudConvert for job ${job_id}`)
 
     let result
 
     // Check if this is a compression job
     if (conversion_type === 'pdf_compress' && input_file) {
-      console.log(`[Conversion Worker] Compressing PDF file with level: ${options?.compression_level || 'recommended'}`)
+      logger.info(`[Conversion Worker] Compressing PDF file with level: ${options?.compression_level || 'recommended'}`)
       result = await cloudConvertService.compressPDF(
         input_file,
         outputFile,
@@ -116,7 +130,7 @@ export const initializeConversionWorker = () => {
     }
     // Check if this is a merge job (multiple input files)
     else if (job.data.input_files && job.data.input_files.length > 0) {
-      console.log(`[Conversion Worker] Merging ${job.data.input_files.length} PDF files`)
+      logger.info(`[Conversion Worker] Merging ${job.data.input_files.length} PDF files`)
       result = await cloudConvertService.mergePDFs(job.data.input_files, outputFile)
     } else if (input_file) {
       // Single file conversion
@@ -194,7 +208,7 @@ export const initializeConversionWorker = () => {
       }
     )
 
-    console.log(`[Conversion Worker] Job ${job_id} completed successfully in ${processingTime}ms`)
+    logger.info(`[Conversion Worker] Job ${job_id} completed successfully in ${processingTime}ms`)
 
     job.progress(100)
 
@@ -204,7 +218,7 @@ export const initializeConversionWorker = () => {
       processing_time: processingTime
     }
   } catch (error: any) {
-    console.error(`[Conversion Worker] Job ${job_id} failed:`, error)
+    logger.error(`[Conversion Worker] Job ${job_id} failed:`, { error: error instanceof Error ? error.message : String(error) })
 
     // Update job as failed
     await ConversionJob.update(
@@ -238,15 +252,15 @@ export const initializeConversionWorker = () => {
 
   // Queue event listeners (already defined in redis.ts, but adding specific logging)
   conversionQueue.on('completed', (job, result) => {
-    console.log(`✓ Conversion job ${job.id} completed:`, result)
+    logger.info(`✓ Conversion job ${job.id} completed:`, { result })
   })
 
   conversionQueue.on('failed', (job, error) => {
-    console.error(`✗ Conversion job ${job?.id} failed:`, error.message)
+    logger.error(`✗ Conversion job ${job?.id} failed:`, { error: error.message instanceof Error ? error.message.message : String(error.message) })
   })
 
   conversionQueue.on('stalled', (job) => {
-    console.warn(`⚠ Conversion job ${job.id} stalled - will be retried`)
+    logger.warn(`⚠ Conversion job ${job.id} stalled - will be retried`)
   })
 }
 
