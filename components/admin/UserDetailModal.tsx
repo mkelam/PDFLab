@@ -565,7 +565,7 @@ export function UserDetailModal({ userId, isOpen, onClose, onUserUpdated }: User
                               {sendingEmail ? 'Sending...' : 'Send Verification Email'}
                             </AdminButton>
                             <AdminButton
-                              variant="success"
+                              variant="primary"
                               onClick={handleVerifyEmail}
                               disabled={verifying}
                             >

@@ -5,6 +5,7 @@ import {
   exportAnalytics
 } from '../controllers/analytics.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
+import { cacheMiddleware } from '../middleware/cache.middleware'
 
 const router = Router()
 
@@ -15,8 +16,9 @@ router.use(authMiddleware)
  * @route GET /api/analytics/dashboard
  * @desc Get user analytics dashboard data
  * @access Private
+ * Cache for 2 minutes - analytics data doesn't need real-time updates
  */
-router.get('/dashboard', getDashboardAnalytics)
+router.get('/dashboard', cacheMiddleware(120), getDashboardAnalytics)
 
 /**
  * @route GET /api/analytics/history
@@ -28,8 +30,9 @@ router.get('/dashboard', getDashboardAnalytics)
  * @query offset - Pagination offset (default: 0)
  * @query startDate - Start date filter (optional)
  * @query endDate - End date filter (optional)
+ * Cache for 2 minutes
  */
-router.get('/history', getConversionHistory)
+router.get('/history', cacheMiddleware(120), getConversionHistory)
 
 /**
  * @route GET /api/analytics/export

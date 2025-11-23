@@ -8,7 +8,6 @@ import { Loader2 } from "lucide-react"
 function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { setTokens } = useAuth()
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -17,10 +16,11 @@ function AuthCallbackContent() {
 
       if (token && refreshToken) {
         try {
-          // Store tokens and fetch user profile
-          await setTokens(token, refreshToken)
+          // Store tokens in localStorage
+          localStorage.setItem('authToken', token)
+          localStorage.setItem('refreshToken', refreshToken)
 
-          // Redirect to dashboard
+          // Redirect to dashboard (AuthContext will pick up the tokens)
           router.push('/dashboard')
         } catch (error) {
           console.error('OAuth callback error:', error)
@@ -33,7 +33,7 @@ function AuthCallbackContent() {
     }
 
     handleCallback()
-  }, [searchParams, setTokens, router])
+  }, [searchParams, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center">

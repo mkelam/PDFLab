@@ -87,7 +87,7 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
   // Handle next step
   const handleNext = async () => {
     if (step < 3) {
-      await updateProgress({ wizard_step: step })
+      await updateProgress({ wizard_last_step: step })
       setStep(step + 1)
     }
   }

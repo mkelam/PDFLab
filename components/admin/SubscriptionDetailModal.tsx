@@ -352,7 +352,7 @@ export function SubscriptionDetailModal({
                               ${parseFloat(payment.amount_net.toString()).toFixed(2)} {payment.currency}
                             </td>
                             <td className="py-3">
-                              <AdminBadge variant={getStatusBadgeVariant(payment.status)} size="sm">
+                              <AdminBadge variant={getStatusBadgeVariant(payment.status)}>
                                 {payment.status}
                               </AdminBadge>
                             </td>

@@ -67,7 +67,14 @@
       "Bash(git stash:*)",
       "Bash(git reset:*)",
       "Bash(npm test)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(git log:*)",
+      "Bash(npx depcheck:*)",
+      "Bash(set ANALYZE=true)",
+      "Bash(npm test:*)",
+      "Bash(test -f backend/src/config/redis.ts)",
+      "Bash(test:*)",
+      "Bash(test -f backend/src/services/cloudconvert.service.ts)"
     ],
     "deny": [],
     "ask": []

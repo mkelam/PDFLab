@@ -430,7 +430,7 @@ export function TransactionDetailModal({
 
                     {transaction.status === 'failed' && (
                       <AdminButton
-                        variant="warning"
+                        variant="secondary"
                         size="sm"
                         onClick={handleRetryPayment}
                         disabled={actionLoading}
