@@ -331,7 +331,6 @@ export const pdflabAPI = {
    */
   async convertPDFToImages(file: File): Promise<ConversionResponse> {
     const startTime = Date.now()
-    const token = getAuthToken()
 
     // Upload and start conversion
     const formData = new FormData()
@@ -340,11 +339,8 @@ export const pdflabAPI = {
 
     let uploadResponse
     try {
-      uploadResponse = await fetch(`${API_URL}/api/upload`, {
+      uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/upload`, {
         method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
         body: formData
       })
 
@@ -389,7 +385,6 @@ export const pdflabAPI = {
    */
   async mergePDFs(files: File[]): Promise<ConversionResponse> {
     const startTime = Date.now()
-    const token = getAuthToken()
 
     if (files.length < 2) {
       throw new Error('At least 2 PDF files are required for merging')
@@ -403,11 +398,8 @@ export const pdflabAPI = {
 
     let uploadResponse
     try {
-      uploadResponse = await fetch(`${API_URL}/api/merge`, {
+      uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/merge`, {
         method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
         body: formData
       })
 
@@ -468,11 +460,8 @@ export const pdflabAPI = {
 
     let uploadResponse
     try {
-      uploadResponse = await fetch(`${API_URL}/api/compress`, {
+      uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/compress`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
         body: formData
       })
 
@@ -551,11 +540,8 @@ export const pdflabAPI = {
 
     let uploadResponse
     try {
-      uploadResponse = await fetch(`${API_URL}/api/batch-convert`, {
+      uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/batch-convert`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
         body: formData
       })
 
