@@ -35,7 +35,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  /**
+   * @deprecated This function is not currently used
+   * @todo Remove in v2.0.0
+   * Session management is handled by JWT expiry, not explicit refresh
+   */
   const refreshSession = () => {
+    console.warn('refreshSession() is deprecated and non-functional')
+    // Keep function for backward compatibility
+    // Will be removed in v2.0.0
     // Extend session by 30 minutes
     const newExpiresAt = Date.now() + 30 * 60 * 1000
     setExpiresAt(newExpiresAt)
@@ -43,7 +51,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("tokenExpiration", newExpiresAt.toString())
   }
 
+  /**
+   * @deprecated This function is not currently used
+   * @todo Remove in v2.0.0
+   */
   const endSession = () => {
+    console.warn('endSession() is deprecated and non-functional')
+    // Keep function for backward compatibility
+    // Will be removed in v2.0.0
     setSessionId(null)
     setIsActive(false)
     setExpiresAt(null)
