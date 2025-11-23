@@ -224,7 +224,7 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
  */
 export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
-    logger.info('🔔 PayFast ITN received:', { JSON.stringify(req.body, null, 2 }))
+    logger.info('PayFast ITN received:', { body: JSON.stringify(req.body, null, 2) })
 
     const itnData = req.body
 

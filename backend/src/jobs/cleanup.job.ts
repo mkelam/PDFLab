@@ -43,7 +43,7 @@ export const initializeCleanupWorker = () => {
     const conversionJob = await ConversionJob.findByPk(job_id)
 
     if (!conversionJob) {
-      logger.info(`[Cleanup Worker] Job ${job_id} not found in database, { skipping` })
+      logger.info(`[Cleanup Worker] Job ${job_id} not found in database, skipping`)
       return { deleted: false, reason: 'Job not found' }
     }
 
@@ -98,7 +98,7 @@ export const initializeCleanupWorker = () => {
       { where: { id: job_id } }
     )
 
-    logger.info(`[Cleanup Worker] Cleanup completed for job ${job_id}, { deleted ${deletedFiles} directories` })
+    logger.info(`[Cleanup Worker] Cleanup completed for job ${job_id}, deleted ${deletedFiles} directories`)
 
     return {
       deleted: true,
