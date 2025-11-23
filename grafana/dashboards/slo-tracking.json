@@ -1,0 +1,315 @@
+{
+  "dashboard": {
+    "title": "PDFLab - SLO Tracking",
+    "tags": ["pdflab", "slo", "reliability"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "1m",
+    "panels": [
+      {
+        "id": 1,
+        "title": "SLO Compliance - All Services",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "pdflab_slo_compliance_percentage{time_window=\"30d\"}",
+            "legendFormat": "{{slo_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value"
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {"color": "red", "value": null},
+            {"color": "orange", "value": 99},
+            {"color": "yellow", "value": 99.5},
+            {"color": "green", "value": 99.9}
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100,
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Error Budget Remaining",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "targets": [
+          {
+            "expr": "pdflab_slo_error_budget_percentage{time_window=\"30d\"}",
+            "legendFormat": "{{slo_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "auto",
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {"color": "red", "value": null},
+            {"color": "orange", "value": 10},
+            {"color": "yellow", "value": 25},
+            {"color": "green", "value": 50}
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100,
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Error Budget Burn Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "targets": [
+          {
+            "expr": "pdflab_slo_error_budget_burn_rate",
+            "legendFormat": "{{slo_type}} - {{time_window}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Burn Rate (x faster than expected)"},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [2], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High Error Budget Burn Rate",
+          "noDataState": "no_data",
+          "message": "Error budget is being consumed faster than expected"
+        },
+        "thresholds": [
+          {
+            "value": 1,
+            "colorMode": "critical",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Uptime SLO (99.9% Target)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+        "targets": [
+          {
+            "expr": "pdflab_service_uptime_percentage{time_window=\"24h\"}",
+            "legendFormat": "{{service_name}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Uptime %", "min": 99, "max": 100},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {
+            "value": 99.9,
+            "colorMode": "critical",
+            "fill": false,
+            "line": true,
+            "op": "lt"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Response Time SLO (<200ms p95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+        "targets": [
+          {
+            "expr": "pdflab_response_time_percentile_ms{percentile=\"p95\"}",
+            "legendFormat": "{{method}} {{route}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Response Time (p95)"},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {
+            "value": 200,
+            "colorMode": "critical",
+            "fill": false,
+            "line": true,
+            "op": "gt"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Error Rate SLO (<0.1% Target)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "pdflab_error_rate_slo_percentage",
+            "legendFormat": "{{error_type}} - {{time_window}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Error Rate %", "max": 1},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {
+            "value": 0.1,
+            "colorMode": "critical",
+            "fill": true,
+            "line": true,
+            "op": "gt"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Conversion Time SLO (<5s for 20-page)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+        "targets": [
+          {
+            "expr": "pdflab_conversion_time_percentile_seconds{page_count_bucket=\"11-20\", percentile=\"p95\"}",
+            "legendFormat": "{{conversion_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Conversion Time (p95)"},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {
+            "value": 5,
+            "colorMode": "critical",
+            "fill": false,
+            "line": true,
+            "op": "gt"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "SLO Violations (Last 24h)",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(20, sum by (slo_type, severity, violation_type) (increase(pdflab_slo_violations_total[24h])))",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "renameByName": {
+                "slo_type": "SLO Type",
+                "severity": "Severity",
+                "violation_type": "Violation",
+                "Value": "Count"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "API Availability by Endpoint",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "pdflab_api_endpoint_availability_percentage{time_window=\"24h\"}",
+            "legendFormat": "{{method}} {{route}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "none",
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value"
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {"color": "red", "value": null},
+            {"color": "orange", "value": 99},
+            {"color": "yellow", "value": 99.5},
+            {"color": "green", "value": 99.95}
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100,
+            "min": 99
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Database Query Time SLO (<100ms p95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 38},
+        "targets": [
+          {
+            "expr": "pdflab_db_query_time_percentile_ms{percentile=\"p95\"}",
+            "legendFormat": "{{operation}} {{model}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Query Time (p95)"},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {
+            "value": 100,
+            "colorMode": "critical",
+            "fill": false,
+            "line": true,
+            "op": "gt"
+          }
+        ]
+      }
+    ]
+  }
+}

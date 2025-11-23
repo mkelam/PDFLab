@@ -1,0 +1,298 @@
+groups:
+  # ============================================================================
+  # Queue Alerts
+  # ============================================================================
+  - name: queue_alerts
+    interval: 30s
+    rules:
+      - alert: QueueBackup
+        expr: pdflab_queue_depth{state="waiting"} > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: queue
+        annotations:
+          summary: "Queue backup detected on {{$labels.queue_name}}"
+          description: "Queue {{$labels.queue_name}} has {{$value}} jobs waiting (threshold: 100). Processing may be delayed."
+
+      - alert: QueueBackupCritical
+        expr: pdflab_queue_depth{state="waiting"} > 500
+        for: 2m
+        labels:
+          severity: critical
+          component: queue
+        annotations:
+          summary: "Critical queue backup on {{$labels.queue_name}}"
+          description: "Queue {{$labels.queue_name}} has {{$value}} jobs waiting (threshold: 500). Immediate action required."
+
+      - alert: QueueStalledJobs
+        expr: rate(pdflab_queue_stalled_jobs_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: queue
+        annotations:
+          summary: "Stalled jobs detected in {{$labels.queue_name}}"
+          description: "Queue {{$labels.queue_name}} has stalled jobs. Check worker health."
+
+      - alert: HighQueueFailureRate
+        expr: (rate(pdflab_job_failures_total[5m]) / rate(pdflab_job_completions_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: queue
+        annotations:
+          summary: "High job failure rate in {{$labels.queue_name}}"
+          description: "Queue {{$labels.queue_name}} failure rate is {{$value | humanizePercentage}}. Investigate job failures."
+
+      - alert: QueueCircuitBreakerOpen
+        expr: pdflab_queue_circuit_breaker_state == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: queue
+        annotations:
+          summary: "Queue circuit breaker open for {{$labels.queue_name}}"
+          description: "Circuit breaker for {{$labels.queue_name}} is open. Jobs are being rejected."
+
+  # ============================================================================
+  # Error Rate Alerts
+  # ============================================================================
+  - name: error_rate_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: (sum(rate(pdflab_http_errors_total[5m])) / sum(rate(http_requests_total[5m]))) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High overall error rate"
+          description: "Error rate is {{$value | humanizePercentage}} (threshold: 5%). Check application logs."
+
+      - alert: High5xxErrorRate
+        expr: (sum(rate(pdflab_http_5xx_errors_total[5m])) / sum(rate(http_requests_total[5m]))) * 100 > 1
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "High 5xx server error rate"
+          description: "5xx error rate is {{$value | humanizePercentage}} (threshold: 1%). Server errors detected."
+
+      - alert: ErrorBurst
+        expr: rate(pdflab_error_bursts_total[1m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Error burst detected on {{$labels.route}}"
+          description: "Sudden spike in errors on {{$labels.route}}. Burst size: {{$labels.burst_size}}."
+
+      - alert: RepeatedErrors
+        expr: rate(pdflab_repeated_errors_total[5m]) > 0
+        for: 3m
+        labels:
+          severity: info
+          component: api
+        annotations:
+          summary: "Repeated error pattern on {{$labels.route}}"
+          description: "Error {{$labels.error_id}} repeating on {{$labels.route}}. Count threshold: {{$labels.count_threshold}}."
+
+      - alert: ConversionProcessingErrors
+        expr: rate(pdflab_conversion_processing_errors_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: conversion
+        annotations:
+          summary: "High conversion processing errors"
+          description: "Conversion errors at {{$labels.stage}} stage: {{$value}} errors/sec. Reason: {{$labels.error_reason}}."
+
+  # ============================================================================
+  # SLO Violation Alerts
+  # ============================================================================
+  - name: slo_alerts
+    interval: 1m
+    rules:
+      - alert: UptimeSLOViolation
+        expr: pdflab_service_uptime_percentage{time_window="24h"} < 99.9
+        for: 5m
+        labels:
+          severity: critical
+          component: slo
+        annotations:
+          summary: "Uptime SLO violation for {{$labels.service_name}}"
+          description: "Service {{$labels.service_name}} uptime is {{$value}}% (target: 99.9%). SLO violated."
+
+      - alert: ResponseTimeSLOViolation
+        expr: pdflab_response_time_percentile_ms{percentile="p95"} > 200
+        for: 5m
+        labels:
+          severity: warning
+          component: slo
+        annotations:
+          summary: "Response time SLO violation on {{$labels.route}}"
+          description: "{{$labels.method}} {{$labels.route}} p95 response time is {{$value}}ms (target: <200ms)."
+
+      - alert: ErrorRateSLOViolation
+        expr: pdflab_error_rate_slo_percentage > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: slo
+        annotations:
+          summary: "Error rate SLO violation"
+          description: "Error rate is {{$value}}% (target: <0.1%). SLO violated."
+
+      - alert: ErrorBudgetLow
+        expr: pdflab_slo_error_budget_percentage{time_window="30d"} < 25
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+        annotations:
+          summary: "Low error budget for {{$labels.slo_type}}"
+          description: "Only {{$value}}% error budget remaining for {{$labels.slo_type}}. Consider slowing down releases."
+
+      - alert: ErrorBudgetCritical
+        expr: pdflab_slo_error_budget_percentage{time_window="30d"} < 10
+        for: 5m
+        labels:
+          severity: critical
+          component: slo
+        annotations:
+          summary: "Critical error budget for {{$labels.slo_type}}"
+          description: "Only {{$value}}% error budget remaining for {{$labels.slo_type}}. Halt non-critical changes."
+
+      - alert: HighErrorBudgetBurnRate
+        expr: pdflab_slo_error_budget_burn_rate > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: slo
+        annotations:
+          summary: "High error budget burn rate for {{$labels.slo_type}}"
+          description: "Error budget burning {{$value}}x faster than expected for {{$labels.slo_type}}. Investigate immediately."
+
+  # ============================================================================
+  # Conversion Funnel Alerts
+  # ============================================================================
+  - name: conversion_funnel_alerts
+    interval: 1m
+    rules:
+      - alert: HighFunnelDropoff
+        expr: (sum by (stage) (rate(pdflab_conversion_funnel_dropoff_total[5m])) / sum by (stage) (rate(pdflab_conversion_funnel_stage_total[5m]))) * 100 > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: conversion
+        annotations:
+          summary: "High funnel drop-off at {{$labels.stage}}"
+          description: "{{$value | humanizePercentage}} drop-off rate at {{$labels.stage}} (threshold: 10%). User experience may be degraded."
+
+      - alert: ConversionFailureSpike
+        expr: rate(pdflab_conversion_failure_total[5m]) > rate(pdflab_conversion_success_total[5m]) * 0.2
+        for: 3m
+        labels:
+          severity: critical
+          component: conversion
+        annotations:
+          summary: "Conversion failure spike detected"
+          description: "Conversion failures are >20% of successes. Investigate conversion pipeline."
+
+      - alert: LongConversionDuration
+        expr: histogram_quantile(0.95, sum by (stage, le) (rate(pdflab_conversion_funnel_stage_duration_seconds_bucket[5m]))) > 60
+        for: 5m
+        labels:
+          severity: warning
+          component: conversion
+        annotations:
+          summary: "Long conversion duration at {{$labels.stage}}"
+          description: "p95 duration at {{$labels.stage}} is {{$value}}s (threshold: 60s). Performance degraded."
+
+  # ============================================================================
+  # Database Alerts
+  # ============================================================================
+  - name: database_alerts
+    interval: 30s
+    rules:
+      - alert: DatabaseErrors
+        expr: rate(pdflab_database_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database errors detected"
+          description: "{{$labels.error_type}} errors on {{$labels.operation}} {{$labels.model}}: {{$value}} errors/sec."
+
+      - alert: SlowDatabaseQueries
+        expr: pdflab_db_query_time_percentile_ms{percentile="p95"} > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "{{$labels.operation}} on {{$labels.model}} p95 query time is {{$value}}ms (target: <100ms)."
+
+  # ============================================================================
+  # External API Alerts
+  # ============================================================================
+  - name: external_api_alerts
+    interval: 30s
+    rules:
+      - alert: ExternalAPIErrors
+        expr: rate(pdflab_external_api_errors_total[5m]) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          component: external_api
+        annotations:
+          summary: "External API errors for {{$labels.api_name}}"
+          description: "{{$labels.error_type}} errors on {{$labels.api_name}}: {{$value}} errors/sec. Circuit breaker: {{$labels.circuit_breaker_state}}."
+
+      - alert: ExternalAPICircuitBreakerOpen
+        expr: pdflab_external_api_errors_total{circuit_breaker_state="open"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: external_api
+        annotations:
+          summary: "Circuit breaker open for {{$labels.api_name}}"
+          description: "Circuit breaker for {{$labels.api_name}} is open. API calls are being blocked."
+
+  # ============================================================================
+  # Rate Limit Alerts
+  # ============================================================================
+  - name: rate_limit_alerts
+    interval: 1m
+    rules:
+      - alert: HighRateLimitHits
+        expr: rate(pdflab_rate_limit_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: info
+          component: rate_limit
+        annotations:
+          summary: "High rate limit hits on {{$labels.route}}"
+          description: "{{$value}} rate limit hits/sec on {{$labels.route}} for {{$labels.limit_type}}. Consider adjusting limits or investigating abuse."
+
+  # ============================================================================
+  # File Upload Alerts
+  # ============================================================================
+  - name: file_upload_alerts
+    interval: 1m
+    rules:
+      - alert: HighFileUploadErrors
+        expr: rate(pdflab_file_upload_errors_total[5m]) > 1
+        for: 3m
+        labels:
+          severity: warning
+          component: upload
+        annotations:
+          summary: "High file upload errors"
+          description: "{{$value}} upload errors/sec. Reason: {{$labels.error_reason}}. File type: {{$labels.file_type}}."
