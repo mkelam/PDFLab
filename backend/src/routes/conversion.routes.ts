@@ -14,6 +14,7 @@ import { uploadMiddleware, uploadMultipleMiddleware, handleUploadError } from '.
 import { uploadLimiter, downloadLimiter } from '../middleware/ratelimit.middleware'
 import { validateGuestQuota, recordGuestConversion } from '../middleware/guest.middleware'
 import { trackUpload, trackDownload, trackQuotaReached } from '../middleware/analytics.middleware'
+import { cacheMiddleware, invalidateCacheMiddleware } from '../middleware/cache.middleware'
 
 const router = Router()
 
@@ -65,8 +66,8 @@ router.post(
   mergePDFs
 )
 
-// Get job status (public - no auth required)
-router.get('/status/:job_id', getJobStatus)
+// Get job status (public - no auth required) - Cache for 30 seconds
+router.get('/status/:job_id', cacheMiddleware(30), getJobStatus)
 
 // Download converted file (supports both authenticated and guest users)
 router.get('/download/:job_id', downloadLimiter, optionalAuthMiddleware, trackDownload, downloadFile)
@@ -74,7 +75,7 @@ router.get('/download/:job_id', downloadLimiter, optionalAuthMiddleware, trackDo
 // Download multiple files as ZIP (batch conversion results)
 router.get('/download-batch', downloadLimiter, optionalAuthMiddleware, downloadBatchZip)
 
-// Get conversion history (requires authentication)
-router.get('/history', authMiddleware, getConversionHistory)
+// Get conversion history (requires authentication) - Cache for 5 minutes
+router.get('/history', authMiddleware, cacheMiddleware(300), getConversionHistory)
 
 export default router

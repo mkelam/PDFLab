@@ -90,8 +90,10 @@ export default function AdminPartnerApplicationsPage() {
   const fetchApplications = async () => {
     try {
       setLoading(true)
-      const params = statusFilter !== 'all' ? { status: statusFilter } : {}
-      const response = await api.get('/partner-applications', { params })
+      const endpoint = statusFilter !== 'all'
+        ? `/partner-applications?status=${statusFilter}`
+        : '/partner-applications'
+      const response = await api.get(endpoint)
 
       if (response?.applications) {
         setApplications(response.applications)

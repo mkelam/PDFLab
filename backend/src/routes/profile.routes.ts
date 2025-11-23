@@ -7,6 +7,7 @@ import {
   getAccountStats
 } from '../controllers/profile.controller'
 import { authMiddleware } from '../middleware/auth.middleware'
+import { cacheMiddleware, invalidateCacheMiddleware } from '../middleware/cache.middleware'
 
 const router = Router()
 
@@ -17,8 +18,9 @@ router.use(authMiddleware)
  * @route GET /api/profile
  * @desc Get user profile
  * @access Private
+ * Cache for 5 minutes
  */
-router.get('/', getProfile)
+router.get('/', cacheMiddleware(300), getProfile)
 
 /**
  * @route PUT /api/profile
@@ -26,8 +28,9 @@ router.get('/', getProfile)
  * @access Private
  * @body name - User's name (optional)
  * @body email - User's email (optional)
+ * Invalidate profile cache after update
  */
-router.put('/', updateProfile)
+router.put('/', invalidateCacheMiddleware('/api/profile'), updateProfile)
 
 /**
  * @route PUT /api/profile/password
@@ -51,7 +54,8 @@ router.delete('/', deleteAccount)
  * @route GET /api/profile/stats
  * @desc Get account statistics
  * @access Private
+ * Cache for 2 minutes
  */
-router.get('/stats', getAccountStats)
+router.get('/stats', cacheMiddleware(120), getAccountStats)
 
 export default router

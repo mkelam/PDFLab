@@ -107,7 +107,7 @@ const ProductTour: React.FC = () => {
       setRun(false)
       await updateProgress({
         tour_completed: true,
-        tour_step: steps.length,
+        tour_step_completed: steps.length,
       })
       return
     }
@@ -116,7 +116,7 @@ const ProductTour: React.FC = () => {
     if (type === EVENTS.STEP_AFTER) {
       const nextStep = index + 1
       await updateProgress({
-        tour_step: nextStep,
+        tour_step_completed: nextStep,
       })
       setStepIndex(nextStep)
     }

@@ -7,9 +7,8 @@ import { GeistMono } from "geist/font/mono"
 // <CHANGE> Added Montserrat for premium headings as per design brief
 import { Montserrat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { TokenExpirationWarning } from "@/components/TokenExpirationWarning"
 import { Toaster } from "@/components/ui/toaster"
-import FeedbackBubble from "@/components/FeedbackBubble"
+import { FeedbackBubble } from "@/lib/dynamic-imports"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { SessionProvider } from "@/contexts/SessionContext"
@@ -41,7 +40,6 @@ export default function ClientLayout({
             <AuthProvider>
               <OnboardingProvider>
                 <div className="relative z-10">{children}</div>
-                <TokenExpirationWarning />
                 <Toaster />
                 <FeedbackBubble />
               </OnboardingProvider>
