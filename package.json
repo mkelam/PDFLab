@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
+    "check-bundle": "node scripts/check-bundle-size.js",
     "test:e2e": "npx playwright test -c tests/e2e/playwright.config.ts",
     "test:e2e:ui": "npx playwright test -c tests/e2e/playwright.config.ts --ui",
     "test:e2e:report": "npx playwright show-report"
@@ -32,6 +34,7 @@
     "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.5.1",
     "geist": "^1.5.1",
     "lucide-react": "^0.454.0",
@@ -45,6 +48,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.0.3",
     "@playwright/test": "^1.56.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
