@@ -4,6 +4,12 @@ import { getConversionQueue, getCleanupQueue } from '../config/redis'
 import { cloudConvertService } from '../services/cloudconvert.service'
 import { ConversionJob, JobStatus, User, UsageLog } from '../models'
 import logger from '../config/logger'
+import {
+  recordConversion,
+  updateQueueMetrics,
+  cloudconvertErrors,
+  queueJobDuration
+} from '../config/metrics'
 
 // Helper function to get absolute storage path
 const getStoragePath = (): string => {
@@ -67,6 +73,11 @@ export const initializeConversionWorker = () => {
   logger.info(`[Conversion Worker] Processing job ${job_id} for user ${user_id}`)
 
   const startTime = Date.now()
+  const jobCreatedAt = job.timestamp
+  const queueWaitTime = (startTime - jobCreatedAt) / 1000 // seconds
+
+  // Track time spent in queue
+  queueJobDuration.observe({ queue: 'conversion' }, queueWaitTime)
 
   try {
     // 1. Get the conversion job record to retrieve original filename
@@ -148,6 +159,9 @@ export const initializeConversionWorker = () => {
     }
 
     if (!result.success) {
+      // Track CloudConvert errors
+      cloudconvertErrors.inc({ error_type: 'conversion_failed' })
+
       // Provide specific error messages for common issues
       let errorMessage = result.error || 'CloudConvert operation failed'
 

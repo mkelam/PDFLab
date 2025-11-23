@@ -75,9 +75,13 @@ import profileRoutes from './routes/profile.routes'
 import testRoutes from './routes/test.routes'
 import partnerRoutes from './routes/partner.routes'
 import partnerApplicationRoutes from './routes/partnerApplication.routes'
+import metricsRoutes from './routes/metrics.routes'
 
 // Import attribution middleware
 import { captureAttribution } from './middleware/attribution.middleware'
+
+// Import metrics middleware
+import { metricsMiddleware } from './middleware/metrics.middleware'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
@@ -89,6 +93,7 @@ app.set('trust proxy', true)
 app.use(requestIdMiddleware)
 
 // HTTP request logging
+app.use(httpLoggerMiddleware)// Prometheus metrics collection (after request ID, before routes)app.use(metricsMiddleware)
 app.use(httpLoggerMiddleware)
 
 // Sentry middleware (only if DSN is configured)
@@ -221,6 +226,7 @@ app.get('/health', async (req: Request, res: Response) => {
   res.status(statusCode).json(health)
 })
 
+// Metrics endpoint (before rate limiting for Prometheus scraping)app.use('/', metricsRoutes)
 // API routes
 app.use('/api/auth', authRoutes)
 app.use('/api/batch', batchRoutes)
