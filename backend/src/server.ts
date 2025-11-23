@@ -355,7 +355,7 @@ const startServer = async () => {
   }
 }
 
-// Graceful shutdown
+// Graceful shutdown - ONLY called for SIGTERM/SIGINT
 const gracefulShutdown = async (signal: string) => {
   console.log(`\n${signal} received. Starting graceful shutdown...`)
 
@@ -368,6 +368,11 @@ const gracefulShutdown = async (signal: string) => {
     await sequelize.close()
     console.log('✓ Database connection closed')
 
+    // Flush Sentry events
+    if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+      await Sentry.close(2000)
+    }
+
     console.log('✓ Graceful shutdown completed')
     process.exit(0)
   } catch (error) {
@@ -376,19 +381,64 @@ const gracefulShutdown = async (signal: string) => {
   }
 }
 
-// Handle shutdown signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-process.on('SIGINT', () => gracefulShutdown('SIGINT'))
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error)
-  gracefulShutdown('UNCAUGHT_EXCEPTION')
+// ONLY exit on intentional signals
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, starting graceful shutdown')
+  gracefulShutdown('SIGTERM')
 })
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
-  gracefulShutdown('UNHANDLED_REJECTION')
+process.on('SIGINT', () => {
+  console.log('SIGINT received, starting graceful shutdown')
+  gracefulShutdown('SIGINT')
+})
+
+// Handle uncaught exceptions WITHOUT killing the process
+process.on('uncaughtException', (error: Error) => {
+  console.error('Uncaught Exception - Non-Fatal', {
+    error: error.message,
+    stack: error.stack,
+    name: error.name,
+    timestamp: new Date().toISOString()
+  })
+
+  // Report to Sentry
+  if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+    Sentry.captureException(error, {
+      level: 'error',
+      tags: {
+        source: 'uncaughtException',
+        fatal: 'false'
+      }
+    })
+  }
+
+  // DO NOT CALL process.exit()
+  // Let PM2 or Docker handle process restarts if truly needed
+})
+
+process.on('unhandledRejection', (reason: unknown, promise: Promise<any>) => {
+  console.error('Unhandled Rejection - Non-Fatal', {
+    reason: String(reason),
+    promise: String(promise),
+    timestamp: new Date().toISOString()
+  })
+
+  // Report to Sentry
+  if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+    Sentry.captureException(new Error('Unhandled Promise Rejection'), {
+      level: 'error',
+      tags: {
+        source: 'unhandledRejection',
+        fatal: 'false'
+      },
+      extra: {
+        reason: String(reason),
+        promise: String(promise)
+      }
+    })
+  }
+
+  // DO NOT CALL process.exit()
 })
 
 // Start the server
