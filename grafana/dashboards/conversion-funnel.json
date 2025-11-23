@@ -1,0 +1,209 @@
+{
+  "dashboard": {
+    "title": "PDFLab - Conversion Funnel",
+    "tags": ["pdflab", "conversion", "funnel"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Conversion Funnel - All Stages",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum by (stage) (rate(pdflab_conversion_funnel_stage_total[5m]))",
+            "legendFormat": "{{stage}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Conversions/sec"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "steppedLine": false,
+        "tooltip": {"shared": true, "sort": 0, "value_type": "individual"}
+      },
+      {
+        "id": 2,
+        "title": "Funnel Drop-off Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "(sum(rate(pdflab_conversion_funnel_dropoff_total[5m])) by (stage) / sum(rate(pdflab_conversion_funnel_stage_total[5m])) by (stage)) * 100",
+            "legendFormat": "{{stage}} drop-off %",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Drop-off Rate", "max": 100, "min": 0},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [10], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High Funnel Drop-off Rate",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Conversions by Stage",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum by (stage) (pdflab_conversion_funnel_active_count)",
+            "legendFormat": "{{stage}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Stage Duration (p95)",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (stage, le) (rate(pdflab_conversion_funnel_stage_duration_seconds_bucket[5m])))",
+            "legendFormat": "{{stage}} p95",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Success vs Failure Rate",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(pdflab_conversion_success_total[5m]))",
+            "legendFormat": "Success",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(pdflab_conversion_failure_total[5m]))",
+            "legendFormat": "Failure",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Conversions/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 6,
+        "title": "E2E Conversion Duration by File Size",
+        "type": "heatmap",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+        "dataFormat": "tsbuckets",
+        "targets": [
+          {
+            "expr": "sum by (le, file_size_bucket) (rate(pdflab_conversion_e2e_duration_seconds_bucket[5m]))",
+            "format": "heatmap",
+            "refId": "A"
+          }
+        ],
+        "yAxis": {"format": "s"},
+        "color": {
+          "mode": "spectrum",
+          "scheme": "interpolateOranges"
+        }
+      },
+      {
+        "id": 7,
+        "title": "Top Conversion Formats",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+        "targets": [
+          {
+            "expr": "topk(10, sum by (source_format, target_format) (rate(pdflab_conversion_format_total[1h])))",
+            "legendFormat": "{{source_format}} → {{target_format}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {"displayMode": "list", "placement": "right"},
+          "pieType": "pie",
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 8,
+        "title": "Conversion by User Type",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "sum by (user_type) (rate(pdflab_conversion_success_total[5m]))",
+            "legendFormat": "{{user_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Conversions/sec"},
+          {"format": "short"}
+        ],
+        "stack": true
+      },
+      {
+        "id": 9,
+        "title": "Failure Reasons",
+        "type": "table",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 22},
+        "targets": [
+          {
+            "expr": "topk(10, sum by (failure_reason, conversion_type) (increase(pdflab_conversion_failure_total[1h])))",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {},
+              "renameByName": {
+                "failure_reason": "Reason",
+                "conversion_type": "Type",
+                "Value": "Count"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
