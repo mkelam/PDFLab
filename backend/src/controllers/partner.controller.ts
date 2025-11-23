@@ -87,7 +87,7 @@ export const partnerLogin = async (req: Request, res: Response): Promise<void> =
         platform: partner.platform,
         status: partner.status,
         commission_tier: partner.commission_tier,
-        commission_rate: partner.commission_rate
+        commission_rate: parseFloat(partner.commission_rate?.toString() || '0')
       }
     })
   } catch (error) {
@@ -178,7 +178,7 @@ export const getPartnerDashboard = async (req: Request, res: Response): Promise<
         slug: partner.slug,
         platform: partner.platform,
         follower_count: partner.follower_count,
-        commission_rate: partner.commission_rate,
+        commission_rate: parseFloat(partner.commission_rate?.toString() || '0'),
         commission_tier: partner.commission_tier,
         status: partner.status,
         referral_link: partner.getReferralLink(),
@@ -193,7 +193,7 @@ export const getPartnerDashboard = async (req: Request, res: Response): Promise<
           signups: totalSignups,
           conversions: totalConversions,
           conversion_rate: conversionRate.toFixed(2) + '%',
-          revenue_generated: partner.total_revenue_generated,
+          revenue_generated: parseFloat(partner.total_revenue_generated?.toString() || '0'),
           commission_earned: totalCommissionEarned.toFixed(2),
           commission_paid: totalCommissionPaid.toFixed(2),
           commission_pending: pendingCommission.toFixed(2)
@@ -211,7 +211,7 @@ export const getPartnerDashboard = async (req: Request, res: Response): Promise<
         id: code.id,
         code: code.code,
         discount_type: code.discount_type,
-        discount_value: code.discount_value,
+        discount_value: parseFloat(code.discount_value?.toString() || '0'),
         uses: code.current_uses,
         max_uses: code.max_uses,
         is_active: code.is_active,
@@ -226,7 +226,7 @@ export const getPartnerDashboard = async (req: Request, res: Response): Promise<
         signup_date: attr.created_at,
         converted: attr.converted_to_paid,
         conversion_date: attr.converted_at,
-        commission_due: attr.commission_due,
+        commission_due: parseFloat(attr.commission_due?.toString() || '0'),
         commission_paid: attr.commission_paid
       }))
     })
@@ -299,8 +299,8 @@ export const getPartnerReferrals = async (req: Request, res: Response): Promise<
         signup_date: attr.created_at,
         converted: attr.converted_to_paid,
         conversion_date: attr.converted_at,
-        first_payment: attr.first_payment_amount,
-        commission_due: attr.commission_due,
+        first_payment: parseFloat(attr.first_payment_amount?.toString() || '0'),
+        commission_due: parseFloat(attr.commission_due?.toString() || '0'),
         commission_paid: attr.commission_paid
       })),
       pagination: {
@@ -401,7 +401,7 @@ export const createPartner = async (req: Request, res: Response): Promise<void> 
         email: partner.email,
         slug: partner.slug,
         commission_tier: partner.commission_tier,
-        commission_rate: partner.commission_rate,
+        commission_rate: parseFloat(partner.commission_rate?.toString() || '0'),
         referral_link: partner.getReferralLink(),
         default_promo_code: defaultPromoCode
       }
@@ -445,7 +445,7 @@ export const getAllPartners = async (req: Request, res: Response): Promise<void>
         platform: partner.platform,
         follower_count: partner.follower_count,
         commission_tier: partner.commission_tier,
-        commission_rate: partner.commission_rate,
+        commission_rate: parseFloat(partner.commission_rate?.toString() || '0'),
         status: partner.status,
         referral_link: partner.getReferralLink(),
         total_signups: partner.total_signups || 0,
