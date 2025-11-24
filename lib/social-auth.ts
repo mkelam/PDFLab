@@ -14,42 +14,22 @@ export const socialProviders: SocialProvider[] = [
     id: 'google',
     name: 'Google',
     icon: 'google',
-    enabled: false, // Not implemented yet
+    enabled: true, // Configured and working
     action: async () => {
       await initiateOAuth('google')
-      return { success: false, error: 'Google authentication not implemented yet' }
+      return { success: true }
     }
-  },
-  {
-    id: 'github',
-    name: 'GitHub',
-    icon: 'github',
-    enabled: false, // Not implemented yet
-    action: async () => {
-      await initiateOAuth('github')
-      return { success: false, error: 'GitHub authentication not implemented yet' }
-    }
-  },
-  {
-    id: 'microsoft',
-    name: 'Microsoft',
-    icon: 'microsoft',
-    enabled: false, // Not implemented yet
-    action: async () => {
-      await initiateOAuth('microsoft')
-      return { success: false, error: 'Microsoft authentication not implemented yet' }
-    }
-  },
+  }
 ]
 
 /**
  * Initiate social authentication flow
- * @param providerId - The social provider ID (google, github, microsoft)
+ * @param providerId - The social provider ID (currently only 'google')
  */
 export async function initiateOAuth(providerId: string): Promise<void> {
-  // TODO: Implement OAuth flow
-  console.warn(`OAuth not implemented yet for provider: ${providerId}`)
-  throw new Error('Social authentication is not available yet. Please use email/password login.')
+  // Redirect to backend OAuth endpoint
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+  window.location.href = `${apiUrl}/api/auth/${providerId}`
 }
 
 /**
