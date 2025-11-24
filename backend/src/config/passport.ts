@@ -61,7 +61,9 @@ passport.use(
   )
 )
 
-// LinkedIn OAuth Strategy (OpenID Connect)
+// LinkedIn OAuth Strategy (OpenID Connect) - Disabled for now
+// Only enable if LINKEDIN_CLIENT_ID is configured
+if (process.env.LINKEDIN_CLIENT_ID) {
 const linkedInStrategy = new OAuth2Strategy(
   {
     authorizationURL: 'https://www.linkedin.com/oauth/v2/authorization',
@@ -147,5 +149,6 @@ linkedInStrategy.userProfile = function(accessToken: string, done: (err: Error |
 }
 
 passport.use('linkedin', linkedInStrategy)
+}
 
 export default passport

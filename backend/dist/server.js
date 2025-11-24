@@ -41,6 +41,8 @@ const Sentry = __importStar(require("@sentry/node"));
 const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables FIRST (needed for Sentry DSN)
 dotenv_1.default.config();
+// Import logger EARLY (needed for Sentry initialization)
+const logger_1 = __importDefault(require("./config/logger"));
 // Initialize Sentry (only if DSN is configured)
 if (process.env.SENTRY_DSN) {
     Sentry.init({
@@ -81,7 +83,6 @@ const database_1 = require("./config/database");
 const redis_1 = require("./config/redis");
 const ratelimit_middleware_1 = require("./middleware/ratelimit.middleware");
 const guest_middleware_1 = require("./middleware/guest.middleware");
-const logger_1 = __importDefault(require("./config/logger"));
 const request_id_middleware_1 = require("./middleware/request-id.middleware");
 const http_logger_middleware_1 = require("./middleware/http-logger.middleware");
 // Import models to ensure they're registered with Sequelize
@@ -89,6 +90,7 @@ require("./models/AdminAuditLog");
 require("./models/SystemHealthLog");
 // Import routes
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const auth_google_routes_1 = __importDefault(require("./routes/auth.google.routes"));
 const conversion_routes_1 = __importDefault(require("./routes/conversion.routes"));
 const batch_routes_1 = __importDefault(require("./routes/batch.routes"));
 const payfast_routes_1 = __importDefault(require("./routes/payfast.routes"));
@@ -230,6 +232,7 @@ app.get('/health', async (req, res) => {
 // Metrics endpoint (before rate limiting for Prometheus scraping)app.use('/', metricsRoutes)
 // API routes
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api', auth_google_routes_1.default); // Google OAuth routes (/api/auth/google/*)
 app.use('/api/batch', batch_routes_1.default);
 app.use('/api/payfast', payfast_routes_1.default);
 app.use('/api/beta', beta_routes_1.default);

@@ -217,7 +217,7 @@ exports.initializePayment = initializePayment;
  */
 const handleWebhook = async (req, res) => {
     try {
-        logger_1.default.info('🔔 PayFast ITN received:', { JSON, : .stringify(req.body, null, 2) });
+        logger_1.default.info('PayFast ITN received:', { body: JSON.stringify(req.body, null, 2) });
         const itnData = req.body;
         // Step 1: Verify the request came from PayFast (OPTIONAL - signature validation is more reliable)
         // Note: PayFast ITN may not always include referer header, so we prioritize signature validation

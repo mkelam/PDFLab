@@ -233,7 +233,7 @@ app.get('/health', async (req: Request, res: Response) => {
 // Metrics endpoint (before rate limiting for Prometheus scraping)app.use('/', metricsRoutes)
 // API routes
 app.use('/api/auth', authRoutes)
-app.use('/api', googleAuthRoutes)  // Google OAuth routes
+app.use('/api', googleAuthRoutes)  // Google OAuth routes (/api/auth/google/*)
 app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)
 app.use('/api/beta', betaRoutes)

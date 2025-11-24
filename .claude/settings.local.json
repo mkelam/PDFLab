@@ -78,7 +78,10 @@
       "Bash(npm --version)",
       "Bash(git --version)",
       "Bash(rsync:*)",
-      "Bash(tar:*)"
+      "Bash(tar:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

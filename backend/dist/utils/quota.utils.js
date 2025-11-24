@@ -54,7 +54,7 @@ async function syncUserQuota(user) {
     // For upgrades, we usually keep existing usage
     // For new subscriptions, we reset to 0 (handled in webhook)
     await user.save();
-    logger_1.default.info(`✓ Quota synced for user ${user.email} - Plan: ${user.plan}, { Limit: ${planQuota.conversions_limit === -1 ? 'Unlimited' : planQuota.conversions_limit}`);
+    logger_1.default.info(`✓ Quota synced for user ${user.email} - Plan: ${user.plan}, Limit: ${planQuota.conversions_limit === -1 ? 'Unlimited' : planQuota.conversions_limit}`);
 }
 /**
  * Update user plan and sync quota
@@ -82,15 +82,15 @@ async function fixAllUserQuotas() {
     for (const user of users) {
         const expectedQuota = exports.PLAN_QUOTAS[user.plan]?.conversions_limit;
         if (expectedQuota !== undefined && user.conversions_limit !== expectedQuota) {
-            logger_1.default.info(`🔧 Fixing ${user.email}: ${user.plan} plan should have ${expectedQuota === -1 ? 'unlimited' : expectedQuota} conversions, { but has ${user.conversions_limit}`);
+            logger_1.default.info(`🔧 Fixing ${user.email}: ${user.plan} plan should have ${expectedQuota === -1 ? 'unlimited' : expectedQuota} conversions, but has ${user.conversions_limit}`);
+            user.conversions_limit = expectedQuota;
+            await user.save();
+            fixed++;
         }
-        user.conversions_limit = expectedQuota;
-        await user.save();
-        fixed++;
     }
+    logger_1.default.info(`✓ Fixed ${fixed}/${users.length} users`);
+    return { fixed, total: users.length };
 }
-logger_1.default.info(`✓ Fixed ${fixed}/${users.length} users`);
-return { fixed, total: users.length };
 /**
  * Check if user can perform a conversion
  */

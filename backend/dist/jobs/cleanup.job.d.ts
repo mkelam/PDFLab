@@ -1,8 +1,5 @@
 /**
  * Initialize cleanup job worker
  */
-export declare const initializeCleanupWorker: () => {
-    deleted: boolean;
-    reason: string;
-} | undefined;
+export declare const initializeCleanupWorker: () => void;
 //# sourceMappingURL=cleanup.job.d.ts.map

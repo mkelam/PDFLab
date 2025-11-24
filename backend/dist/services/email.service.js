@@ -26,7 +26,7 @@ class EmailService {
         // Only initialize if SMTP credentials are provided
         if (emailConfig.auth.user && emailConfig.auth.pass) {
             this.transporter = nodemailer_1.default.createTransport(emailConfig);
-            logger_1.default.info('✓ Email service initialized with SMTP:', { emailConfig, : .host });
+            logger_1.default.info('✓ Email service initialized with SMTP:', { host: emailConfig.host });
         }
         else {
             logger_1.default.warn('⚠ Email service not configured - missing SMTP credentials');
