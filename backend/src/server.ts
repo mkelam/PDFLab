@@ -60,6 +60,7 @@ import './models/SystemHealthLog'
 
 // Import routes
 import authRoutes from './routes/auth.routes'
+import googleAuthRoutes from './routes/auth.google.routes'
 import conversionRoutes from './routes/conversion.routes'
 import batchRoutes from './routes/batch.routes'
 import payfastRoutes from './routes/payfast.routes'
@@ -232,6 +233,7 @@ app.get('/health', async (req: Request, res: Response) => {
 // Metrics endpoint (before rate limiting for Prometheus scraping)app.use('/', metricsRoutes)
 // API routes
 app.use('/api/auth', authRoutes)
+app.use('/api', googleAuthRoutes)  // Google OAuth routes
 app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)
 app.use('/api/beta', betaRoutes)
