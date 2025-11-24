@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const analytics_controller_1 = require("../controllers/analytics.controller");
 const auth_middleware_1 = require("../middleware/auth.middleware");
+const cache_middleware_1 = require("../middleware/cache.middleware");
 const router = (0, express_1.Router)();
 // All routes require authentication
 router.use(auth_middleware_1.authMiddleware);
@@ -10,8 +11,9 @@ router.use(auth_middleware_1.authMiddleware);
  * @route GET /api/analytics/dashboard
  * @desc Get user analytics dashboard data
  * @access Private
+ * Cache for 2 minutes - analytics data doesn't need real-time updates
  */
-router.get('/dashboard', analytics_controller_1.getDashboardAnalytics);
+router.get('/dashboard', (0, cache_middleware_1.cacheMiddleware)(120), analytics_controller_1.getDashboardAnalytics);
 /**
  * @route GET /api/analytics/history
  * @desc Get detailed conversion history with filters
@@ -22,8 +24,9 @@ router.get('/dashboard', analytics_controller_1.getDashboardAnalytics);
  * @query offset - Pagination offset (default: 0)
  * @query startDate - Start date filter (optional)
  * @query endDate - End date filter (optional)
+ * Cache for 2 minutes
  */
-router.get('/history', analytics_controller_1.getConversionHistory);
+router.get('/history', (0, cache_middleware_1.cacheMiddleware)(120), analytics_controller_1.getConversionHistory);
 /**
  * @route GET /api/analytics/export
  * @desc Export analytics data as CSV

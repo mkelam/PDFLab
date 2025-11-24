@@ -13,7 +13,7 @@ const router = (0, express_1.Router)();
  * Get circuit breaker statistics for all CloudConvert operations
  * Requires authentication
  */
-router.get('/circuit-breakers', auth_middleware_1.authenticateToken, async (req, res) => {
+router.get('/circuit-breakers', auth_middleware_1.requireAuth, async (req, res) => {
     try {
         const stats = cloudconvert_service_1.cloudConvertService.getCircuitBreakerStats();
         logger_1.default.info('Circuit breaker stats requested', {
@@ -44,7 +44,7 @@ router.get('/circuit-breakers', auth_middleware_1.authenticateToken, async (req,
  * Get simple health status based on circuit breaker states
  * Requires authentication
  */
-router.get('/circuit-breakers/health', auth_middleware_1.authenticateToken, async (req, res) => {
+router.get('/circuit-breakers/health', auth_middleware_1.requireAuth, async (req, res) => {
     try {
         const stats = cloudconvert_service_1.cloudConvertService.getCircuitBreakerStats();
         // Check if any circuit breaker is open
