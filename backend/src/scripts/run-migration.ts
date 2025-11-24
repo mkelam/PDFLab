@@ -24,7 +24,7 @@ async function runMigration() {
     // Verify table was created
     const tableDescription = await sequelize.getQueryInterface().describeTable('batch_jobs')
     logger.info('\n📊 BatchJob Table Schema:')
-    logger.info('Columns:', { Object.keys(tableDescription }).join(', '))
+    logger.info('Columns:', Object.keys(tableDescription).join(', '))
 
     logger.info('\n✅ Migration completed successfully!')
     process.exit(0)
