@@ -22,7 +22,7 @@ import { startQueueMonitoring } from './queue.metrics'
 /**
  * Initialize all metrics modules
  */
-export function initializeMetrics(): void {
+export function initializeMetrics(): () => void {
   logger.info('[Metrics] Initializing advanced monitoring')
 
   // Start queue monitoring (every 10 seconds)
