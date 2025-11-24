@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDFLab - Competitive Positioning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              border: "oklch(1 0 0 / 0.12)",
+              input: "oklch(0.15 0 0)",
+              ring: "oklch(0.84 0 0)",
+              background: "oklch(0.05 0 0)",
+              foreground: "oklch(0.95 0 0)",
+              primary: {
+                DEFAULT: "oklch(0.6 0.1 180)",
+                foreground: "oklch(0.95 0 0)",
+              },
+              secondary: {
+                DEFAULT: "oklch(0.12 0 0)",
+                foreground: "oklch(0.95 0 0)",
+              },
+              destructive: {
+                DEFAULT: "oklch(0.5 0.2 25)",
+                foreground: "oklch(0.95 0 0)",
+              },
+              muted: {
+                DEFAULT: "oklch(0.12 0 0)",
+                foreground: "oklch(0.65 0 0)",
+              },
+              accent: {
+                DEFAULT: "oklch(0.6 0.1 180)",
+                foreground: "oklch(0.95 0 0)",
+              },
+              popover: {
+                DEFAULT: "oklch(0 0 0)",
+                foreground: "oklch(0.95 0 0)",
+              },
+              card: {
+                DEFAULT: "oklch(0 0 0)",
+                foreground: "oklch(0.95 0 0)",
+              },
+            },
+            borderRadius: {
+              lg: "0.75rem",
+              md: "calc(0.75rem - 2px)",
+              sm: "calc(0.75rem - 4px)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Custom CSS from globals.css */
+      body {
+        background-color: oklch(0.05 0 0);
+        color: oklch(0.95 0 0);
+        min-height: 100vh;
+        position: relative;
+        /* Fallback background if image is missing */
+        background: linear-gradient(oklch(1 0 0 / 0.1), oklch(1 0 0 / 0.1)),
+          url("file:///C:/Users/Mac/OneDrive/Desktop/Projects/PDFLab/public/images/circuit-board-bg.png")
+            center / cover no-repeat fixed;
+      }
+
+      /* Grain texture */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.02;
+        z-index: -1;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+      }
+
+      .glass {
+        background-color: oklch(0 0 0 / 0.5);
+        border: 1px solid oklch(1 0 0 / 0.15);
+        border-radius: 0.75rem;
+        backdrop-filter: blur(
+          0px
+        ); /* Explicitly no blur as per design system */
+      }
+
+      .glass-strong {
+        background-color: oklch(0 0 0 / 0.5);
+        border: 1px solid oklch(1 0 0 / 0.15);
+        border-radius: 0.75rem;
+      }
+
+      .glass-nav {
+        background-color: oklch(0.05 0 0 / 0.85);
+        border-bottom: 1px solid oklch(1 0 0 / 0.15);
+        backdrop-filter: blur(12px);
+      }
+
+      .text-gradient-primary {
+        background: linear-gradient(
+          to right,
+          oklch(0.6 0.1 180),
+          #2dd4bf,
+          #5eead4
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* PDFLab Column Highlight */
+      .pdflab-column-header {
+        padding: 1rem;
+        position: relative;
+      }
+
+      .pdflab-column-header::before {
+        content: "⭐";
+        position: absolute;
+        top: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.75rem;
+        line-height: 1;
+        filter: drop-shadow(0 4px 8px oklch(0.6 0.1 180 / 0.5));
+        animation: pulse-glow 3s ease-in-out infinite;
+        z-index: 10;
+      }
+
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          filter: drop-shadow(0 4px 8px oklch(0.6 0.1 180 / 0.5));
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          filter: drop-shadow(0 0 15px oklch(0.6 0.1 180 / 0.8));
+          transform: translateX(-50%) scale(1.15);
+        }
+      }
+
+      .pdflab-column-cell {
+        background: linear-gradient(
+          135deg,
+          oklch(0.6 0.1 180 / 0.08),
+          oklch(0.7 0.12 185 / 0.05)
+        );
+        border-left: 3px solid oklch(0.6 0.1 180 / 0.4);
+        border-right: 3px solid oklch(0.6 0.1 180 / 0.4);
+        position: relative;
+      }
+
+      .pdflab-column-cell:first-of-type {
+        border-top: 2px solid oklch(0.6 0.1 180 / 0.3);
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+      }
+
+      .pdflab-column-cell:last-of-type {
+        border-bottom: 2px solid oklch(0.6 0.1 180 / 0.3);
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-nav">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex items-center justify-between h-16">
+          <a href="#" class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center"
+            >
+              <i data-lucide="file-text" class="w-4 h-4 text-primary"></i>
+            </div>
+            <span class="font-semibold text-lg">PDF Lab Pro</span>
+          </a>
+
+          <!-- Desktop Navigation -->
+          <div class="hidden md:flex items-center space-x-6">
+            <a
+              href="#"
+              class="text-sm font-medium hover:text-primary transition-colors"
+              >Features</a
+            >
+            <a
+              href="#"
+              class="text-sm font-medium text-primary transition-colors"
+              >Compare</a
+            >
+            <a
+              href="#"
+              class="text-sm font-medium hover:text-primary transition-colors"
+              >Pricing</a
+            >
+            <a
+              href="#"
+              class="text-sm font-medium hover:text-primary transition-colors"
+              >Sign in</a
+            >
+            <a
+              href="#"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2"
+            >
+              Sign up
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-32 pb-16 px-6">
+      <div class="max-w-6xl mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-4">
+          <h1 class="font-bold text-4xl md:text-5xl mb-6 leading-tight">
+            Why Professionals Choose
+            <span class="text-gradient-primary">PDFLab</span>
+          </h1>
+          <p
+            className="text-xl text-muted-foreground max-w-2xl mx-auto"
+            style="
+              color: oklch(0.65 0 0);
+              font-size: 1.25rem;
+              max-width: 42rem;
+              margin-left: auto;
+              margin-right: auto;
+            "
+          >
+            Stop overpaying for bloatware or risking your data with free tools.
+            Get enterprise-grade conversion at startup prices.
+          </p>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="mb-20 overflow-x-auto pt-8">
+          <div class="min-w-[1000px]">
+            <div class="grid grid-cols-7 gap-4 mb-2 px-4 items-end">
+              <div class="col-span-2 font-semibold text-lg pb-4">Feature</div>
+              <div class="text-center font-bold text-lg pdflab-column-header">
+                <div class="flex items-center justify-center gap-2">
+                  <span
+                    class="text-gradient-primary text-2xl font-extrabold tracking-tight"
+                    >PDFLab</span
+                  >
+                </div>
+              </div>
+              <div class="text-center font-bold text-foreground pb-4">
+                Adobe Acrobat
+              </div>
+              <div class="text-center font-bold text-foreground pb-4">
+                Foxit
+              </div>
+              <div class="text-center font-bold text-foreground pb-4">
+                Smallpdf
+              </div>
+              <div class="text-center font-bold text-foreground pb-4">
+                iLovePDF
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Price -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium">Monthly Cost</div>
+                <div
+                  class="text-center font-bold text-green-400 pdflab-column-cell p-4"
+                >
+                  $9.99 - $29.99
+                </div>
+                <div class="text-center text-muted-foreground">$20.00+</div>
+                <div class="text-center text-muted-foreground">$14.99+</div>
+                <div class="text-center text-muted-foreground">$12.00+</div>
+                <div class="text-center text-red-400 font-medium">
+                  $7.00 + Data Mining
+                </div>
+              </div>
+
+              <!-- Privacy -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium flex items-center gap-2">
+                  <i data-lucide="shield" class="w-4 h-4 text-primary"></i>
+                  Data Privacy
+                </div>
+                <div
+                  class="text-center font-bold text-primary pdflab-column-cell p-4"
+                >
+                  Zero Data Mining
+                </div>
+                <div class="text-center text-muted-foreground">
+                  Cloud Retention
+                </div>
+                <div class="text-center text-muted-foreground">
+                  Cloud Retention
+                </div>
+                <div class="text-center text-muted-foreground">Varies</div>
+                <div class="text-center text-red-400 font-medium">
+                  Ad-Targeting
+                </div>
+              </div>
+
+              <!-- Limits -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium">Free Tier Limits</div>
+                <div
+                  class="text-center font-bold text-primary pdflab-column-cell p-4"
+                >
+                  10/mo (25MB)
+                </div>
+                <div class="text-center text-muted-foreground">
+                  7-day Trial Only
+                </div>
+                <div class="text-center text-muted-foreground">
+                  14-day Trial Only
+                </div>
+                <div class="text-center text-muted-foreground">2 tasks/day</div>
+                <div class="text-center text-muted-foreground">Limited</div>
+              </div>
+
+              <!-- Bloatware -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium">Software Bloat</div>
+                <div
+                  class="text-center font-bold text-green-400 pdflab-column-cell p-4"
+                >
+                  Zero (Web-Based)
+                </div>
+                <div class="text-center text-red-400">Heavy Install</div>
+                <div class="text-center text-red-400">Heavy Install</div>
+                <div class="text-center text-muted-foreground">Web-Based</div>
+                <div class="text-center text-muted-foreground">Web-Based</div>
+              </div>
+
+              <!-- Ad-Free -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium flex items-center gap-2">
+                  <i data-lucide="ban" class="w-4 h-4 text-primary"></i>
+                  Ad-Free Experience
+                </div>
+                <div
+                  class="text-center flex justify-center pdflab-column-cell p-4"
+                >
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center text-red-400">Upsells</div>
+                <div class="text-center text-red-400">Upsells</div>
+                <div class="text-center text-red-400">Ads & Upsells</div>
+                <div class="text-center text-red-400">Ads & Upsells</div>
+              </div>
+
+              <!-- Watermarks -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium">No Watermarks</div>
+                <div
+                  class="text-center flex justify-center pdflab-column-cell p-4"
+                >
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center text-muted-foreground">Paid Only</div>
+                <div class="text-center text-muted-foreground">Paid Only</div>
+                <div class="text-center text-muted-foreground">Free Tier</div>
+                <div class="text-center text-muted-foreground">Free Tier</div>
+              </div>
+
+              <!-- Batch Processing -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium flex items-center gap-2">
+                  <i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>
+                  Batch Processing
+                </div>
+                <div
+                  class="text-center flex justify-center pdflab-column-cell p-4"
+                >
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+              </div>
+
+              <!-- OCR -->
+              <div class="glass p-4 grid grid-cols-7 gap-4 items-center">
+                <div class="col-span-2 font-medium">AI-Powered OCR</div>
+                <div
+                  class="text-center flex justify-center pdflab-column-cell p-4"
+                >
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+                <div class="text-center flex justify-center">
+                  <i data-lucide="check" class="text-green-400 w-5 h-5"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Differentiators -->
+        <div class="grid md:grid-cols-3 gap-6 mb-20">
+          <!-- Card 1 -->
+          <div class="glass-strong border border-primary/20 rounded-xl p-6">
+            <div class="flex flex-col space-y-1.5 mb-4">
+              <i data-lucide="lock" class="w-10 h-10 text-primary mb-2"></i>
+              <h3 class="font-semibold leading-none tracking-tight text-xl">
+                Privacy First
+              </h3>
+            </div>
+            <div class="text-sm text-muted-foreground">
+              We don't mine your data. Your files are automatically and
+              permanently deleted from our servers 1 hour after processing.
+              Bank-grade TLS encryption ensures your documents are safe in
+              transit.
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="glass-strong border border-primary/20 rounded-xl p-6">
+            <div class="flex flex-col space-y-1.5 mb-4">
+              <i
+                data-lucide="dollar-sign"
+                class="w-10 h-10 text-green-400 mb-2"
+              ></i>
+              <h3 class="font-semibold leading-none tracking-tight text-xl">
+                Startup Pricing
+              </h3>
+            </div>
+            <div class="text-sm text-muted-foreground">
+              Get the same enterprise-quality conversion engine used by the big
+              guys, but at a price that makes sense for individuals and
+              startups. No hidden fees, cancel anytime.
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="glass-strong border border-primary/20 rounded-xl p-6">
+            <div class="flex flex-col space-y-1.5 mb-4">
+              <i data-lucide="zap" class="w-10 h-10 text-yellow-400 mb-2"></i>
+              <h3 class="font-semibold leading-none tracking-tight text-xl">
+                Built for Speed
+              </h3>
+            </div>
+            <div class="text-sm text-muted-foreground">
+              Batch process up to 50 files at once. Our distributed cloud
+              architecture ensures your conversions happen in seconds, not
+              minutes, regardless of file size.
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div
+          class="text-center glass-strong p-12 rounded-2xl border border-primary/30 relative overflow-hidden"
+        >
+          <div class="absolute inset-0 bg-primary/5 z-0"></div>
+          <div class="relative z-10">
+            <h2 class="text-3xl font-bold mb-4">
+              Ready to Upgrade Your Workflow?
+            </h2>
+            <p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Join thousands of professionals who have switched to the faster,
+              safer, and more affordable PDF solution.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="#"
+                class="inline-flex items-center justify-center rounded-md text-lg font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 w-full sm:w-auto"
+              >
+                View Pricing
+              </a>
+              <a
+                href="#"
+                class="inline-flex items-center justify-center rounded-md text-lg font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-primary/50 bg-transparent hover:bg-primary/10 hover:text-accent-foreground h-11 px-8 w-full sm:w-auto"
+              >
+                Try for Free
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-border/30 py-8 px-6 mt-auto">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-wrap justify-center gap-6 mb-6">
+          <a
+            href="#"
+            class="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <i data-lucide="shield" class="w-4 h-4"></i>
+            Bank-Grade Security
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <i data-lucide="check" class="w-4 h-4"></i>
+            GDPR Compliant
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <i data-lucide="x" class="w-4 h-4"></i>
+            Zero Data Retention
+          </a>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-4 mb-4 text-sm">
+          <a
+            href="#"
+            class="text-muted-foreground hover:text-primary transition-colors"
+            >Privacy Policy</a
+          >
+          <a
+            href="#"
+            class="text-muted-foreground hover:text-primary transition-colors"
+            >Terms of Service</a
+          >
+          <a
+            href="#"
+            class="text-muted-foreground hover:text-primary transition-colors"
+            >Security</a
+          >
+          <a
+            href="#"
+            class="text-muted-foreground hover:text-primary transition-colors"
+            >Features</a
+          >
+          <a
+            href="#"
+            class="text-muted-foreground hover:text-primary transition-colors"
+            >Pricing</a
+          >
+        </div>
+
+        <div class="text-center">
+          <div class="text-sm text-muted-foreground">
+            © 2024 PDFLab.Pro. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

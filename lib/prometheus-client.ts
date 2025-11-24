@@ -349,11 +349,13 @@ export async function getResponseTimePercentiles(route?: string) {
   const client = new PrometheusClient()
 
   const percentiles = ['p50', 'p75', 'p95', 'p99']
-  const labels = route ? { route, percentile: '' } : { percentile: '' }
 
   const results = await Promise.all(
     percentiles.map(async percentile => {
-      labels.percentile = percentile
+      const labels: Record<string, string> = { percentile }
+      if (route) {
+        labels.route = route
+      }
       const value = await client.getCurrentValue(
         'pdflab_response_time_percentile_ms',
         labels

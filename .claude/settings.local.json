@@ -74,7 +74,11 @@
       "Bash(npm test:*)",
       "Bash(test -f backend/src/config/redis.ts)",
       "Bash(test:*)",
-      "Bash(test -f backend/src/services/cloudconvert.service.ts)"
+      "Bash(test -f backend/src/services/cloudconvert.service.ts)",
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "Bash(rsync:*)",
+      "Bash(tar:*)"
     ],
     "deny": [],
     "ask": []

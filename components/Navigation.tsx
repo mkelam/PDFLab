@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { FileText, LogOut, User } from "lucide-react"
-import { useAuth } from "@/contexts/AuthContext"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { FileText, LogOut, User } from "lucide-react";
+import Link from "next/link";
 
 export function Navigation() {
-  const { user, isLoading, logout } = useAuth()
+  const { user, isLoading, logout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await logout()
+      await logout();
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error("Logout failed:", error);
     }
-  }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
@@ -35,6 +35,11 @@ export function Navigation() {
                 Features
               </Button>
             </Link>
+            <Link href="/comparison">
+              <Button variant="ghost" size="sm" className="text-sm">
+                Compare
+              </Button>
+            </Link>
             <Link href="/pricing">
               <Button variant="ghost" size="sm" className="text-sm">
                 Pricing
@@ -52,7 +57,10 @@ export function Navigation() {
                     Dashboard
                   </Button>
                 </Link>
-                <Badge variant={user.plan === 'free' ? 'secondary' : 'default'} className="capitalize">
+                <Badge
+                  variant={user.plan === "free" ? "secondary" : "default"}
+                  className="capitalize"
+                >
                   {user.plan}
                 </Badge>
                 <Button
@@ -74,7 +82,10 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm" className="text-sm bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button
+                    size="sm"
+                    className="text-sm bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
                     Sign up
                   </Button>
                 </Link>
@@ -110,7 +121,10 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm" className="text-sm bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button
+                    size="sm"
+                    className="text-sm bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
                     Sign up
                   </Button>
                 </Link>
@@ -120,5 +134,5 @@ export function Navigation() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

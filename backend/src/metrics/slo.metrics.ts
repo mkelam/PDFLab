@@ -149,20 +149,20 @@ export const responseTimeSloViolations = new Counter({
 // ============================================================================
 
 /**
- * Current error rate (errors per second)
+ * Current SLO error rate (errors per second)
  */
-export const currentErrorRate = new Gauge({
-  name: 'pdflab_current_error_rate_per_second',
-  help: 'Current error rate in errors per second',
+export const sloCurrentErrorRate = new Gauge({
+  name: 'pdflab_slo_current_error_rate_per_second',
+  help: 'Current SLO error rate in errors per second',
   labelNames: ['error_type'] // 4xx, 5xx
 })
 
 /**
- * Error rate percentage
+ * SLO error rate percentage
  */
-export const errorRatePercentage = new Gauge({
+export const sloErrorRatePercentage = new Gauge({
   name: 'pdflab_error_rate_slo_percentage',
-  help: 'Error rate as percentage of total requests',
+  help: 'Error rate as percentage of total requests for SLO tracking',
   labelNames: ['time_window', 'error_type']
 })
 
@@ -405,14 +405,14 @@ export function updateResponseTimePercentile(
 }
 
 /**
- * Update error rate
+ * Update SLO error rate
  */
-export function updateErrorRatePercentage(
+export function updateSloErrorRatePercentage(
   errorType: '4xx' | '5xx' | 'all',
   percentage: number,
   timeWindow: string
 ): void {
-  errorRatePercentage.labels(timeWindow, errorType).set(percentage)
+  sloErrorRatePercentage.labels(timeWindow, errorType).set(percentage)
 
   // Check against SLO
   if (percentage > SLO_TARGETS.ERROR_RATE_PERCENTAGE) {
