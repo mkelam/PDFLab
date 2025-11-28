@@ -42,11 +42,12 @@ const getMonitoringDashboard = async (req, res) => {
       FROM health_checks
       WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)`, { type: sequelize_1.QueryTypes.SELECT });
         // Convert string values to numbers
-        const uptime = uptimeRaw[0] ? {
-            backend_uptime: parseFloat(uptimeRaw[0].backend_uptime) || 0,
-            worker_uptime: parseFloat(uptimeRaw[0].worker_uptime) || 0,
-            mysql_uptime: parseFloat(uptimeRaw[0].mysql_uptime) || 0,
-            redis_uptime: parseFloat(uptimeRaw[0].redis_uptime) || 0
+        const uptimeRow = uptimeRaw[0];
+        const uptime = uptimeRow ? {
+            backend_uptime: parseFloat(String(uptimeRow.backend_uptime)) || 0,
+            worker_uptime: parseFloat(String(uptimeRow.worker_uptime)) || 0,
+            mysql_uptime: parseFloat(String(uptimeRow.mysql_uptime)) || 0,
+            redis_uptime: parseFloat(String(uptimeRow.redis_uptime)) || 0
         } : {};
         // Get recent alerts (last 10)
         const recentAlerts = await database_1.sequelize.query(`SELECT * FROM monitoring_alerts
@@ -85,27 +86,37 @@ exports.getMonitoringDashboard = getMonitoringDashboard;
 const getHealthChecks = async (req, res) => {
     try {
         const { page = 1, limit = 50, environment, status } = req.query;
-        const offset = (Number(page) - 1) * Number(limit);
-        let whereClause = '';
-        if (environment) {
-            whereClause += `WHERE environment = '${environment}'`;
-        }
-        if (status) {
-            whereClause += `${whereClause ? ' AND' : 'WHERE'} overall_status = '${status}'`;
-        }
+        // Validate and sanitize pagination parameters
+        const pageNum = Math.max(1, Number(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, Number(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        // Validate environment and status values against allowed values
+        const allowedEnvironments = ['development', 'staging', 'production', 'prod', 'dev'];
+        const allowedStatuses = ['healthy', 'warning', 'critical', 'unknown'];
+        const safeEnvironment = environment && allowedEnvironments.includes(String(environment)) ? String(environment) : null;
+        const safeStatus = status && allowedStatuses.includes(String(status)) ? String(status) : null;
         const checks = await database_1.sequelize.query(`SELECT * FROM health_checks
-      ${whereClause}
+      WHERE (:environment IS NULL OR environment = :environment)
+      AND (:status IS NULL OR overall_status = :status)
       ORDER BY timestamp DESC
-      LIMIT ${limit} OFFSET ${offset}`, { type: sequelize_1.QueryTypes.SELECT });
-        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM health_checks ${whereClause}`, { type: sequelize_1.QueryTypes.SELECT });
+      LIMIT :limit OFFSET :offset`, {
+            replacements: { environment: safeEnvironment, status: safeStatus, limit: limitNum, offset },
+            type: sequelize_1.QueryTypes.SELECT
+        });
+        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM health_checks
+      WHERE (:environment IS NULL OR environment = :environment)
+      AND (:status IS NULL OR overall_status = :status)`, {
+            replacements: { environment: safeEnvironment, status: safeStatus },
+            type: sequelize_1.QueryTypes.SELECT
+        });
         res.json({
             success: true,
             data: checks,
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: pageNum,
+                limit: limitNum,
                 total: totalCount[0].total,
-                pages: Math.ceil(totalCount[0].total / Number(limit))
+                pages: Math.ceil(totalCount[0].total / limitNum)
             }
         });
     }
@@ -125,24 +136,33 @@ exports.getHealthChecks = getHealthChecks;
 const getDriftChecks = async (req, res) => {
     try {
         const { page = 1, limit = 50, level } = req.query;
-        const offset = (Number(page) - 1) * Number(limit);
-        let whereClause = '';
-        if (level) {
-            whereClause = `WHERE drift_level = '${level}'`;
-        }
+        // Validate and sanitize pagination parameters
+        const pageNum = Math.max(1, Number(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, Number(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        // Validate drift level against allowed values
+        const allowedLevels = ['none', 'low', 'medium', 'high', 'critical'];
+        const safeLevel = level && allowedLevels.includes(String(level)) ? String(level) : null;
         const checks = await database_1.sequelize.query(`SELECT * FROM drift_checks
-      ${whereClause}
+      WHERE (:level IS NULL OR drift_level = :level)
       ORDER BY timestamp DESC
-      LIMIT ${limit} OFFSET ${offset}`, { type: sequelize_1.QueryTypes.SELECT });
-        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM drift_checks ${whereClause}`, { type: sequelize_1.QueryTypes.SELECT });
+      LIMIT :limit OFFSET :offset`, {
+            replacements: { level: safeLevel, limit: limitNum, offset },
+            type: sequelize_1.QueryTypes.SELECT
+        });
+        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM drift_checks
+      WHERE (:level IS NULL OR drift_level = :level)`, {
+            replacements: { level: safeLevel },
+            type: sequelize_1.QueryTypes.SELECT
+        });
         res.json({
             success: true,
             data: checks,
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: pageNum,
+                limit: limitNum,
                 total: totalCount[0].total,
-                pages: Math.ceil(totalCount[0].total / Number(limit))
+                pages: Math.ceil(totalCount[0].total / limitNum)
             }
         });
     }
@@ -162,27 +182,37 @@ exports.getDriftChecks = getDriftChecks;
 const getDeploymentValidations = async (req, res) => {
     try {
         const { page = 1, limit = 50, environment, result } = req.query;
-        const offset = (Number(page) - 1) * Number(limit);
-        let whereClause = '';
-        if (environment) {
-            whereClause += `WHERE environment = '${environment}'`;
-        }
-        if (result) {
-            whereClause += `${whereClause ? ' AND' : 'WHERE'} validation_result = '${result}'`;
-        }
+        // Validate and sanitize pagination parameters
+        const pageNum = Math.max(1, Number(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, Number(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        // Validate environment and result values against allowed values
+        const allowedEnvironments = ['development', 'staging', 'production', 'prod', 'dev'];
+        const allowedResults = ['success', 'failure', 'warning', 'skipped'];
+        const safeEnvironment = environment && allowedEnvironments.includes(String(environment)) ? String(environment) : null;
+        const safeResult = result && allowedResults.includes(String(result)) ? String(result) : null;
         const validations = await database_1.sequelize.query(`SELECT * FROM deployment_validations
-      ${whereClause}
+      WHERE (:environment IS NULL OR environment = :environment)
+      AND (:result IS NULL OR validation_result = :result)
       ORDER BY timestamp DESC
-      LIMIT ${limit} OFFSET ${offset}`, { type: sequelize_1.QueryTypes.SELECT });
-        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM deployment_validations ${whereClause}`, { type: sequelize_1.QueryTypes.SELECT });
+      LIMIT :limit OFFSET :offset`, {
+            replacements: { environment: safeEnvironment, result: safeResult, limit: limitNum, offset },
+            type: sequelize_1.QueryTypes.SELECT
+        });
+        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM deployment_validations
+      WHERE (:environment IS NULL OR environment = :environment)
+      AND (:result IS NULL OR validation_result = :result)`, {
+            replacements: { environment: safeEnvironment, result: safeResult },
+            type: sequelize_1.QueryTypes.SELECT
+        });
         res.json({
             success: true,
             data: validations,
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: pageNum,
+                limit: limitNum,
                 total: totalCount[0].total,
-                pages: Math.ceil(totalCount[0].total / Number(limit))
+                pages: Math.ceil(totalCount[0].total / limitNum)
             }
         });
     }
@@ -202,31 +232,40 @@ exports.getDeploymentValidations = getDeploymentValidations;
 const getMonitoringAlerts = async (req, res) => {
     try {
         const { page = 1, limit = 50, severity, acknowledged, resolved } = req.query;
-        const offset = (Number(page) - 1) * Number(limit);
-        let whereClause = '';
-        const conditions = [];
-        if (severity)
-            conditions.push(`severity = '${severity}'`);
-        if (acknowledged !== undefined)
-            conditions.push(`acknowledged = ${acknowledged === 'true' ? 'TRUE' : 'FALSE'}`);
-        if (resolved !== undefined)
-            conditions.push(`resolved = ${resolved === 'true' ? 'TRUE' : 'FALSE'}`);
-        if (conditions.length > 0) {
-            whereClause = 'WHERE ' + conditions.join(' AND ');
-        }
+        // Validate and sanitize pagination parameters
+        const pageNum = Math.max(1, Number(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, Number(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        // Validate severity against allowed values
+        const allowedSeverities = ['info', 'warning', 'critical', 'error'];
+        const safeSeverity = severity && allowedSeverities.includes(String(severity)) ? String(severity) : null;
+        // Convert boolean strings to actual booleans (or null if not provided)
+        const safeAcknowledged = acknowledged !== undefined ? acknowledged === 'true' : null;
+        const safeResolved = resolved !== undefined ? resolved === 'true' : null;
         const alerts = await database_1.sequelize.query(`SELECT * FROM monitoring_alerts
-      ${whereClause}
+      WHERE (:severity IS NULL OR severity = :severity)
+      AND (:acknowledged IS NULL OR acknowledged = :acknowledged)
+      AND (:resolved IS NULL OR resolved = :resolved)
       ORDER BY severity DESC, timestamp DESC
-      LIMIT ${limit} OFFSET ${offset}`, { type: sequelize_1.QueryTypes.SELECT });
-        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM monitoring_alerts ${whereClause}`, { type: sequelize_1.QueryTypes.SELECT });
+      LIMIT :limit OFFSET :offset`, {
+            replacements: { severity: safeSeverity, acknowledged: safeAcknowledged, resolved: safeResolved, limit: limitNum, offset },
+            type: sequelize_1.QueryTypes.SELECT
+        });
+        const totalCount = await database_1.sequelize.query(`SELECT COUNT(*) as total FROM monitoring_alerts
+      WHERE (:severity IS NULL OR severity = :severity)
+      AND (:acknowledged IS NULL OR acknowledged = :acknowledged)
+      AND (:resolved IS NULL OR resolved = :resolved)`, {
+            replacements: { severity: safeSeverity, acknowledged: safeAcknowledged, resolved: safeResolved },
+            type: sequelize_1.QueryTypes.SELECT
+        });
         res.json({
             success: true,
             data: alerts,
             pagination: {
-                page: Number(page),
-                limit: Number(limit),
+                page: pageNum,
+                limit: limitNum,
                 total: totalCount[0].total,
-                pages: Math.ceil(totalCount[0].total / Number(limit))
+                pages: Math.ceil(totalCount[0].total / limitNum)
             }
         });
     }
@@ -305,34 +344,40 @@ exports.resolveAlert = resolveAlert;
 const getMetricsTrend = async (req, res) => {
     try {
         const { days = 7, metric = 'drift_score' } = req.query;
-        let query = '';
-        if (metric === 'drift_score') {
-            query = `
-        SELECT
+        // Validate and sanitize days parameter (1-365 days)
+        const safeDays = Math.min(365, Math.max(1, Number(days) || 7));
+        // Validate metric against allowed values
+        const allowedMetrics = ['drift_score', 'health_score'];
+        const safeMetric = allowedMetrics.includes(String(metric)) ? String(metric) : 'drift_score';
+        let trend = [];
+        if (safeMetric === 'drift_score') {
+            trend = await database_1.sequelize.query(`SELECT
           DATE(timestamp) as date,
           AVG(drift_score) as avg_value,
           MAX(drift_score) as max_value,
           MIN(drift_score) as min_value
         FROM drift_checks
-        WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+        WHERE timestamp >= DATE_SUB(NOW(), INTERVAL :days DAY)
         GROUP BY DATE(timestamp)
-        ORDER BY date ASC
-      `;
+        ORDER BY date ASC`, {
+                replacements: { days: safeDays },
+                type: sequelize_1.QueryTypes.SELECT
+            });
         }
-        else if (metric === 'health_score') {
-            query = `
-        SELECT
+        else if (safeMetric === 'health_score') {
+            trend = await database_1.sequelize.query(`SELECT
           DATE(timestamp) as date,
           (SUM(services_healthy) / (SUM(services_healthy) + SUM(services_unhealthy))) * 100 as avg_value,
           100 as max_value,
           0 as min_value
         FROM health_checks
-        WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+        WHERE timestamp >= DATE_SUB(NOW(), INTERVAL :days DAY)
         GROUP BY DATE(timestamp)
-        ORDER BY date ASC
-      `;
+        ORDER BY date ASC`, {
+                replacements: { days: safeDays },
+                type: sequelize_1.QueryTypes.SELECT
+            });
         }
-        const trend = await database_1.sequelize.query(query, { type: sequelize_1.QueryTypes.SELECT });
         res.json({
             success: true,
             data: trend
@@ -354,13 +399,18 @@ exports.getMetricsTrend = getMetricsTrend;
 const getServiceUptime = async (req, res) => {
     try {
         const { days = 7, environment = 'prod' } = req.query;
+        // Validate and sanitize days parameter (1-365 days)
+        const safeDays = Math.min(365, Math.max(1, Number(days) || 7));
+        // Validate environment against allowed values
+        const allowedEnvironments = ['development', 'staging', 'production', 'prod', 'dev'];
+        const safeEnvironment = allowedEnvironments.includes(String(environment)) ? String(environment) : 'prod';
         const uptime = await database_1.sequelize.query(`SELECT
         'backend' as service,
         (SUM(CASE WHEN backend_status = 'healthy' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as uptime_percent,
         SUM(CASE WHEN backend_status = 'healthy' THEN 1 ELSE 0 END) as healthy_count,
         COUNT(*) as total_checks
       FROM health_checks
-      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL :days DAY)
         AND environment = :environment
       UNION ALL
       SELECT
@@ -369,7 +419,7 @@ const getServiceUptime = async (req, res) => {
         SUM(CASE WHEN worker_status = 'healthy' THEN 1 ELSE 0 END) as healthy_count,
         COUNT(*) as total_checks
       FROM health_checks
-      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL :days DAY)
         AND environment = :environment
       UNION ALL
       SELECT
@@ -378,7 +428,7 @@ const getServiceUptime = async (req, res) => {
         SUM(CASE WHEN mysql_status = 'healthy' THEN 1 ELSE 0 END) as healthy_count,
         COUNT(*) as total_checks
       FROM health_checks
-      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL :days DAY)
         AND environment = :environment
       UNION ALL
       SELECT
@@ -387,9 +437,9 @@ const getServiceUptime = async (req, res) => {
         SUM(CASE WHEN redis_status = 'healthy' THEN 1 ELSE 0 END) as healthy_count,
         COUNT(*) as total_checks
       FROM health_checks
-      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL :days DAY)
         AND environment = :environment`, {
-            replacements: { environment },
+            replacements: { days: safeDays, environment: safeEnvironment },
             type: sequelize_1.QueryTypes.SELECT
         });
         res.json({

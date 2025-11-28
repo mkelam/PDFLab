@@ -55,7 +55,7 @@ export function createCircuitBreaker<T extends any[], R>(
     circuitBreakerCalls.inc({ name, result: 'success' })
     logger.debug(`Circuit breaker success: ${name}`, {
       circuitBreaker: name,
-      state: breaker.status.state
+      state: getCircuitState(breaker)
     })
   })
 
@@ -64,7 +64,7 @@ export function createCircuitBreaker<T extends any[], R>(
     circuitBreakerCalls.inc({ name, result: 'failure' })
     logger.warn(`Circuit breaker failure: ${name}`, {
       circuitBreaker: name,
-      state: breaker.status.state,
+      state: getCircuitState(breaker),
       error: error.message
     })
   })
@@ -92,6 +92,16 @@ export function createCircuitBreaker<T extends any[], R>(
   return breaker
 }
 
+/**
+ * Helper to get the circuit state string from a breaker
+ * The opossum library doesn't expose state directly on status, so we derive it
+ */
+function getCircuitState(breaker: CircuitBreaker<any, any>): string {
+  if (breaker.opened) return 'open'
+  if (breaker.halfOpen) return 'half-open'
+  return 'closed'
+}
+
 export function getCircuitBreakerStats(breaker: CircuitBreaker<any, any>) {
   const stats = breaker.stats
 
@@ -102,7 +112,7 @@ export function getCircuitBreakerStats(breaker: CircuitBreaker<any, any>) {
     rejects: stats.rejects,       // Rejected calls (circuit open)
     timeouts: stats.timeouts,     // Timed out calls
     fallbacks: stats.fallbacks,   // Fallback executions
-    state: breaker.status.state,  // current state (open/closed/half-open)
+    state: getCircuitState(breaker),  // current state (open/closed/half-open)
     isOpen: breaker.opened,       // Is circuit open?
     percentiles: {
       p50: stats.percentiles['0.5'],

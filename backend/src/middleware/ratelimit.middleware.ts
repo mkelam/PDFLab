@@ -1,13 +1,33 @@
 import rateLimit from 'express-rate-limit'
-// import RedisStore from 'rate-limit-redis'
-// import { redisClient } from '../config/redis'
+import RedisStore from 'rate-limit-redis'
+import { redisClient } from '../config/redis'
 import { Request } from 'express'
+import logger from '../config/logger'
+
+/**
+ * Create a Redis store for rate limiting if Redis is available
+ * Falls back to in-memory store if Redis is not connected
+ */
+const createRedisStore = (prefix: string): any => {
+  if (redisClient.isOpen) {
+    logger.info(`Creating Redis-backed rate limiter: ${prefix}`)
+    return new RedisStore({
+      sendCommand: (...args: string[]) => redisClient.sendCommand(args) as any,
+      prefix: prefix
+    })
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    logger.warn(`Redis not available for rate limiter: ${prefix} - falling back to in-memory store. This is NOT recommended for production!`)
+  }
+  return undefined
+}
 
 /**
  * General API rate limiter
  * 100 requests per 15 minutes per IP (production)
  * 10000 requests per 15 minutes (development - essentially unlimited)
- * Note: Using in-memory store for now. TODO: Switch to Redis store when ready for production
+ * Uses Redis store in production for distributed rate limiting
  */
 export const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
@@ -21,22 +41,18 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Fix trust proxy warning by using a keyGenerator
   keyGenerator: (req: Request) => {
     // In production behind nginx, use X-Forwarded-For
     // In development, use socket IP
     return req.ip || req.socket?.remoteAddress || 'unknown'
-  }
-  // TODO: Add Redis store in production
-  // store: new RedisStore({
-  //   client: redisClient,
-  //   prefix: 'rate-limit:api:'
-  // })
+  },
+  store: createRedisStore('rate-limit:api:')
 })
 
 /**
  * Upload rate limiter
  * Tier-based limits per hour
+ * Uses Redis store in production for distributed rate limiting
  */
 export const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -64,8 +80,8 @@ export const uploadLimiter = rateLimit({
     message: 'You have exceeded your hourly upload limit. Please upgrade your plan or try again later.'
   },
   standardHeaders: true,
-  legacyHeaders: false
-  // TODO: Add Redis store in production
+  legacyHeaders: false,
+  store: createRedisStore('rate-limit:upload:')
 })
 
 /**
@@ -73,6 +89,7 @@ export const uploadLimiter = rateLimit({
  * Prevents brute force attacks on login/register
  * 5 attempts per 15 minutes per IP (production/test)
  * 1000 attempts per 15 minutes (development only)
+ * Uses Redis store in production for distributed rate limiting
  */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -84,16 +101,16 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Fix trust proxy warning by using a keyGenerator
   keyGenerator: (req: Request) => {
     return req.ip || req.socket?.remoteAddress || 'unknown'
-  }
-  // TODO: Add Redis store in production
+  },
+  store: createRedisStore('rate-limit:auth:')
 })
 
 /**
  * Download rate limiter
  * 50 downloads per 10 minutes per user
+ * Uses Redis store in production for distributed rate limiting
  */
 export const downloadLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
@@ -106,6 +123,6 @@ export const downloadLimiter = rateLimit({
     message: 'Too many download requests. Please wait a few minutes.'
   },
   standardHeaders: true,
-  legacyHeaders: false
-  // TODO: Add Redis store in production
+  legacyHeaders: false,
+  store: createRedisStore('rate-limit:download:')
 })

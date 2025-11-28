@@ -88,17 +88,29 @@ interface PartnerCreationAttributes
     | 'platform'
     | 'follower_count'
     | 'website'
+    | 'referral_code'
     | 'commission_rate'
     | 'commission_tier'
     | 'free_licenses_allocated'
     | 'free_licenses_used'
     | 'status'
     | 'contract_signed_at'
+    | 'activated_at'
+    | 'total_clicks'
     | 'total_signups'
     | 'total_conversions'
     | 'total_revenue_generated'
     | 'total_commission_earned'
     | 'total_commission_paid'
+    | 'current_month_conversions'
+    | 'last_conversion_at'
+    | 'payment_method'
+    | 'payment_email'
+    | 'password_hash'
+    | 'last_login_at'
+    | 'brand_name'
+    | 'application_id'
+    | 'user_id'
     | 'notes'
     | 'created_at'
     | 'updated_at'
@@ -150,6 +162,10 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   public notes?: string
   public readonly created_at!: Date
   public readonly updated_at!: Date
+
+  // Association properties (populated when included in queries)
+  public promo_codes?: import('./PromoCode').PromoCode[]
+  public user_attributions?: import('./UserAttribution').UserAttribution[]
 
   // Helper methods
   public getCommissionRateByTier(): number {

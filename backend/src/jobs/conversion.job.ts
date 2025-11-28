@@ -270,7 +270,7 @@ export const initializeConversionWorker = () => {
   })
 
   conversionQueue.on('failed', (job, error) => {
-    logger.error(`✗ Conversion job ${job?.id} failed:`, { error: error.message instanceof Error ? error.message.message : String(error.message) })
+    logger.error(`✗ Conversion job ${job?.id} failed:`, { error: error instanceof Error ? error.message : String(error) })
   })
 
   conversionQueue.on('stalled', (job) => {

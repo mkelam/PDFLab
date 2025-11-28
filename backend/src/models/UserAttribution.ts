@@ -83,6 +83,11 @@ export class UserAttribution extends Model<UserAttributionAttributes, UserAttrib
   public readonly created_at!: Date
   public readonly updated_at!: Date
 
+  // Association properties (populated when included in queries)
+  public user?: User
+  public partner?: Partner
+  public promo_code?: PromoCode
+
   // Helper methods
   public async markAsConverted(paymentAmount: number, commissionRate: number): Promise<void> {
     this.converted_to_paid = true

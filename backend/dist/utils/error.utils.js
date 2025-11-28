@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateErrorId = generateErrorId;
 exports.sendErrorResponse = sendErrorResponse;
@@ -14,6 +17,7 @@ exports.sendInternalServerError = sendInternalServerError;
 exports.sendServiceUnavailable = sendServiceUnavailable;
 exports.logError = logError;
 const uuid_1 = require("uuid");
+const logger_1 = __importDefault(require("../config/logger"));
 /**
  * Generate a unique error ID for tracking
  */
@@ -33,7 +37,8 @@ function sendErrorResponse(res, statusCode, error, message, additionalData = {})
     // Add error ID for 500 errors for support tracking
     if (statusCode >= 500) {
         response.error_id = generateErrorId();
-        console.error(`[Error ${response.error_id}]`, {
+        logger_1.default.error(`Server error ${response.error_id}`, {
+            error_id: response.error_id,
             statusCode,
             error,
             message,
@@ -113,8 +118,9 @@ function sendServiceUnavailable(res, message, additionalData = {}) {
  */
 function logError(context, error, additionalInfo = {}) {
     const errorId = generateErrorId();
-    console.error(`[Error ${errorId}] ${context}:`, {
-        error: error.message || error,
+    logger_1.default.error(`${context} [${errorId}]`, {
+        error_id: errorId,
+        error: error.message || String(error),
         stack: error.stack,
         ...additionalInfo,
         timestamp: new Date().toISOString()

@@ -109,7 +109,7 @@ export declare class CloudConvertService {
             rejects: number;
             timeouts: number;
             fallbacks: number;
-            state: any;
+            state: string;
             isOpen: boolean;
             percentiles: {
                 p50: number;
@@ -124,7 +124,7 @@ export declare class CloudConvertService {
             rejects: number;
             timeouts: number;
             fallbacks: number;
-            state: any;
+            state: string;
             isOpen: boolean;
             percentiles: {
                 p50: number;
@@ -139,7 +139,7 @@ export declare class CloudConvertService {
             rejects: number;
             timeouts: number;
             fallbacks: number;
-            state: any;
+            state: string;
             isOpen: boolean;
             percentiles: {
                 p50: number;
@@ -154,7 +154,7 @@ export declare class CloudConvertService {
             rejects: number;
             timeouts: number;
             fallbacks: number;
-            state: any;
+            state: string;
             isOpen: boolean;
             percentiles: {
                 p50: number;

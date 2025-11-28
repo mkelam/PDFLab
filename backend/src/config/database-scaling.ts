@@ -157,26 +157,32 @@ export async function testDatabaseConnections(): Promise<{
 
 /**
  * Get connection pool statistics
+ * Note: pool is an internal property of ConnectionManager, we use type assertion
  */
 export function getPoolStats() {
+  // Type assertion needed as pool is internal to Sequelize's ConnectionManager
+  const primaryPool = (sequelizePrimary.connectionManager as any).pool
+  const replicaPool = (sequelizeReplica.connectionManager as any).pool
+  const scaledPool = (sequelizeScaled.connectionManager as any).pool
+
   return {
     primary: {
-      size: sequelizePrimary.connectionManager.pool?.size || 0,
-      available: sequelizePrimary.connectionManager.pool?.available || 0,
-      using: sequelizePrimary.connectionManager.pool?.using || 0,
-      waiting: sequelizePrimary.connectionManager.pool?.waiting || 0
+      size: primaryPool?.size || 0,
+      available: primaryPool?.available || 0,
+      using: primaryPool?.using || 0,
+      waiting: primaryPool?.waiting || 0
     },
     replica: {
-      size: sequelizeReplica.connectionManager.pool?.size || 0,
-      available: sequelizeReplica.connectionManager.pool?.available || 0,
-      using: sequelizeReplica.connectionManager.pool?.using || 0,
-      waiting: sequelizeReplica.connectionManager.pool?.waiting || 0
+      size: replicaPool?.size || 0,
+      available: replicaPool?.available || 0,
+      using: replicaPool?.using || 0,
+      waiting: replicaPool?.waiting || 0
     },
     scaled: {
-      size: sequelizeScaled.connectionManager.pool?.size || 0,
-      available: sequelizeScaled.connectionManager.pool?.available || 0,
-      using: sequelizeScaled.connectionManager.pool?.using || 0,
-      waiting: sequelizeScaled.connectionManager.pool?.waiting || 0
+      size: scaledPool?.size || 0,
+      available: scaledPool?.available || 0,
+      using: scaledPool?.using || 0,
+      waiting: scaledPool?.waiting || 0
     }
   }
 }

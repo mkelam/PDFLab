@@ -66,10 +66,12 @@ const register = async (req, res) => {
             });
             return;
         }
-        if (!(0, auth_utils_1.isValidPassword)(password)) {
+        const passwordValidation = (0, auth_utils_1.isValidPassword)(password);
+        if (!passwordValidation.valid) {
             res.status(400).json({
                 error: 'Weak password',
-                message: 'Password must be at least 8 characters long and contain letters and numbers'
+                message: passwordValidation.errors[0] || 'Password does not meet security requirements',
+                errors: passwordValidation.errors
             });
             return;
         }
@@ -467,10 +469,12 @@ const resetPassword = async (req, res) => {
             });
             return;
         }
-        if (!(0, auth_utils_1.isValidPassword)(new_password)) {
+        const passwordValidation = (0, auth_utils_1.isValidPassword)(new_password);
+        if (!passwordValidation.valid) {
             res.status(422).json({
                 error: 'Weak password',
-                message: 'Password must be at least 8 characters long and contain letters and numbers'
+                message: passwordValidation.errors[0] || 'Password does not meet security requirements',
+                errors: passwordValidation.errors
             });
             return;
         }

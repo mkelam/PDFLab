@@ -43,7 +43,8 @@ export function sendErrorResponse(
   // Add error ID for 500 errors for support tracking
   if (statusCode >= 500) {
     response.error_id = generateErrorId()
-    console.error(`[Error ${response.error_id}]`, {
+    logger.error(`Server error ${response.error_id}`, {
+      error_id: response.error_id,
       statusCode,
       error,
       message,
@@ -181,8 +182,9 @@ export function logError(
 ): void {
   const errorId = generateErrorId()
 
-  console.error(`[Error ${errorId}] ${context}:`, {
-    error: error.message || error,
+  logger.error(`${context} [${errorId}]`, {
+    error_id: errorId,
+    error: error.message || String(error),
     stack: error.stack,
     ...additionalInfo,
     timestamp: new Date().toISOString()

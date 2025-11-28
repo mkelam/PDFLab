@@ -10,7 +10,7 @@ import {
   getConversionHistory
 } from '../controllers/conversion.controller'
 import { authMiddleware, optionalAuthMiddleware, checkConversionQuota } from '../middleware/auth.middleware'
-import { uploadMiddleware, uploadMultipleMiddleware, handleUploadError } from '../middleware/upload.middleware'
+import { uploadMiddleware, uploadMultipleMiddleware, handleUploadError, validateFileMagicBytes, validateMultipleFileMagicBytes } from '../middleware/upload.middleware'
 import { uploadLimiter, downloadLimiter } from '../middleware/ratelimit.middleware'
 import { validateGuestQuota, recordGuestConversion } from '../middleware/guest.middleware'
 import { trackUpload, trackDownload, trackQuotaReached } from '../middleware/analytics.middleware'
@@ -28,6 +28,7 @@ router.post(
   checkConversionQuota, // Check user quota if authenticated
   uploadMiddleware.single('file'),
   handleUploadError,
+  validateFileMagicBytes, // Validate file content matches PDF format
   trackUpload, // Track successful uploads
   uploadFile
 )
@@ -39,6 +40,7 @@ router.post(
   authMiddleware,
   uploadMultipleMiddleware.array('files', 10),
   handleUploadError,
+  validateMultipleFileMagicBytes, // Validate all files are valid PDFs
   trackUpload,
   batchConvert
 )
@@ -51,6 +53,7 @@ router.post(
   checkConversionQuota,
   uploadMiddleware.single('file'),
   handleUploadError,
+  validateFileMagicBytes, // Validate file content matches PDF format
   trackUpload,
   compressPDF
 )
@@ -63,6 +66,7 @@ router.post(
   checkConversionQuota,
   uploadMultipleMiddleware.array('files', 10),
   handleUploadError,
+  validateMultipleFileMagicBytes, // Validate all files are valid PDFs
   mergePDFs
 )
 

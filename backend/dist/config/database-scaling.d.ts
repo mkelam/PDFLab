@@ -18,6 +18,7 @@ export declare function testDatabaseConnections(): Promise<{
 }>;
 /**
  * Get connection pool statistics
+ * Note: pool is an internal property of ConnectionManager, we use type assertion
  */
 export declare function getPoolStats(): {
     primary: {

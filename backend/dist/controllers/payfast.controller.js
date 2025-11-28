@@ -12,8 +12,8 @@ const email_service_1 = __importDefault(require("../services/email.service"));
 const User_1 = require("../models/User");
 const subscription_model_1 = require("../models/subscription.model");
 const payment_log_model_1 = require("../models/payment-log.model");
-const quota_utils_1 = require("../utils/quota.utils");
 const logger_1 = __importDefault(require("../config/logger"));
+const database_1 = require("../config/database");
 // Helper function to render with layout
 const renderWithLayout = async (view, data = {}) => {
     const layoutPath = path_1.default.join(__dirname, '..', 'views', 'layouts', 'main.ejs');
@@ -214,6 +214,9 @@ exports.initializePayment = initializePayment;
 /**
  * POST /api/payfast/webhook
  * Handle PayFast ITN (Instant Transaction Notification)
+ *
+ * IMPORTANT: This handler uses database transactions to ensure data consistency.
+ * All payment, subscription, and user updates are atomic - either all succeed or all fail.
  */
 const handleWebhook = async (req, res) => {
     try {
@@ -226,18 +229,18 @@ const handleWebhook = async (req, res) => {
             try {
                 const host = new URL(referer).hostname;
                 if (payfast_service_1.default.validatePayFastHost(host)) {
-                    logger_1.default.info('✓ Request from valid PayFast host:', { host });
+                    logger_1.default.info('Request from valid PayFast host:', { host });
                 }
                 else {
                     logger_1.default.warn('Request from non-PayFast host - proceeding with signature validation', { host });
                 }
             }
             catch (e) {
-                logger_1.default.warn('⚠️  Could not parse referer/origin:', { referer });
+                logger_1.default.warn('Could not parse referer/origin:', { referer });
             }
         }
         else {
-            logger_1.default.info('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation');
+            logger_1.default.info('No referer/origin header (common for PayFast ITN) - proceeding with signature validation');
         }
         // Step 2: Validate signature (PRIMARY security check)
         const receivedSignature = itnData.signature;
@@ -254,81 +257,114 @@ const handleWebhook = async (req, res) => {
             res.status(403).send('Payment verification failed');
             return;
         }
-        // Step 4: Process the payment
+        // Step 4: Process the payment within a database transaction
+        // This ensures atomicity - either all updates succeed or all fail
         const { m_payment_id, pf_payment_id, payment_status, amount_gross, amount_fee, amount_net, custom_str1, custom_str2, token } = itnData;
-        // Find the payment log
-        const paymentLog = await payment_log_model_1.PaymentLog.findOne({
+        // Check for idempotency - prevent duplicate processing
+        const existingLog = await payment_log_model_1.PaymentLog.findOne({
             where: { transaction_id: m_payment_id }
         });
-        if (!paymentLog) {
-            logger_1.default.error('Payment log not found:', { m_payment_id });
-            res.status(404).send('Payment not found');
+        if (existingLog && existingLog.status === payment_log_model_1.PaymentStatus.COMPLETE) {
+            logger_1.default.info('Payment already processed (idempotency check):', { m_payment_id });
+            res.status(200).send('OK');
             return;
         }
-        // Update payment log
-        paymentLog.payfast_payment_id = pf_payment_id;
-        paymentLog.status = payment_status === 'COMPLETE' ? payment_log_model_1.PaymentStatus.COMPLETE : payment_log_model_1.PaymentStatus.FAILED;
-        paymentLog.amount_gross = parseFloat(amount_gross);
-        paymentLog.amount_fee = parseFloat(amount_fee);
-        paymentLog.amount_net = parseFloat(amount_net);
-        paymentLog.itn_data = itnData;
-        paymentLog.processed_at = new Date();
-        if (payment_status !== 'COMPLETE') {
-            paymentLog.error_message = `Payment failed with status: ${payment_status}`;
-        }
-        await paymentLog.save();
-        // If payment successful, update subscription and user
-        if (payment_status === 'COMPLETE') {
-            const userId = custom_str1;
-            const planId = custom_str2;
-            // Find user
-            const user = await User_1.User.findByPk(userId);
-            if (!user) {
-                logger_1.default.error('User not found:', { userId });
-                res.status(404).send('User not found');
-                return;
+        // Use a database transaction for all updates
+        await database_1.sequelize.transaction(async (t) => {
+            // Find the payment log
+            const paymentLog = await payment_log_model_1.PaymentLog.findOne({
+                where: { transaction_id: m_payment_id },
+                transaction: t,
+                lock: t.LOCK.UPDATE // Lock the row to prevent concurrent modifications
+            });
+            if (!paymentLog) {
+                throw new Error(`Payment log not found: ${m_payment_id}`);
             }
-            // Find subscription
-            const subscription = await subscription_model_1.Subscription.findByPk(paymentLog.subscription_id);
-            if (subscription) {
-                subscription.status = subscription_model_1.SubscriptionStatus.ACTIVE;
-                subscription.payfast_token = token;
-                subscription.payfast_subscription_id = pf_payment_id;
-                subscription.billing_date = new Date();
-                // Set next billing date (30 days from now)
-                const nextBilling = new Date();
-                nextBilling.setDate(nextBilling.getDate() + 30);
-                subscription.next_billing_date = nextBilling;
-                await subscription.save();
+            // Update payment log
+            paymentLog.payfast_payment_id = pf_payment_id;
+            paymentLog.status = payment_status === 'COMPLETE' ? payment_log_model_1.PaymentStatus.COMPLETE : payment_log_model_1.PaymentStatus.FAILED;
+            paymentLog.amount_gross = parseFloat(amount_gross);
+            paymentLog.amount_fee = parseFloat(amount_fee);
+            paymentLog.amount_net = parseFloat(amount_net);
+            paymentLog.itn_data = itnData;
+            paymentLog.processed_at = new Date();
+            if (payment_status !== 'COMPLETE') {
+                paymentLog.error_message = `Payment failed with status: ${payment_status}`;
             }
-            // Update user subscription metadata
-            user.subscription_id = pf_payment_id;
-            user.subscription_status = User_1.SubscriptionStatus.ACTIVE;
-            // Update user plan and sync quota (this ensures quota is correct)
-            await (0, quota_utils_1.updateUserPlan)(user, planId, true); // true = reset usage on new subscription
-            logger_1.default.info(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`);
-            // Send payment receipt email (non-blocking)
-            if (subscription) {
-                const planName = PRICING_PLANS[planId]?.name || planId;
-                email_service_1.default.sendPaymentReceiptEmail(user.email, {
-                    plan: planName,
-                    amount: amount_gross,
-                    currency: 'USD',
-                    transactionId: m_payment_id,
-                    billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                    nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
-                }).catch((error) => {
-                    logger_1.default.error('Failed to send payment receipt email:', { error: error instanceof Error ? error.message : String(error) });
-                    // Don't fail webhook if email fails
+            await paymentLog.save({ transaction: t });
+            // If payment successful, update subscription and user
+            if (payment_status === 'COMPLETE') {
+                const userId = custom_str1;
+                const planId = custom_str2;
+                // Find user with lock
+                const user = await User_1.User.findByPk(userId, {
+                    transaction: t,
+                    lock: t.LOCK.UPDATE
+                });
+                if (!user) {
+                    throw new Error(`User not found: ${userId}`);
+                }
+                // Find subscription with lock
+                const subscription = await subscription_model_1.Subscription.findByPk(paymentLog.subscription_id, {
+                    transaction: t,
+                    lock: t.LOCK.UPDATE
+                });
+                if (subscription) {
+                    subscription.status = subscription_model_1.SubscriptionStatus.ACTIVE;
+                    subscription.payfast_token = token;
+                    subscription.payfast_subscription_id = pf_payment_id;
+                    subscription.billing_date = new Date();
+                    // Set next billing date (30 days from now)
+                    const nextBilling = new Date();
+                    nextBilling.setDate(nextBilling.getDate() + 30);
+                    subscription.next_billing_date = nextBilling;
+                    await subscription.save({ transaction: t });
+                }
+                // Update user subscription metadata
+                user.subscription_id = pf_payment_id;
+                user.subscription_status = User_1.SubscriptionStatus.ACTIVE;
+                // Update user plan and sync quota (within the same transaction)
+                // Note: updateUserPlan needs to be called with transaction support
+                const planConfig = PRICING_PLANS[planId];
+                if (planConfig) {
+                    user.plan = planId;
+                    user.conversions_limit = planConfig.conversions === -1 ? 999999 : planConfig.conversions;
+                    user.conversions_used = 0; // Reset usage on new subscription
+                }
+                await user.save({ transaction: t });
+                logger_1.default.info(`Subscription activated for user ${user.email} - Plan: ${planId} - Transaction committed`);
+                // Send payment receipt email AFTER transaction commits (non-blocking)
+                // We schedule this outside the transaction to not block the webhook response
+                setImmediate(() => {
+                    if (subscription) {
+                        const planName = PRICING_PLANS[planId]?.name || planId;
+                        email_service_1.default.sendPaymentReceiptEmail(user.email, {
+                            plan: planName,
+                            amount: amount_gross,
+                            currency: 'USD',
+                            transactionId: m_payment_id,
+                            billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                            nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
+                        }).catch((error) => {
+                            logger_1.default.error('Failed to send payment receipt email:', { error: error instanceof Error ? error.message : String(error) });
+                        });
+                    }
                 });
             }
-        }
+        });
         // Send 200 OK response to PayFast
         res.status(200).send('OK');
     }
     catch (error) {
         logger_1.default.error('Webhook error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).send('Webhook processing failed');
+        // Check if this is a "not found" error vs. a processing error
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('not found')) {
+            res.status(404).send(errorMessage);
+        }
+        else {
+            res.status(500).send('Webhook processing failed');
+        }
     }
 };
 exports.handleWebhook = handleWebhook;

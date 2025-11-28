@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PartnerApplication = exports.AttributionMethod = exports.UserAttribution = exports.DiscountType = exports.PromoCode = exports.PartnerStatus = exports.CommissionTier = exports.PartnerPlatform = exports.Partner = exports.OnboardingTemplate = exports.OnboardingProgress = exports.Feedback = exports.BetaApplication = exports.PasswordHistory = exports.PaymentType = exports.PaymentStatus = exports.PaymentLog = exports.PlanType = exports.Subscription = exports.HealthStatus = exports.SystemHealthLog = exports.AuditLogSeverity = exports.AdminAuditLog = exports.UsageLog = exports.BatchStatus = exports.BatchOperationType = exports.BatchJob = exports.JobStatus = exports.ConversionType = exports.ConversionJob = exports.SubscriptionStatus = exports.UserRole = exports.UserPlan = exports.User = void 0;
+exports.PartnerApplication = exports.AttributionMethod = exports.UserAttribution = exports.DiscountType = exports.PromoCode = exports.PartnerStatus = exports.CommissionTier = exports.PartnerPlatform = exports.Partner = exports.RefreshToken = exports.OnboardingTemplate = exports.OnboardingProgress = exports.Feedback = exports.BetaApplication = exports.PasswordHistory = exports.PaymentType = exports.PaymentStatus = exports.PaymentLog = exports.PlanType = exports.Subscription = exports.HealthStatus = exports.SystemHealthLog = exports.AuditLogSeverity = exports.AdminAuditLog = exports.UsageLog = exports.BatchStatus = exports.BatchOperationType = exports.BatchJob = exports.JobStatus = exports.ConversionType = exports.ConversionJob = exports.SubscriptionStatus = exports.UserRole = exports.UserPlan = exports.User = void 0;
 // Central export for all models
 var User_1 = require("./User");
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return User_1.User; } });
@@ -43,6 +43,8 @@ var OnboardingProgress_1 = require("./OnboardingProgress");
 Object.defineProperty(exports, "OnboardingProgress", { enumerable: true, get: function () { return __importDefault(OnboardingProgress_1).default; } });
 var OnboardingTemplate_1 = require("./OnboardingTemplate");
 Object.defineProperty(exports, "OnboardingTemplate", { enumerable: true, get: function () { return __importDefault(OnboardingTemplate_1).default; } });
+var RefreshToken_1 = require("./RefreshToken");
+Object.defineProperty(exports, "RefreshToken", { enumerable: true, get: function () { return RefreshToken_1.RefreshToken; } });
 // Influencer Attribution & Partner System
 var Partner_1 = require("./Partner");
 Object.defineProperty(exports, "Partner", { enumerable: true, get: function () { return Partner_1.Partner; } });
@@ -134,6 +136,16 @@ User_2.User.hasOne(OnboardingProgress_2.default, {
     as: 'onboardingProgress'
 });
 OnboardingProgress_2.default.belongsTo(User_2.User, {
+    foreignKey: 'user_id',
+    as: 'user'
+});
+// User <-> RefreshToken (one-to-many)
+const RefreshToken_2 = require("./RefreshToken");
+User_2.User.hasMany(RefreshToken_2.RefreshToken, {
+    foreignKey: 'user_id',
+    as: 'refreshTokens'
+});
+RefreshToken_2.RefreshToken.belongsTo(User_2.User, {
     foreignKey: 'user_id',
     as: 'user'
 });

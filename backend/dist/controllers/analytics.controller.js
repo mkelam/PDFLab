@@ -15,7 +15,8 @@ const getDashboardAnalytics = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         // Get date ranges
         const now = new Date();
@@ -56,7 +57,7 @@ const getDashboardAnalytics = async (req, res) => {
         }, {});
         // Total file size processed
         const totalFileSizeBytes = allConversions.reduce((sum, job) => {
-            return sum + (parseInt(job.file_size) || 0);
+            return sum + (parseInt(String(job.file_size)) || 0);
         }, 0);
         const totalFileSizeMB = Math.round(totalFileSizeBytes / (1024 * 1024));
         // Daily conversion trend (last 7 days)
@@ -124,7 +125,8 @@ const getConversionHistory = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         // Query parameters
         const { type, status, limit = '50', offset = '0', startDate, endDate } = req.query;
@@ -184,7 +186,8 @@ const exportAnalytics = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         // Get all conversions
         const conversions = await models_1.ConversionJob.findAll({

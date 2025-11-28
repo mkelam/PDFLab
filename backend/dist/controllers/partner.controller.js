@@ -511,14 +511,17 @@ const getAttributionStats = async (req, res) => {
         });
         const totalRevenue = allAttributions.reduce((sum, attr) => sum + parseFloat(attr.first_payment_amount.toString()), 0);
         const totalCommission = allAttributions.reduce((sum, attr) => sum + parseFloat(attr.commission_due.toString()), 0);
+        // Calculate percentages safely (avoid division by zero)
+        const partnerPercentage = totalAttributions > 0 ? ((partnerAttributions / totalAttributions) * 100).toFixed(2) : '0.00';
+        const conversionRate = totalAttributions > 0 ? ((convertedUsers / totalAttributions) * 100).toFixed(2) : '0.00';
         res.status(200).json({
             stats: {
                 total_signups: totalAttributions,
                 partner_signups: partnerAttributions,
                 organic_signups: organicSignups,
-                partner_percentage: ((partnerAttributions / totalAttributions) * 100).toFixed(2) + '%',
+                partner_percentage: partnerPercentage + '%',
                 total_conversions: convertedUsers,
-                conversion_rate: ((convertedUsers / totalAttributions) * 100).toFixed(2) + '%',
+                conversion_rate: conversionRate + '%',
                 total_revenue: totalRevenue.toFixed(2),
                 total_commission: totalCommission.toFixed(2)
             }

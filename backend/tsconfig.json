@@ -21,6 +21,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "types": ["node"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
 
     // Strict type checking (ENHANCED)
     "strict": true,
