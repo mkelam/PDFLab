@@ -14,14 +14,18 @@ router.post('/upload', auth_middleware_1.optionalAuthMiddleware, // Auth is opti
 ratelimit_middleware_1.uploadLimiter, guest_middleware_1.validateGuestQuota, // Check guest quota if not authenticated
 analytics_middleware_1.trackQuotaReached, // Track when guests hit quota limit
 auth_middleware_1.checkConversionQuota, // Check user quota if authenticated
-upload_middleware_1.uploadMiddleware.single('file'), upload_middleware_1.handleUploadError, analytics_middleware_1.trackUpload, // Track successful uploads
+upload_middleware_1.uploadMiddleware.single('file'), upload_middleware_1.handleUploadError, upload_middleware_1.validateFileMagicBytes, // Validate file content matches PDF format
+analytics_middleware_1.trackUpload, // Track successful uploads
 conversion_controller_1.uploadFile);
 // Batch convert multiple files (requires authentication - Pro/Enterprise only)
-router.post('/batch-convert', ratelimit_middleware_1.uploadLimiter, auth_middleware_1.authMiddleware, upload_middleware_1.uploadMultipleMiddleware.array('files', 10), upload_middleware_1.handleUploadError, analytics_middleware_1.trackUpload, conversion_controller_1.batchConvert);
+router.post('/batch-convert', ratelimit_middleware_1.uploadLimiter, auth_middleware_1.authMiddleware, upload_middleware_1.uploadMultipleMiddleware.array('files', 10), upload_middleware_1.handleUploadError, upload_middleware_1.validateMultipleFileMagicBytes, // Validate all files are valid PDFs
+analytics_middleware_1.trackUpload, conversion_controller_1.batchConvert);
 // Compress PDF (requires authentication)
-router.post('/compress', ratelimit_middleware_1.uploadLimiter, auth_middleware_1.authMiddleware, auth_middleware_1.checkConversionQuota, upload_middleware_1.uploadMiddleware.single('file'), upload_middleware_1.handleUploadError, analytics_middleware_1.trackUpload, conversion_controller_1.compressPDF);
+router.post('/compress', ratelimit_middleware_1.uploadLimiter, auth_middleware_1.authMiddleware, auth_middleware_1.checkConversionQuota, upload_middleware_1.uploadMiddleware.single('file'), upload_middleware_1.handleUploadError, upload_middleware_1.validateFileMagicBytes, // Validate file content matches PDF format
+analytics_middleware_1.trackUpload, conversion_controller_1.compressPDF);
 // Merge multiple PDFs
-router.post('/merge', auth_middleware_1.authMiddleware, ratelimit_middleware_1.uploadLimiter, auth_middleware_1.checkConversionQuota, upload_middleware_1.uploadMultipleMiddleware.array('files', 10), upload_middleware_1.handleUploadError, conversion_controller_1.mergePDFs);
+router.post('/merge', auth_middleware_1.authMiddleware, ratelimit_middleware_1.uploadLimiter, auth_middleware_1.checkConversionQuota, upload_middleware_1.uploadMultipleMiddleware.array('files', 10), upload_middleware_1.handleUploadError, upload_middleware_1.validateMultipleFileMagicBytes, // Validate all files are valid PDFs
+conversion_controller_1.mergePDFs);
 // Get job status (public - no auth required) - Cache for 30 seconds
 router.get('/status/:job_id', (0, cache_middleware_1.cacheMiddleware)(30), conversion_controller_1.getJobStatus);
 // Download converted file (supports both authenticated and guest users)

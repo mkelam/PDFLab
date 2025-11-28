@@ -1,6 +1,14 @@
 /**
  * Comprehensive Token Testing Suite
  * Tests all JWT token functionality: access tokens, refresh tokens, password reset tokens
+ *
+ * NOTE: This is an INTEGRATION test that requires:
+ * - A running MySQL/MariaDB database
+ * - A running Redis instance
+ * - Proper environment variables set
+ *
+ * To run these tests, ensure your database is running and accessible.
+ * These tests are SKIPPED by default in CI environments without a database.
  */
 
 import request from 'supertest'
@@ -9,7 +17,13 @@ import { User } from '../src/models/User'
 import { generateAccessToken, generateRefreshToken, generatePasswordResetToken, verifyToken } from '../src/utils/auth.utils'
 import jwt from 'jsonwebtoken'
 
-describe('JWT Token System - Comprehensive Tests', () => {
+// Skip integration tests if no database is configured
+const DATABASE_URL = process.env.DB_HOST || process.env.DATABASE_URL
+const SKIP_INTEGRATION = !DATABASE_URL || process.env.SKIP_INTEGRATION_TESTS === 'true'
+
+const describeOrSkip = SKIP_INTEGRATION ? describe.skip : describe
+
+describeOrSkip('JWT Token System - Comprehensive Tests', () => {
   let testUser: any
   let accessToken: string
   let refreshToken: string

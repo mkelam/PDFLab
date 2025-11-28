@@ -15,7 +15,8 @@ const getProfile = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         const user = await models_1.User.findByPk(userId, {
             attributes: [
@@ -34,7 +35,8 @@ const getProfile = async (req, res) => {
             ]
         });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
+            return;
         }
         res.json({ user });
     }
@@ -55,15 +57,18 @@ const updateProfile = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         const { name, email } = req.body;
         // Validation
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
+            res.status(400).json({ error: 'Invalid email format' });
+            return;
         }
         if (name && (name.length < 2 || name.length > 100)) {
-            return res.status(400).json({ error: 'Name must be between 2 and 100 characters' });
+            res.status(400).json({ error: 'Name must be between 2 and 100 characters' });
+            return;
         }
         // Check if email is already taken
         if (email) {
@@ -71,13 +76,15 @@ const updateProfile = async (req, res) => {
                 where: { email }
             });
             if (existingUser && existingUser.id !== userId) {
-                return res.status(400).json({ error: 'Email already in use' });
+                res.status(400).json({ error: 'Email already in use' });
+                return;
             }
         }
         // Update user
         const user = await models_1.User.findByPk(userId);
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
+            return;
         }
         if (name)
             user.name = name;
@@ -86,7 +93,7 @@ const updateProfile = async (req, res) => {
             // If email changed, mark as unverified
             if (user.email !== email) {
                 user.email_verified = false;
-                user.email_verified_at = null;
+                user.email_verified_at = undefined;
             }
         }
         await user.save();
@@ -126,25 +133,30 @@ const changePassword = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         const { currentPassword, newPassword } = req.body;
         // Validation
         if (!currentPassword || !newPassword) {
-            return res.status(400).json({ error: 'Current password and new password are required' });
+            res.status(400).json({ error: 'Current password and new password are required' });
+            return;
         }
         if (newPassword.length < 8) {
-            return res.status(400).json({ error: 'New password must be at least 8 characters' });
+            res.status(400).json({ error: 'New password must be at least 8 characters' });
+            return;
         }
         // Get user with password
         const user = await models_1.User.findByPk(userId);
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
+            return;
         }
         // Verify current password
         const isValidPassword = await bcrypt_1.default.compare(currentPassword, user.password_hash);
         if (!isValidPassword) {
-            return res.status(401).json({ error: 'Current password is incorrect' });
+            res.status(401).json({ error: 'Current password is incorrect' });
+            return;
         }
         // Hash new password
         const hashedPassword = await bcrypt_1.default.hash(newPassword, 10);
@@ -170,24 +182,28 @@ const deleteAccount = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         const { password, confirmation } = req.body;
         // Validation
         if (!password || confirmation !== 'DELETE') {
-            return res.status(400).json({
+            res.status(400).json({
                 error: 'Password and confirmation (type DELETE) are required'
             });
+            return;
         }
         // Get user
         const user = await models_1.User.findByPk(userId);
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
+            return;
         }
         // Verify password
         const isValidPassword = await bcrypt_1.default.compare(password, user.password_hash);
         if (!isValidPassword) {
-            return res.status(401).json({ error: 'Password is incorrect' });
+            res.status(401).json({ error: 'Password is incorrect' });
+            return;
         }
         // Delete user (cascade will delete related records)
         await user.destroy();
@@ -210,7 +226,8 @@ const getAccountStats = async (req, res) => {
     try {
         const userId = req.user?.id;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
         const user = await models_1.User.findByPk(userId, {
             attributes: [
@@ -223,7 +240,8 @@ const getAccountStats = async (req, res) => {
             ]
         });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
+            return;
         }
         // Calculate account age
         const accountAge = Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24));

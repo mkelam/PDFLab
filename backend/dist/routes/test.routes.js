@@ -190,21 +190,19 @@ router.post('/test/sentry-payfast-error', (req, res) => {
 /**
  * Test performance/slow transaction
  * POST /api/test/sentry-slow-performance
+ * Note: Uses Sentry.startSpan for newer SDK versions
  */
 router.post('/test/sentry-slow-performance', async (req, res) => {
-    const transaction = Sentry.startTransaction({
+    await Sentry.startSpan({
         op: 'test.performance',
         name: 'Test Slow API Response',
-        tags: {
+        attributes: {
             test: true,
             alert_test: 'performance',
         },
-    });
-    Sentry.getCurrentScope().setSpan(transaction);
-    try {
+    }, async () => {
         // Simulate slow operation (3 seconds)
         await new Promise(resolve => setTimeout(resolve, 3000));
-        transaction.setStatus('ok');
         res.json({
             success: true,
             message: 'Slow performance test completed',
@@ -212,14 +210,7 @@ router.post('/test/sentry-slow-performance', async (req, res) => {
             expected: 'Performance alert should fire if P95 exceeds threshold',
             note: 'May require multiple requests to trigger P95 alert'
         });
-    }
-    catch (error) {
-        transaction.setStatus('internal_error');
-        throw error;
-    }
-    finally {
-        transaction.finish();
-    }
+    });
 });
 /**
  * Test user impact (multiple users affected)

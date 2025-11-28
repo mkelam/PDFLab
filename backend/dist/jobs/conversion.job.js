@@ -201,7 +201,7 @@ const initializeConversionWorker = () => {
         logger_1.default.info(`✓ Conversion job ${job.id} completed:`, { result });
     });
     conversionQueue.on('failed', (job, error) => {
-        logger_1.default.error(`✗ Conversion job ${job?.id} failed:`, { error: error.message instanceof Error ? error.message.message : String(error.message) });
+        logger_1.default.error(`✗ Conversion job ${job?.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     });
     conversionQueue.on('stalled', (job) => {
         logger_1.default.warn(`⚠ Conversion job ${job.id} stalled - will be retried`);

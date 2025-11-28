@@ -12,6 +12,9 @@ export declare const initializePayment: (req: Request, res: Response) => Promise
 /**
  * POST /api/payfast/webhook
  * Handle PayFast ITN (Instant Transaction Notification)
+ *
+ * IMPORTANT: This handler uses database transactions to ensure data consistency.
+ * All payment, subscription, and user updates are atomic - either all succeed or all fail.
  */
 export declare const handleWebhook: (req: Request, res: Response) => Promise<void>;
 /**

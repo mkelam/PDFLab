@@ -114,7 +114,8 @@ const submitApplication = async (req, res) => {
         const { email, full_name, brand_name, country, primary_platform, audience_size, audience_niche, platform_url, why_pdflab, promotion_methods, content_idea, estimated_conversions, previous_affiliates } = req.body;
         // Validation - only require core fields
         if (!email || !full_name || !primary_platform || !audience_size || !audience_niche || !platform_url) {
-            return res.status(400).json({ error: 'Missing required fields' });
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
         }
         // Check for duplicate application
         const existingApplication = await PartnerApplication_1.default.findOne({
@@ -122,18 +123,21 @@ const submitApplication = async (req, res) => {
         });
         if (existingApplication) {
             if (existingApplication.status === 'pending') {
-                return res.status(409).json({ error: 'You already have a pending application' });
+                res.status(409).json({ error: 'You already have a pending application' });
+                return;
             }
             else if (existingApplication.status === 'approved') {
-                return res.status(409).json({ error: 'You are already an approved partner' });
+                res.status(409).json({ error: 'You are already an approved partner' });
+                return;
             }
             else if (existingApplication.status === 'rejected') {
                 // Check if 90 days have passed
                 const daysSinceRejection = Math.floor((Date.now() - new Date(existingApplication.reviewed_at || 0).getTime()) / (1000 * 60 * 60 * 24));
                 if (daysSinceRejection < 90) {
-                    return res.status(403).json({
+                    res.status(403).json({
                         error: `You can reapply ${90 - daysSinceRejection} days after your previous rejection`
                     });
+                    return;
                 }
             }
         }
@@ -185,10 +189,11 @@ const submitApplication = async (req, res) => {
           <p>Best regards,<br/>The PDFLab Team</p>
         `
             }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
-            return res.status(200).json({
+            res.status(200).json({
                 message: 'Application received but does not meet current requirements',
                 status: 'rejected'
             });
+            return;
         }
         // Successful submission
         await email_service_1.default.sendEmail({
@@ -253,7 +258,8 @@ const getApplication = async (req, res) => {
         const { id } = req.params;
         const application = await PartnerApplication_1.default.findByPk(id);
         if (!application) {
-            return res.status(404).json({ error: 'Application not found' });
+            res.status(404).json({ error: 'Application not found' });
+            return;
         }
         res.json({ application });
     }
@@ -274,10 +280,12 @@ const approveApplication = async (req, res) => {
         const adminUser = req.user;
         const application = await PartnerApplication_1.default.findByPk(id);
         if (!application) {
-            return res.status(404).json({ error: 'Application not found' });
+            res.status(404).json({ error: 'Application not found' });
+            return;
         }
         if (application.status !== 'pending' && application.status !== 'flagged') {
-            return res.status(400).json({ error: 'Application is not in pending state' });
+            res.status(400).json({ error: 'Application is not in pending state' });
+            return;
         }
         // Generate unique identifiers
         const slug = await (0, partner_utils_1.generateSlug)(application.full_name);
@@ -396,10 +404,12 @@ const rejectApplication = async (req, res) => {
         const adminUser = req.user;
         const application = await PartnerApplication_1.default.findByPk(id);
         if (!application) {
-            return res.status(404).json({ error: 'Application not found' });
+            res.status(404).json({ error: 'Application not found' });
+            return;
         }
         if (application.status !== 'pending' && application.status !== 'flagged') {
-            return res.status(400).json({ error: 'Application is not in pending state' });
+            res.status(400).json({ error: 'Application is not in pending state' });
+            return;
         }
         // Update application
         application.status = 'rejected';
@@ -440,7 +450,8 @@ const flagApplication = async (req, res) => {
         const { admin_notes } = req.body;
         const application = await PartnerApplication_1.default.findByPk(id);
         if (!application) {
-            return res.status(404).json({ error: 'Application not found' });
+            res.status(404).json({ error: 'Application not found' });
+            return;
         }
         application.status = 'flagged';
         application.admin_notes = admin_notes;

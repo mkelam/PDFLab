@@ -15,6 +15,7 @@ export { default as OnboardingProgress } from './OnboardingProgress'
 export type { OnboardingStatus } from './OnboardingProgress'
 export { default as OnboardingTemplate } from './OnboardingTemplate'
 export type { TemplateFormat } from './OnboardingTemplate'
+export { RefreshToken } from './RefreshToken'
 
 // Influencer Attribution & Partner System
 export { Partner, PartnerPlatform, CommissionTier, PartnerStatus } from './Partner'
@@ -112,6 +113,17 @@ User.hasOne(OnboardingProgress, {
   as: 'onboardingProgress'
 })
 OnboardingProgress.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+})
+
+// User <-> RefreshToken (one-to-many)
+import { RefreshToken } from './RefreshToken'
+User.hasMany(RefreshToken, {
+  foreignKey: 'user_id',
+  as: 'refreshTokens'
+})
+RefreshToken.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user'
 })

@@ -7,12 +7,13 @@ import logger from '../config/logger'
  * Get user profile
  * @route GET /api/profile
  */
-export const getProfile = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     const user = await User.findByPk(userId, {
@@ -33,7 +34,8 @@ export const getProfile = async (req: Request, res: Response) => {
     })
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      res.status(404).json({ error: 'User not found' })
+      return
     }
 
     res.json({ user })
@@ -50,23 +52,26 @@ export const getProfile = async (req: Request, res: Response) => {
  * Update user profile
  * @route PUT /api/profile
  */
-export const updateProfile = async (req: Request, res: Response) => {
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     const { name, email } = req.body
 
     // Validation
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' })
+      res.status(400).json({ error: 'Invalid email format' })
+      return
     }
 
     if (name && (name.length < 2 || name.length > 100)) {
-      return res.status(400).json({ error: 'Name must be between 2 and 100 characters' })
+      res.status(400).json({ error: 'Name must be between 2 and 100 characters' })
+      return
     }
 
     // Check if email is already taken
@@ -76,14 +81,16 @@ export const updateProfile = async (req: Request, res: Response) => {
       })
 
       if (existingUser && existingUser.id !== userId) {
-        return res.status(400).json({ error: 'Email already in use' })
+        res.status(400).json({ error: 'Email already in use' })
+        return
       }
     }
 
     // Update user
     const user = await User.findByPk(userId)
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      res.status(404).json({ error: 'User not found' })
+      return
     }
 
     if (name) user.name = name
@@ -92,7 +99,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       // If email changed, mark as unverified
       if (user.email !== email) {
         user.email_verified = false
-        user.email_verified_at = null
+        user.email_verified_at = undefined
       }
     }
 
@@ -130,35 +137,40 @@ export const updateProfile = async (req: Request, res: Response) => {
  * Change password
  * @route PUT /api/profile/password
  */
-export const changePassword = async (req: Request, res: Response) => {
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     const { currentPassword, newPassword } = req.body
 
     // Validation
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Current password and new password are required' })
+      res.status(400).json({ error: 'Current password and new password are required' })
+      return
     }
 
     if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters' })
+      res.status(400).json({ error: 'New password must be at least 8 characters' })
+      return
     }
 
     // Get user with password
     const user = await User.findByPk(userId)
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      res.status(404).json({ error: 'User not found' })
+      return
     }
 
     // Verify current password
     const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash)
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Current password is incorrect' })
+      res.status(401).json({ error: 'Current password is incorrect' })
+      return
     }
 
     // Hash new password
@@ -182,33 +194,37 @@ export const changePassword = async (req: Request, res: Response) => {
  * Delete account
  * @route DELETE /api/profile
  */
-export const deleteAccount = async (req: Request, res: Response) => {
+export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     const { password, confirmation } = req.body
 
     // Validation
     if (!password || confirmation !== 'DELETE') {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Password and confirmation (type DELETE) are required'
       })
+      return
     }
 
     // Get user
     const user = await User.findByPk(userId)
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      res.status(404).json({ error: 'User not found' })
+      return
     }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Password is incorrect' })
+      res.status(401).json({ error: 'Password is incorrect' })
+      return
     }
 
     // Delete user (cascade will delete related records)
@@ -228,12 +244,13 @@ export const deleteAccount = async (req: Request, res: Response) => {
  * Get account statistics
  * @route GET /api/profile/stats
  */
-export const getAccountStats = async (req: Request, res: Response) => {
+export const getAccountStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     const user = await User.findByPk(userId, {
@@ -248,7 +265,8 @@ export const getAccountStats = async (req: Request, res: Response) => {
     })
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      res.status(404).json({ error: 'User not found' })
+      return
     }
 
     // Calculate account age

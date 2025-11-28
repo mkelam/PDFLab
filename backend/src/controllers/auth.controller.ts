@@ -40,10 +40,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    if (!isValidPassword(password)) {
+    const passwordValidation = isValidPassword(password)
+    if (!passwordValidation.valid) {
       res.status(400).json({
         error: 'Weak password',
-        message: 'Password must be at least 8 characters long and contain letters and numbers'
+        message: passwordValidation.errors[0] || 'Password does not meet security requirements',
+        errors: passwordValidation.errors
       })
       return
     }
@@ -485,10 +487,12 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
       return
     }
 
-    if (!isValidPassword(new_password)) {
+    const passwordValidation = isValidPassword(new_password)
+    if (!passwordValidation.valid) {
       res.status(422).json({
         error: 'Weak password',
-        message: 'Password must be at least 8 characters long and contain letters and numbers'
+        message: passwordValidation.errors[0] || 'Password does not meet security requirements',
+        errors: passwordValidation.errors
       })
       return
     }

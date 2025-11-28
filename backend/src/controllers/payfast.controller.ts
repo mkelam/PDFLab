@@ -9,6 +9,7 @@ import { Subscription, SubscriptionStatus, PlanType } from '../models/subscripti
 import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.model'
 import { updateUserPlan } from '../utils/quota.utils'
 import logger from '../config/logger'
+import { sequelize } from '../config/database'
 
 // Helper function to render with layout
 const renderWithLayout = async (view: string, data: any = {}): Promise<string> => {
@@ -221,6 +222,9 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
 /**
  * POST /api/payfast/webhook
  * Handle PayFast ITN (Instant Transaction Notification)
+ *
+ * IMPORTANT: This handler uses database transactions to ensure data consistency.
+ * All payment, subscription, and user updates are atomic - either all succeed or all fail.
  */
 export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -235,15 +239,15 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       try {
         const host = new URL(referer as string).hostname
         if (payfastService.validatePayFastHost(host)) {
-          logger.info('✓ Request from valid PayFast host:', { host })
+          logger.info('Request from valid PayFast host:', { host })
         } else {
           logger.warn('Request from non-PayFast host - proceeding with signature validation', { host })
         }
       } catch (e) {
-        logger.warn('⚠️  Could not parse referer/origin:', { referer })
+        logger.warn('Could not parse referer/origin:', { referer })
       }
     } else {
-      logger.info('ℹ️  No referer/origin header (common for PayFast ITN) - proceeding with signature validation')
+      logger.info('No referer/origin header (common for PayFast ITN) - proceeding with signature validation')
     }
 
     // Step 2: Validate signature (PRIMARY security check)
@@ -264,95 +268,133 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       return
     }
 
-    // Step 4: Process the payment
+    // Step 4: Process the payment within a database transaction
+    // This ensures atomicity - either all updates succeed or all fail
     const { m_payment_id, pf_payment_id, payment_status, amount_gross, amount_fee, amount_net, custom_str1, custom_str2, token } = itnData
 
-    // Find the payment log
-    const paymentLog = await PaymentLog.findOne({
+    // Check for idempotency - prevent duplicate processing
+    const existingLog = await PaymentLog.findOne({
       where: { transaction_id: m_payment_id }
     })
 
-    if (!paymentLog) {
-      logger.error('Payment log not found:', { m_payment_id })
-      res.status(404).send('Payment not found')
+    if (existingLog && existingLog.status === PaymentStatus.COMPLETE) {
+      logger.info('Payment already processed (idempotency check):', { m_payment_id })
+      res.status(200).send('OK')
       return
     }
 
-    // Update payment log
-    paymentLog.payfast_payment_id = pf_payment_id
-    paymentLog.status = payment_status === 'COMPLETE' ? PaymentStatus.COMPLETE : PaymentStatus.FAILED
-    paymentLog.amount_gross = parseFloat(amount_gross)
-    paymentLog.amount_fee = parseFloat(amount_fee)
-    paymentLog.amount_net = parseFloat(amount_net)
-    paymentLog.itn_data = itnData
-    paymentLog.processed_at = new Date()
+    // Use a database transaction for all updates
+    await sequelize.transaction(async (t) => {
+      // Find the payment log
+      const paymentLog = await PaymentLog.findOne({
+        where: { transaction_id: m_payment_id },
+        transaction: t,
+        lock: t.LOCK.UPDATE // Lock the row to prevent concurrent modifications
+      })
 
-    if (payment_status !== 'COMPLETE') {
-      paymentLog.error_message = `Payment failed with status: ${payment_status}`
-    }
-
-    await paymentLog.save()
-
-    // If payment successful, update subscription and user
-    if (payment_status === 'COMPLETE') {
-      const userId = custom_str1
-      const planId = custom_str2
-
-      // Find user
-      const user = await User.findByPk(userId)
-      if (!user) {
-        logger.error('User not found:', { userId })
-        res.status(404).send('User not found')
-        return
+      if (!paymentLog) {
+        throw new Error(`Payment log not found: ${m_payment_id}`)
       }
 
-      // Find subscription
-      const subscription = await Subscription.findByPk(paymentLog.subscription_id!)
-      if (subscription) {
-        subscription.status = SubscriptionStatus.ACTIVE
-        subscription.payfast_token = token
-        subscription.payfast_subscription_id = pf_payment_id
-        subscription.billing_date = new Date()
+      // Update payment log
+      paymentLog.payfast_payment_id = pf_payment_id
+      paymentLog.status = payment_status === 'COMPLETE' ? PaymentStatus.COMPLETE : PaymentStatus.FAILED
+      paymentLog.amount_gross = parseFloat(amount_gross)
+      paymentLog.amount_fee = parseFloat(amount_fee)
+      paymentLog.amount_net = parseFloat(amount_net)
+      paymentLog.itn_data = itnData
+      paymentLog.processed_at = new Date()
 
-        // Set next billing date (30 days from now)
-        const nextBilling = new Date()
-        nextBilling.setDate(nextBilling.getDate() + 30)
-        subscription.next_billing_date = nextBilling
-
-        await subscription.save()
+      if (payment_status !== 'COMPLETE') {
+        paymentLog.error_message = `Payment failed with status: ${payment_status}`
       }
 
-      // Update user subscription metadata
-      user.subscription_id = pf_payment_id
-      user.subscription_status = UserSubscriptionStatus.ACTIVE
+      await paymentLog.save({ transaction: t })
 
-      // Update user plan and sync quota (this ensures quota is correct)
-      await updateUserPlan(user, planId as UserPlan, true) // true = reset usage on new subscription
+      // If payment successful, update subscription and user
+      if (payment_status === 'COMPLETE') {
+        const userId = custom_str1
+        const planId = custom_str2
 
-      logger.info(`✓ Subscription activated for user ${user.email} - Plan: ${planId} - Quota synced`)
+        // Find user with lock
+        const user = await User.findByPk(userId, {
+          transaction: t,
+          lock: t.LOCK.UPDATE
+        })
 
-      // Send payment receipt email (non-blocking)
-      if (subscription) {
-        const planName = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]?.name || planId
-        emailService.sendPaymentReceiptEmail(user.email, {
-          plan: planName,
-          amount: amount_gross,
-          currency: 'USD',
-          transactionId: m_payment_id,
-          billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-          nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
-        }).catch((error) => {
-          logger.error('Failed to send payment receipt email:', { error: error instanceof Error ? error.message : String(error) })
-          // Don't fail webhook if email fails
+        if (!user) {
+          throw new Error(`User not found: ${userId}`)
+        }
+
+        // Find subscription with lock
+        const subscription = await Subscription.findByPk(paymentLog.subscription_id!, {
+          transaction: t,
+          lock: t.LOCK.UPDATE
+        })
+
+        if (subscription) {
+          subscription.status = SubscriptionStatus.ACTIVE
+          subscription.payfast_token = token
+          subscription.payfast_subscription_id = pf_payment_id
+          subscription.billing_date = new Date()
+
+          // Set next billing date (30 days from now)
+          const nextBilling = new Date()
+          nextBilling.setDate(nextBilling.getDate() + 30)
+          subscription.next_billing_date = nextBilling
+
+          await subscription.save({ transaction: t })
+        }
+
+        // Update user subscription metadata
+        user.subscription_id = pf_payment_id
+        user.subscription_status = UserSubscriptionStatus.ACTIVE
+
+        // Update user plan and sync quota (within the same transaction)
+        // Note: updateUserPlan needs to be called with transaction support
+        const planConfig = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]
+        if (planConfig) {
+          user.plan = planId as UserPlan
+          user.conversions_limit = planConfig.conversions === -1 ? 999999 : planConfig.conversions
+          user.conversions_used = 0 // Reset usage on new subscription
+        }
+
+        await user.save({ transaction: t })
+
+        logger.info(`Subscription activated for user ${user.email} - Plan: ${planId} - Transaction committed`)
+
+        // Send payment receipt email AFTER transaction commits (non-blocking)
+        // We schedule this outside the transaction to not block the webhook response
+        setImmediate(() => {
+          if (subscription) {
+            const planName = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]?.name || planId
+            emailService.sendPaymentReceiptEmail(user.email, {
+              plan: planName,
+              amount: amount_gross,
+              currency: 'USD',
+              transactionId: m_payment_id,
+              billingDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+              nextBillingDate: subscription.next_billing_date?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'
+            }).catch((error) => {
+              logger.error('Failed to send payment receipt email:', { error: error instanceof Error ? error.message : String(error) })
+            })
+          }
         })
       }
-    }
+    })
 
     // Send 200 OK response to PayFast
     res.status(200).send('OK')
   } catch (error) {
     logger.error('Webhook error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).send('Webhook processing failed')
+
+    // Check if this is a "not found" error vs. a processing error
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes('not found')) {
+      res.status(404).send(errorMessage)
+    } else {
+      res.status(500).send('Webhook processing failed')
+    }
   }
 }
 

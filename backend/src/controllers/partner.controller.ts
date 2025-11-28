@@ -542,7 +542,7 @@ export const getAttributionStats = async (req: Request, res: Response): Promise<
   try {
     const totalAttributions = await UserAttribution.count()
     const partnerAttributions = await UserAttribution.count({
-      where: { partner_id: { [Op.ne]: null } }
+      where: { partner_id: { [Op.ne]: null as any } }
     })
     const organicSignups = totalAttributions - partnerAttributions
     const convertedUsers = await UserAttribution.count({
@@ -562,14 +562,18 @@ export const getAttributionStats = async (req: Request, res: Response): Promise<
       0
     )
 
+    // Calculate percentages safely (avoid division by zero)
+    const partnerPercentage = totalAttributions > 0 ? ((partnerAttributions / totalAttributions) * 100).toFixed(2) : '0.00'
+    const conversionRate = totalAttributions > 0 ? ((convertedUsers / totalAttributions) * 100).toFixed(2) : '0.00'
+
     res.status(200).json({
       stats: {
         total_signups: totalAttributions,
         partner_signups: partnerAttributions,
         organic_signups: organicSignups,
-        partner_percentage: ((partnerAttributions / totalAttributions) * 100).toFixed(2) + '%',
+        partner_percentage: partnerPercentage + '%',
         total_conversions: convertedUsers,
-        conversion_rate: ((convertedUsers / totalAttributions) * 100).toFixed(2) + '%',
+        conversion_rate: conversionRate + '%',
         total_revenue: totalRevenue.toFixed(2),
         total_commission: totalCommission.toFixed(2)
       }

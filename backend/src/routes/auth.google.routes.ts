@@ -1,27 +1,54 @@
 import { Router } from 'express'
-import passport from '../config/passport'
+import passport, { isGoogleOAuthConfigured } from '../config/passport'
 import jwt from 'jsonwebtoken'
 
 const router = Router()
 
 // Google OAuth login
-router.get('/auth/google', (req, res, next) => {
+router.get('/auth/google', (req, res, next): void => {
+  // Check if Google OAuth is configured
+  if (!isGoogleOAuthConfigured) {
+    console.warn('[Google Routes] Google OAuth not configured')
+    res.status(503).json({
+      error: 'Google OAuth not configured',
+      message: 'Google login is not available. Please use email/password login or contact support.'
+    })
+    return
+  }
+
   console.log('[Google Routes] /auth/google route accessed')
   console.log('[Google Routes] Redirecting to Google OAuth...')
   next()
-}, passport.authenticate('google', { scope: ['profile', 'email'], session: false })
-)
+}, (req, res, next): void => {
+  // Only call passport.authenticate if Google OAuth is configured
+  if (isGoogleOAuthConfigured) {
+    passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next)
+  }
+})
 
 // Google OAuth callback
 router.get('/auth/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
-  (req, res) => {
+  (req, res, next): void => {
+    // Check if Google OAuth is configured
+    if (!isGoogleOAuthConfigured) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+      res.redirect(`${frontendUrl}/login?error=google_not_configured`)
+      return
+    }
+    // Call passport authenticate
+    passport.authenticate('google', {
+      session: false,
+      failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed`
+    })(req, res, next)
+  },
+  (req, res): void => {
     console.log('[Google Routes] Callback route hit')
     const user = req.user as any
 
     if (!user) {
       console.error('[Google Routes] ERROR: No user in request')
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user`)
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user`)
+      return
     }
 
     console.log('[Google Routes] User authenticated:', user.email)

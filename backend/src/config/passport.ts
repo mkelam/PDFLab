@@ -4,62 +4,69 @@ import { Strategy as OAuth2Strategy } from 'passport-oauth2'
 import { User } from '../models'
 import axios from 'axios'
 
-// Google OAuth Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3006/api/auth/google/callback',
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        console.log('[Google OAuth] Callback received')
-        console.log('[Google OAuth] Profile ID:', profile.id)
+// Track if Google OAuth is configured
+export const isGoogleOAuthConfigured = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 
-        const email = profile.emails?.[0]?.value
-        console.log('[Google OAuth] Email:', email)
+// Google OAuth Strategy - Only initialize if credentials are configured
+if (isGoogleOAuthConfigured) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3006/api/auth/google/callback',
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          console.log('[Google OAuth] Callback received')
+          console.log('[Google OAuth] Profile ID:', profile.id)
 
-        if (!email) {
-          console.error('[Google OAuth] ERROR: No email found in profile')
-          return done(new Error('No email found in Google profile'))
+          const email = profile.emails?.[0]?.value
+          console.log('[Google OAuth] Email:', email)
+
+          if (!email) {
+            console.error('[Google OAuth] ERROR: No email found in profile')
+            return done(new Error('No email found in Google profile'))
+          }
+
+          // Find or create user
+          let user = await User.findOne({ where: { email } })
+          console.log('[Google OAuth] User lookup:', user ? 'Found existing user' : 'New user')
+
+          if (!user) {
+            // Create new user
+            console.log('[Google OAuth] Creating new user:', email)
+            user = await User.create({
+              email,
+              name: profile.displayName || email.split('@')[0],
+              password_hash: '', // No password for OAuth users
+              plan: 'free' as import('../models/User').UserPlan,
+              conversions_used: 0,
+              conversions_limit: 3,
+              google_id: profile.id,
+            })
+            console.log('[Google OAuth] New user created:', user.id)
+          } else if (!user.google_id) {
+            // Link existing user to Google
+            console.log('[Google OAuth] Linking existing user to Google:', user.id)
+            user.google_id = profile.id
+            await user.save()
+            console.log('[Google OAuth] User linked to Google')
+          } else {
+            console.log('[Google OAuth] User already linked to Google')
+          }
+
+          return done(null, user)
+        } catch (error) {
+          console.error('[Google OAuth] ERROR:', error)
+          return done(error as Error)
         }
-
-        // Find or create user
-        let user = await User.findOne({ where: { email } })
-        console.log('[Google OAuth] User lookup:', user ? 'Found existing user' : 'New user')
-
-        if (!user) {
-          // Create new user
-          console.log('[Google OAuth] Creating new user:', email)
-          user = await User.create({
-            email,
-            name: profile.displayName || email.split('@')[0],
-            password_hash: '', // No password for OAuth users
-            plan: 'free' as import('../models/User').UserPlan,
-            conversions_used: 0,
-            conversions_limit: 3,
-            google_id: profile.id,
-          })
-          console.log('[Google OAuth] ✅ New user created:', user.id)
-        } else if (!user.google_id) {
-          // Link existing user to Google
-          console.log('[Google OAuth] Linking existing user to Google:', user.id)
-          user.google_id = profile.id
-          await user.save()
-          console.log('[Google OAuth] ✅ User linked to Google')
-        } else {
-          console.log('[Google OAuth] ✅ User already linked to Google')
-        }
-
-        return done(null, user)
-      } catch (error) {
-        console.error('[Google OAuth] ERROR:', error)
-        return done(error as Error)
       }
-    }
+    )
   )
-)
+} else {
+  console.warn('[Passport] Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET required')
+}
 
 // LinkedIn OAuth Strategy (OpenID Connect) - Disabled for now
 // Only enable if LINKEDIN_CLIENT_ID is configured

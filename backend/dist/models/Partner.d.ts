@@ -54,7 +54,7 @@ interface PartnerAttributes {
     created_at: Date;
     updated_at: Date;
 }
-interface PartnerCreationAttributes extends Optional<PartnerAttributes, 'id' | 'slug' | 'platform' | 'follower_count' | 'website' | 'commission_rate' | 'commission_tier' | 'free_licenses_allocated' | 'free_licenses_used' | 'status' | 'contract_signed_at' | 'total_signups' | 'total_conversions' | 'total_revenue_generated' | 'total_commission_earned' | 'total_commission_paid' | 'notes' | 'created_at' | 'updated_at'> {
+interface PartnerCreationAttributes extends Optional<PartnerAttributes, 'id' | 'slug' | 'platform' | 'follower_count' | 'website' | 'referral_code' | 'commission_rate' | 'commission_tier' | 'free_licenses_allocated' | 'free_licenses_used' | 'status' | 'contract_signed_at' | 'activated_at' | 'total_clicks' | 'total_signups' | 'total_conversions' | 'total_revenue_generated' | 'total_commission_earned' | 'total_commission_paid' | 'current_month_conversions' | 'last_conversion_at' | 'payment_method' | 'payment_email' | 'password_hash' | 'last_login_at' | 'brand_name' | 'application_id' | 'user_id' | 'notes' | 'created_at' | 'updated_at'> {
 }
 export declare class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
     id: string;
@@ -90,6 +90,8 @@ export declare class Partner extends Model<PartnerAttributes, PartnerCreationAtt
     notes?: string;
     readonly created_at: Date;
     readonly updated_at: Date;
+    promo_codes?: import('./PromoCode').PromoCode[];
+    user_attributions?: import('./UserAttribution').UserAttribution[];
     getCommissionRateByTier(): number;
     getReferralLink(): string;
     getFreeLicensesRemaining(): number;

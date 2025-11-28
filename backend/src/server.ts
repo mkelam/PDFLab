@@ -482,6 +482,13 @@ process.on('unhandledRejection', (reason: unknown, promise: Promise<any>) => {
   // DO NOT CALL process.exit()
 })
 
-// Start the server
-startServer()
+// Export app for testing (allows importing without starting server)
+export { app }
+
+// Start the server only when this file is run directly (not when imported for testing)
+// In CommonJS, require.main === module means this file is the entry point
+// We check if we're NOT in a test environment to auto-start
+if (process.env.NODE_ENV !== 'test') {
+  startServer()
+}
 

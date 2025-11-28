@@ -7,12 +7,13 @@ import logger from '../config/logger'
  * Get user analytics dashboard data
  * @route GET /api/analytics/dashboard
  */
-export const getDashboardAnalytics = async (req: Request, res: Response) => {
+export const getDashboardAnalytics = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     // Get date ranges
@@ -71,7 +72,7 @@ export const getDashboardAnalytics = async (req: Request, res: Response) => {
 
     // Total file size processed
     const totalFileSizeBytes = allConversions.reduce((sum, job) => {
-      return sum + (parseInt(job.file_size as string) || 0)
+      return sum + (parseInt(String(job.file_size)) || 0)
     }, 0)
     const totalFileSizeMB = Math.round(totalFileSizeBytes / (1024 * 1024))
 
@@ -139,12 +140,13 @@ export const getDashboardAnalytics = async (req: Request, res: Response) => {
  * Get detailed conversion history with filters
  * @route GET /api/analytics/history
  */
-export const getConversionHistory = async (req: Request, res: Response) => {
+export const getConversionHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     // Query parameters
@@ -213,12 +215,13 @@ export const getConversionHistory = async (req: Request, res: Response) => {
  * Export analytics data as CSV
  * @route GET /api/analytics/export
  */
-export const exportAnalytics = async (req: Request, res: Response) => {
+export const exportAnalytics = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     // Get all conversions

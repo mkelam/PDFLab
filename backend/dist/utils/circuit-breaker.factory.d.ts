@@ -8,7 +8,7 @@ export declare function getCircuitBreakerStats(breaker: CircuitBreaker<any, any>
     rejects: number;
     timeouts: number;
     fallbacks: number;
-    state: any;
+    state: string;
     isOpen: boolean;
     percentiles: {
         p50: number;
