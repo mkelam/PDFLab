@@ -1,18 +1,21 @@
 # PDFLab Go-To-Market (GTM) Strategy Master Plan
 
-**Version:** 1.0
-**Date:** November 24, 2025
+**Version:** 2.0
+**Date:** November 28, 2025
 **Status:** Approved for Execution
+**Last Updated By:** Alex (Co-CEO)
 
 ---
 
 ## 1. Executive Summary
 
-This GTM strategy is designed to launch PDFLab into a competitive market by leveraging a "Grand Slam Offer" (high value, low risk) and a low-cost, high-leverage acquisition strategy focused on micro-influencers and community engagement.
+This GTM strategy is designed to launch PDFLab into a competitive market by leveraging a **tiered "Earned Value" acquisition model** that balances velocity with quality signal.
 
-**Core Thesis:** PDFLab will stop competing on features and price alone. We will compete on **transformation** ("Never waste time on PDF formatting again") and **trust** (Privacy-First).
+**Core Thesis:** We do not give away the product. We **trade** it. License for labor (usage + feedback), not just email addresses.
 
-**90-Day Goal:** Acquire 50 paying customers and achieve $1,500 MRR.
+**Strategic Pivot (v2.0):** Replaced passive "free lifetime" with **Earned Lifetime** — users must prove value to keep access. This filters freeloaders while preserving marketing velocity.
+
+**90-Day Goal:** Acquire 100 validated power users (Founder's Edition) + 50 paying customers = $1,500 MRR.
 
 ---
 
@@ -53,7 +56,41 @@ This GTM strategy is designed to launch PDFLab into a competitive market by leve
 
 ---
 
-## 3. Pricing Strategy
+## 3. Acquisition Tiers (The "Earned Value" Model)
+
+### 3.1 Tier 0: Founder's Edition (Earned Lifetime)
+
+**The Offer:** "Get PDFLab Pro for Life — Founder's Edition"
+**The Catch:** This license is conditional. You must prove you're a power user.
+
+| Element | Specification |
+|:--------|:--------------|
+| **Cap** | Strictly 100 users (real scarcity) |
+| **Initial Access** | 14 days of full Pro features |
+| **Unlock Criteria** | Must complete within 14 days: |
+| | - Convert **10+ documents** (Proof of Utility) |
+| | - Submit **1 Feedback Form** (Proof of Engagement) |
+| **Success** | Permanent Lifetime Pro access |
+| **Failure** | Downgrade to Free tier |
+
+**Why This Works:**
+- Filters freeloaders (deal-seekers who don't use = flushed out)
+- Guarantees PMF signal (only keep users who actually work with the tool)
+- Maintains velocity (headline is still "Lifetime Free" for marketing)
+
+### 3.2 Tier 1: Partner Pass (60-Day Trial)
+
+| Element | Specification |
+|:--------|:--------------|
+| **Cap** | Unlimited (via influencer channels only) |
+| **Target** | Audiences who missed Founder's Edition |
+| **Access** | 60 days full Pro features |
+| **Requirement** | Email only (no card required) |
+| **End State** | Downgrade to Free or convert to paid |
+
+**Why 60 Days:** Habit formation averages 66 days. 30 days is too short for infrequent PDF use cases. 60 days makes influencers look like heroes ("I got you double the normal trial").
+
+### 3.3 Tier 2: Standard Plans (Paid)
 
 | Tier           | Price     | Target Audience      | Key Features                                            |
 | :------------- | :-------- | :------------------- | :------------------------------------------------------ |
@@ -62,7 +99,15 @@ This GTM strategy is designed to launch PDFLab into a competitive market by leve
 | **Pro**        | $29.99/mo | Professionals/SMBs   | **Unlimited**, Batch Processing, OCR, Priority Support. |
 | **Enterprise** | Custom    | Large Teams          | API Access, SSO, Dedicated Account Manager.             |
 
-_Launch Special:_ First 100 Pro users get a **Lifetime Price Lock** at $29.99/mo.
+---
+
+## 3.4 The Feedback Form (Required for Tier 0)
+
+Keep it surgical. 3 questions only:
+
+1. **What did you use PDFLab for?** (Open text — understand use case)
+2. **What almost stopped you from using it?** (Friction discovery)
+3. **Would you pay $X/month to keep Pro access?** (Willingness to pay signal)
 
 ---
 
@@ -95,45 +140,115 @@ _Launch Special:_ First 100 Pro users get a **Lifetime Price Lock** at $29.99/mo
 
 ## 5. 90-Day Execution Roadmap
 
-### Month 1: Foundation & Soft Launch
+### Phase 1: The "Founder's 100" Campaign (Days 1-14)
 
-- **Week 1:** Finalize "Grand Slam Offer" landing page and pricing.
-- **Week 2:** Build list of 50 micro-influencers and send personalized outreach.
-- **Week 3:** "Warm up" Reddit accounts (karma building) and post initial "Problem" threads.
-- **Week 4:** Onboard first 5 partners and launch "Beta Access" campaign on Reddit.
+| Day | Action | Channel |
+|:----|:-------|:--------|
+| 1-3 | Implement Earned Lifetime backend (14-day probation, conversion tracking, feedback form) | Dev |
+| 1-3 | Build landing page with live counter ("97/100 spots remaining") | Dev |
+| 4 | Launch "Founder's 100" campaign | Reddit, Twitter, Indie Hackers |
+| 4-14 | Email sequence: Day 0 (welcome), Day 3 (nudge), Day 7 (progress), Day 12 (urgency) | Marketing |
+| 14 | First batch of downgrades (users who failed criteria) | Automated |
 
-### Month 2: Growth & Optimization
+**Messaging:** "I'm giving away 100 Lifetime Licenses to people who will actually break my app. If you don't use it, you lose it."
 
-- **Week 5:** Full public launch of Pro Plan. Influencers post reviews/tutorials.
-- **Week 6:** Launch "7-Day PDF Power User Challenge" lead magnet.
-- **Week 7:** Analyze conversion data. Optimize onboarding flow based on feedback.
-- **Week 8:** Retargeting campaign for free users who hit limits.
+**Success Metric:** % of Founder's 100 who complete the 10-conversion challenge.
 
-### Month 3: Scale & Automation
+### Phase 2: Partner Expansion (Days 15-45)
 
-- **Week 9:** Expand influencer program to Tier 2 partners.
-- **Week 10:** Launch cold email campaign to SMB Operations Managers.
-- **Week 11:** Introduction of "Enterprise" sales motion (manual outreach).
-- **Week 12:** Review metrics, adjust pricing if needed, plan Phase 2 (Paid Ads).
+| Week | Action |
+|:-----|:-------|
+| 3 | Pivot to 60-Day Partner Pass as the primary offer |
+| 3-4 | Onboard first 5 micro-influencers with custom referral codes |
+| 4-5 | Influencers post reviews/tutorials with "Missed the Founder's 100?" messaging |
+| 6 | Launch "7-Day PDF Power User Challenge" lead magnet |
+
+**Messaging:** "Missed the Founder's 100? Our partners have a secret 60-Day Pass."
+
+**Success Metric:** Day 60 retention rate.
+
+### Phase 3: Scale & Conversion (Days 46-90)
+
+| Week | Action |
+|:-----|:-------|
+| 7 | Analyze conversion data from Founder's Edition feedback |
+| 8 | Optimize onboarding based on "What almost stopped you?" responses |
+| 9 | Retargeting campaign for free users hitting limits |
+| 10 | Expand to Tier 2 influencer partners |
+| 11 | Launch cold email to SMB Operations Managers |
+| 12 | Review metrics, plan Phase 2 (Paid Ads if CAC < $50) |
 
 ---
 
 ## 6. Success Metrics
 
-| Metric               | Month 1 Goal | Month 2 Goal | Month 3 Goal |
-| :------------------- | :----------- | :----------- | :----------- |
-| **New Leads**        | 100          | 300          | 500          |
-| **Paying Customers** | 10           | 25           | 50           |
-| **MRR**              | $300         | $750         | $1,500       |
-| **Partners Active**  | 5            | 10           | 15           |
+### Primary Metrics
+
+| Metric | Month 1 Goal | Month 2 Goal | Month 3 Goal |
+|:-------|:-------------|:-------------|:-------------|
+| **Founder's 100 Signups** | 100 | — | — |
+| **Founder's 100 Completion Rate** | >50% (50 users earn lifetime) | — | — |
+| **60-Day Partner Pass Users** | — | 200 | 400 |
+| **Paying Customers** | 10 | 25 | 50 |
+| **MRR** | $300 | $750 | $1,500 |
+| **Partners Active** | 5 | 10 | 15 |
+
+### Activation & Retention Metrics
+
+| Metric | Target | Why It Matters |
+|:-------|:-------|:---------------|
+| **Activation Rate** (1+ conversion in 48hrs) | >40% | Users who convert immediately are 3x more likely to retain |
+| **Day 7 Retention** | >25% | Early indicator of habit formation |
+| **Day 30/60 Retention** | >15% | True product-market fit signal |
+| **Feedback Form Completion** | 100% of Founder's 100 | Required for lifetime unlock |
 
 ---
 
 ## 7. Risks & Mitigation
 
-| Risk                        | Mitigation                                                                      |
-| :-------------------------- | :------------------------------------------------------------------------------ |
-| **Low Influencer Response** | Increase commission to 40% or offer upfront "setup fee" for top tier.           |
-| **Reddit Ban**              | Strictly follow "Give 10x before asking" rule. Use transparent "Founder" flair. |
-| **Churn > 10%**             | Implement "exit survey" and offer free 1-on-1 onboarding to save accounts.      |
-| **Technical Issues**        | 24/7 monitoring (Sentry) and "War Room" protocol for launch weeks.              |
+| Risk | Mitigation |
+|:-----|:-----------|
+| **Low Influencer Response** | Increase commission to 40% or offer upfront "setup fee" for top tier. |
+| **Reddit Ban** | Strictly follow "Give 10x before asking" rule. Use transparent "Founder" flair. |
+| **Churn > 10%** | Implement "exit survey" and offer free 1-on-1 onboarding to save accounts. |
+| **Technical Issues** | 24/7 monitoring (Sentry) and "War Room" protocol for launch weeks. |
+| **Founder's 100 Low Completion** | If <30% complete challenge: (1) Extend to 21 days, (2) Lower threshold to 5 conversions, (3) Add in-app progress nudges. |
+| **Freeloaders Gaming System** | Conversion must be unique files (hash check). Feedback form requires >50 chars per field. |
+
+---
+
+## 8. Implementation Checklist
+
+### Backend Requirements (Days 1-3)
+
+- [ ] Create `founder_edition` plan type in database
+- [ ] Track conversion count per user during probation period
+- [ ] Build 14-day probation timer with auto-downgrade
+- [ ] Create feedback form API endpoint
+- [ ] Implement "spots remaining" counter (100 - approved founder users)
+- [ ] Email triggers: Day 0, 3, 7, 12 (urgency sequence)
+
+### Frontend Requirements (Days 1-3)
+
+- [ ] Landing page with live "X/100 spots remaining" counter
+- [ ] Progress indicator: "You've converted X/10 files"
+- [ ] Feedback form modal (3 questions)
+- [ ] "Congratulations! You've earned Lifetime Pro" success state
+- [ ] "Trial ended" downgrade notification
+
+### Marketing Assets (Day 4)
+
+- [ ] Reddit post: "I'm giving away 100 Lifetime Licenses..."
+- [ ] Twitter thread with countdown
+- [ ] Indie Hackers launch post
+- [ ] Email sequence templates (4 emails)
+
+---
+
+## 9. Decision Log
+
+| Date | Decision | Rationale | Owner |
+|:-----|:---------|:----------|:------|
+| 2025-11-28 | Pivot from passive "free lifetime" to "Earned Lifetime" | Filters freeloaders while preserving marketing velocity | Alex (CEO) |
+| 2025-11-28 | Set probation period to 14 days with 10-conversion + feedback requirement | Balances urgency with reasonable time for infrequent users | Alex (CEO) |
+| 2025-11-28 | Kill 30-day trial option | Boring, indistinguishable from competitors. Go big (60) or go home. | Strategy Team |
