@@ -5,6 +5,7 @@ bundle:
   description: Includes every core system agent.
 agents:
   - bmad-orchestrator
+  - ceo
   - "*"
 workflows:
   - brownfield-fullstack.yaml

@@ -4,6 +4,7 @@ bundle:
   icon: ⚡
   description: Only the bare minimum for the IDE PO SM dev qa cycle.
 agents:
+  - ceo
   - po
   - sm
   - dev

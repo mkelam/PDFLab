@@ -5,6 +5,7 @@ bundle:
   description: Team capable of full stack, front end only, or service development.
 agents:
   - bmad-orchestrator
+  - ceo
   - analyst
   - pm
   - ux-expert

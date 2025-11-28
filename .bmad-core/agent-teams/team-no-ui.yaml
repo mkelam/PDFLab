@@ -5,6 +5,7 @@ bundle:
   description: Team with no UX or UI Planning.
 agents:
   - bmad-orchestrator
+  - ceo
   - analyst
   - pm
   - architect
