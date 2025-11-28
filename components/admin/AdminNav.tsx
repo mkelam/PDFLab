@@ -16,7 +16,8 @@ import {
   MessageSquare,
   UsersRound,
   UserPlus,
-  LogOut
+  LogOut,
+  Crown
 } from 'lucide-react'
 
 interface NavItemProps {
@@ -51,6 +52,7 @@ export function AdminNav() {
   const navItems = [
     { href: '/admin', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { href: '/admin/users', icon: <Users size={20} />, label: 'Users' },
+    { href: '/admin/founders', icon: <Crown size={20} />, label: "Founder's Edition" },
     { href: '/admin/partners', icon: <UsersRound size={20} />, label: 'Partners' },
     { href: '/admin/partner-applications', icon: <UserPlus size={20} />, label: 'Partner Applications' },
     { href: '/admin/beta-users', icon: <Sparkles size={20} />, label: 'Beta Users' },

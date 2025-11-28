@@ -16,6 +16,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
       search = '',
       plan,
       role,
+      founder_status,
       page = '1',
       limit = '25',
       sortBy = 'created_at',
@@ -45,6 +46,11 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
     // Filter by role
     if (role && role !== 'all') {
       where.role = role
+    }
+
+    // Filter by founder status
+    if (founder_status && founder_status !== 'all' && founder_status !== '') {
+      where.founder_status = founder_status
     }
 
     // Get users with pagination
