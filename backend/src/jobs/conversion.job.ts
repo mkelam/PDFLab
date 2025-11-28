@@ -3,6 +3,8 @@ import path from 'path'
 import { getConversionQueue, getCleanupQueue } from '../config/redis'
 import { cloudConvertService } from '../services/cloudconvert.service'
 import { ConversionJob, JobStatus, User, UsageLog } from '../models'
+import { FounderStatus } from '../models/User'
+import { incrementConversionCount } from '../controllers/founder.controller'
 import logger from '../config/logger'
 import {
   recordConversion,
@@ -198,6 +200,14 @@ export const initializeConversionWorker = () => {
     // 5. Increment user conversion count (skip for guest users)
     if (user_id) {
       await User.increment('conversions_used', { where: { id: user_id } })
+
+      // 5b. Increment founder conversion count if user is in active founder challenge
+      const founderResult = await incrementConversionCount(user_id)
+      if (founderResult.earned) {
+        logger.info(`[Founder] User ${user_id} earned lifetime Pro access after conversion!`)
+      } else if (founderResult.count > 0) {
+        logger.info(`[Founder] User ${user_id} founder conversion count: ${founderResult.count}/10`)
+      }
     }
 
     // 6. Log usage (skip for guest users - they don't have usage logs)

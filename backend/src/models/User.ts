@@ -23,6 +23,13 @@ export enum SubscriptionStatus {
   TRIALING = 'trialing'
 }
 
+export enum FounderStatus {
+  NONE = 'none',
+  ACTIVE = 'active',
+  EARNED = 'earned',
+  EXPIRED = 'expired'
+}
+
 interface UserAttributes {
   id: string
   email: string
@@ -47,12 +54,16 @@ interface UserAttributes {
   onboarding_skipped: boolean
   google_id?: string
   linkedin_id?: string
+  founder_status: FounderStatus
+  founder_deadline?: Date
+  founder_feedback_submitted: boolean
+  founder_conversions_count: number
   created_at: Date
   updated_at: Date
   last_login?: Date
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at' | 'google_id' | 'linkedin_id'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at' | 'google_id' | 'linkedin_id' | 'founder_status' | 'founder_deadline' | 'founder_feedback_submitted' | 'founder_conversions_count'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string
@@ -78,6 +89,10 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public onboarding_skipped!: boolean
   public google_id?: string
   public linkedin_id?: string
+  public founder_status!: FounderStatus
+  public founder_deadline?: Date
+  public founder_feedback_submitted!: boolean
+  public founder_conversions_count!: number
   public readonly created_at!: Date
   public readonly updated_at!: Date
   public last_login?: Date
@@ -122,6 +137,44 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 
   public resetMonthlyUsage(): void {
     this.conversions_used = 0
+  }
+
+  // Founder edition helper methods
+  public isFounderActive(): boolean {
+    return this.founder_status === FounderStatus.ACTIVE
+  }
+
+  public isFounderEarned(): boolean {
+    return this.founder_status === FounderStatus.EARNED
+  }
+
+  public hasFounderDeadlinePassed(): boolean {
+    if (!this.founder_deadline) return false
+    return new Date() > this.founder_deadline
+  }
+
+  public hasCompletedFounderChallenge(): boolean {
+    return this.founder_conversions_count >= 10 && this.founder_feedback_submitted
+  }
+
+  public getFounderProgress(): {
+    conversions: number
+    conversionsRequired: number
+    feedbackSubmitted: boolean
+    daysRemaining: number
+    isComplete: boolean
+  } {
+    const now = new Date()
+    const deadline = this.founder_deadline || now
+    const daysRemaining = Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+
+    return {
+      conversions: this.founder_conversions_count,
+      conversionsRequired: 10,
+      feedbackSubmitted: this.founder_feedback_submitted,
+      daysRemaining,
+      isComplete: this.hasCompletedFounderChallenge()
+    }
   }
 }
 
@@ -232,6 +285,25 @@ User.init(
     linkedin_id: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },
+    founder_status: {
+      type: DataTypes.ENUM(...Object.values(FounderStatus)),
+      defaultValue: FounderStatus.NONE,
+      allowNull: false
+    },
+    founder_deadline: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    founder_feedback_submitted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
+    founder_conversions_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
     },
     created_at: {
       type: DataTypes.DATE,

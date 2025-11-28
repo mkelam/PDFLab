@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { User, UserPlan, ConversionJob, UserAttribution, Partner, PromoCode } from '../models'
+import { FounderStatus } from '../models/User'
 import { AttributionMethod } from '../models/UserAttribution'
 import {
   hashPassword,
@@ -19,9 +20,13 @@ import logger from '../config/logger'
 /**
  * Register a new user
  */
+// Constants for Founder's Edition
+const FOUNDER_EDITION_CAP = 100
+const FOUNDER_CHALLENGE_DAYS = 14
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, name, promo_code } = req.body
+    const { email, password, name, promo_code, founder_edition } = req.body
 
     // Validation
     if (!email || !password) {
@@ -64,14 +69,52 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Sanitize user inputs to prevent XSS
     const sanitizedName = name ? sanitizeText(name) : undefined
 
+    // ===================================
+    // FOUNDER'S EDITION HANDLING
+    // ===================================
+    let isFounderSignup = false
+    let founderStatus: FounderStatus = FounderStatus.NONE
+    let founderDeadline: Date | undefined
+    let userPlan = UserPlan.FREE
+
+    if (founder_edition) {
+      // Check if Founder's Edition spots are still available
+      const founderCount = await User.count({
+        where: {
+          founder_status: [FounderStatus.ACTIVE, FounderStatus.EARNED]
+        }
+      })
+
+      if (founderCount >= FOUNDER_EDITION_CAP) {
+        res.status(400).json({
+          error: 'Founder Edition sold out',
+          message: `All ${FOUNDER_EDITION_CAP} Founder's Edition spots have been claimed. Please sign up for our regular free tier or check out our Partner Pass offers.`,
+          spots_remaining: 0
+        })
+        return
+      }
+
+      // Founder signup approved
+      isFounderSignup = true
+      founderStatus = FounderStatus.ACTIVE
+      founderDeadline = new Date(Date.now() + FOUNDER_CHALLENGE_DAYS * 24 * 60 * 60 * 1000)
+      userPlan = UserPlan.PRO // Founders get Pro access during the challenge
+
+      logger.info(`[Founder] New Founder's Edition signup: ${email} (${FOUNDER_EDITION_CAP - founderCount - 1} spots remaining)`)
+    }
+
     // Create user
     const user = await User.create({
       email,
       password_hash,
       name: sanitizedName,
-      plan: UserPlan.FREE,
+      plan: userPlan,
       conversions_used: 0,
-      conversions_limit: parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
+      conversions_limit: isFounderSignup ? 999999 : parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3'),
+      founder_status: founderStatus,
+      founder_deadline: founderDeadline,
+      founder_feedback_submitted: false,
+      founder_conversions_count: 0,
       created_at: new Date(),
       updated_at: new Date()
     })
@@ -213,10 +256,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       plan: user.plan
     })
 
+    // Build response message
+    let successMessage = 'User registered successfully'
+    if (isFounderSignup) {
+      successMessage = `Welcome to Founder's Edition! Complete 10 conversions and submit feedback within ${FOUNDER_CHALLENGE_DAYS} days to earn lifetime Pro access.`
+    } else if (migratedJobs > 0) {
+      successMessage = `User registered successfully. ${migratedJobs} conversion${migratedJobs > 1 ? 's' : ''} migrated to your account.`
+    }
+
+    // Calculate spots remaining for response
+    const spotsRemaining = isFounderSignup
+      ? FOUNDER_EDITION_CAP - (await User.count({ where: { founder_status: [FounderStatus.ACTIVE, FounderStatus.EARNED] } }))
+      : undefined
+
     res.status(201).json({
-      message: migratedJobs > 0
-        ? `User registered successfully. ${migratedJobs} conversion${migratedJobs > 1 ? 's' : ''} migrated to your account.`
-        : 'User registered successfully',
+      message: successMessage,
       user: {
         id: user.id,
         email: user.email,
@@ -224,11 +278,24 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         role: user.role,
         plan: user.plan,
         conversions_used: user.conversions_used,
-        conversions_limit: user.conversions_limit
+        conversions_limit: user.conversions_limit,
+        founder_status: user.founder_status,
+        founder_deadline: user.founder_deadline,
+        founder_progress: isFounderSignup ? user.getFounderProgress() : undefined
       },
       token: accessToken,
       refreshToken: refreshToken,
-      migrated_jobs: migratedJobs
+      migrated_jobs: migratedJobs,
+      founder_edition: isFounderSignup ? {
+        enrolled: true,
+        spots_remaining: spotsRemaining,
+        deadline: founderDeadline,
+        challenge: {
+          conversions_required: 10,
+          feedback_required: true,
+          days_remaining: FOUNDER_CHALLENGE_DAYS
+        }
+      } : undefined
     })
   } catch (error) {
     logger.error('Registration error:', { error: error instanceof Error ? error.message : String(error) })

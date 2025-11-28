@@ -1,0 +1,331 @@
+import { Request, Response } from 'express'
+import { User, UserPlan } from '../models'
+import { FounderStatus } from '../models/User'
+import { Op } from 'sequelize'
+import logger from '../config/logger'
+
+// Constants
+const FOUNDER_EDITION_CAP = 100
+const FOUNDER_CONVERSIONS_REQUIRED = 10
+
+/**
+ * Get founder challenge progress for authenticated user
+ */
+export const getProgress = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' })
+      return
+    }
+
+    // Check if user is enrolled in Founder's Edition
+    if (user.founder_status === FounderStatus.NONE) {
+      res.status(400).json({
+        error: 'Not enrolled',
+        message: 'You are not enrolled in the Founder\'s Edition program'
+      })
+      return
+    }
+
+    const progress = user.getFounderProgress()
+
+    res.status(200).json({
+      founder_status: user.founder_status,
+      progress: {
+        conversions: progress.conversions,
+        conversions_required: progress.conversionsRequired,
+        conversions_remaining: Math.max(0, progress.conversionsRequired - progress.conversions),
+        feedback_submitted: progress.feedbackSubmitted,
+        days_remaining: progress.daysRemaining,
+        deadline: user.founder_deadline,
+        is_complete: progress.isComplete,
+        percentage: Math.min(100, Math.round((progress.conversions / progress.conversionsRequired) * 100))
+      },
+      message: getProgressMessage(user.founder_status, progress)
+    })
+  } catch (error) {
+    logger.error('Get founder progress error:', { error: error instanceof Error ? error.message : String(error) })
+    res.status(500).json({
+      error: 'Failed to get progress',
+      message: 'An error occurred while fetching your founder challenge progress'
+    })
+  }
+}
+
+/**
+ * Submit founder feedback form
+ */
+export const submitFeedback = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' })
+      return
+    }
+
+    // Check if user is enrolled in Founder's Edition
+    if (user.founder_status !== FounderStatus.ACTIVE) {
+      res.status(400).json({
+        error: 'Cannot submit feedback',
+        message: user.founder_status === FounderStatus.NONE
+          ? 'You are not enrolled in the Founder\'s Edition program'
+          : user.founder_status === FounderStatus.EARNED
+            ? 'You have already earned your lifetime license!'
+            : 'Your Founder\'s Edition challenge has expired'
+      })
+      return
+    }
+
+    const { use_case, friction_points, would_pay } = req.body
+
+    // Validate feedback (minimum 50 chars per field as per GTM strategy)
+    if (!use_case || use_case.length < 50) {
+      res.status(400).json({
+        error: 'Invalid feedback',
+        message: 'Please describe your use case in at least 50 characters'
+      })
+      return
+    }
+
+    if (!friction_points || friction_points.length < 50) {
+      res.status(400).json({
+        error: 'Invalid feedback',
+        message: 'Please describe friction points in at least 50 characters'
+      })
+      return
+    }
+
+    if (would_pay === undefined || would_pay === null) {
+      res.status(400).json({
+        error: 'Invalid feedback',
+        message: 'Please indicate whether you would pay for Pro access'
+      })
+      return
+    }
+
+    // Store feedback (you might want to create a separate FounderFeedback model for this)
+    // For now, we'll log it and mark as submitted
+    logger.info('[Founder] Feedback submitted', {
+      user_id: user.id,
+      email: user.email,
+      use_case: use_case.substring(0, 100), // Log first 100 chars
+      friction_points: friction_points.substring(0, 100),
+      would_pay
+    })
+
+    // Mark feedback as submitted
+    user.founder_feedback_submitted = true
+    await user.save()
+
+    // Check if challenge is now complete
+    const isNowComplete = user.hasCompletedFounderChallenge()
+    if (isNowComplete) {
+      user.founder_status = FounderStatus.EARNED
+      await user.save()
+
+      logger.info(`[Founder] User ${user.email} has EARNED lifetime Pro access!`)
+
+      res.status(200).json({
+        success: true,
+        message: 'Congratulations! You have earned lifetime Pro access!',
+        founder_status: FounderStatus.EARNED,
+        lifetime_access: true
+      })
+      return
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Feedback submitted successfully. Keep converting to complete the challenge!',
+      founder_status: user.founder_status,
+      progress: user.getFounderProgress()
+    })
+  } catch (error) {
+    logger.error('Submit founder feedback error:', { error: error instanceof Error ? error.message : String(error) })
+    res.status(500).json({
+      error: 'Failed to submit feedback',
+      message: 'An error occurred while submitting your feedback'
+    })
+  }
+}
+
+/**
+ * Increment founder conversion count (called internally after successful conversion)
+ */
+export const incrementConversionCount = async (userId: string): Promise<{ earned: boolean; count: number }> => {
+  try {
+    const user = await User.findByPk(userId)
+    if (!user || user.founder_status !== FounderStatus.ACTIVE) {
+      return { earned: false, count: 0 }
+    }
+
+    user.founder_conversions_count += 1
+    await user.save()
+
+    logger.info(`[Founder] User ${user.email} conversion count: ${user.founder_conversions_count}/${FOUNDER_CONVERSIONS_REQUIRED}`)
+
+    // Check if challenge is now complete
+    if (user.hasCompletedFounderChallenge()) {
+      user.founder_status = FounderStatus.EARNED
+      await user.save()
+
+      logger.info(`[Founder] User ${user.email} has EARNED lifetime Pro access!`)
+      return { earned: true, count: user.founder_conversions_count }
+    }
+
+    return { earned: false, count: user.founder_conversions_count }
+  } catch (error) {
+    logger.error('Increment founder conversion error:', { error: error instanceof Error ? error.message : String(error) })
+    return { earned: false, count: 0 }
+  }
+}
+
+/**
+ * Check and expire founders whose deadline has passed (cron job)
+ */
+export const checkAndExpireFounders = async (_req?: Request, res?: Response): Promise<void> => {
+  try {
+    const now = new Date()
+
+    // Find all active founders whose deadline has passed
+    const expiredFounders = await User.findAll({
+      where: {
+        founder_status: FounderStatus.ACTIVE,
+        founder_deadline: {
+          [Op.lt]: now
+        }
+      }
+    })
+
+    let expiredCount = 0
+    for (const user of expiredFounders) {
+      // Check if they completed the challenge
+      if (user.hasCompletedFounderChallenge()) {
+        user.founder_status = FounderStatus.EARNED
+        logger.info(`[Founder] Late completion: User ${user.email} earned lifetime access`)
+      } else {
+        // Downgrade to free
+        user.founder_status = FounderStatus.EXPIRED
+        user.plan = UserPlan.FREE
+        user.conversions_limit = parseInt(process.env['CONVERSIONS_LIMIT_FREE'] || '3')
+        expiredCount++
+        logger.info(`[Founder] Expired: User ${user.email} downgraded to free (${user.founder_conversions_count} conversions, feedback: ${user.founder_feedback_submitted})`)
+      }
+      await user.save()
+    }
+
+    const message = `Founder expiry check complete. ${expiredCount} users expired, ${expiredFounders.length - expiredCount} earned.`
+    logger.info(`[Founder] ${message}`)
+
+    if (res) {
+      res.status(200).json({
+        success: true,
+        message,
+        expired_count: expiredCount,
+        earned_count: expiredFounders.length - expiredCount
+      })
+    }
+  } catch (error) {
+    logger.error('Check founder expiry error:', { error: error instanceof Error ? error.message : String(error) })
+    if (res) {
+      res.status(500).json({
+        error: 'Expiry check failed',
+        message: 'An error occurred while checking founder expiry'
+      })
+    }
+  }
+}
+
+/**
+ * Get founder edition stats (admin only)
+ */
+export const getFounderStats = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const activeCount = await User.count({ where: { founder_status: FounderStatus.ACTIVE } })
+    const earnedCount = await User.count({ where: { founder_status: FounderStatus.EARNED } })
+    const expiredCount = await User.count({ where: { founder_status: FounderStatus.EXPIRED } })
+
+    const spotsRemaining = FOUNDER_EDITION_CAP - activeCount - earnedCount
+
+    res.status(200).json({
+      total_cap: FOUNDER_EDITION_CAP,
+      spots_remaining: Math.max(0, spotsRemaining),
+      spots_taken: activeCount + earnedCount,
+      breakdown: {
+        active: activeCount,
+        earned: earnedCount,
+        expired: expiredCount
+      },
+      is_sold_out: spotsRemaining <= 0
+    })
+  } catch (error) {
+    logger.error('Get founder stats error:', { error: error instanceof Error ? error.message : String(error) })
+    res.status(500).json({
+      error: 'Failed to get stats',
+      message: 'An error occurred while fetching founder stats'
+    })
+  }
+}
+
+/**
+ * Get remaining founder spots (public endpoint for landing page counter)
+ */
+export const getSpotsRemaining = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const takenCount = await User.count({
+      where: {
+        founder_status: [FounderStatus.ACTIVE, FounderStatus.EARNED]
+      }
+    })
+
+    const spotsRemaining = Math.max(0, FOUNDER_EDITION_CAP - takenCount)
+
+    res.status(200).json({
+      spots_remaining: spotsRemaining,
+      total_spots: FOUNDER_EDITION_CAP,
+      is_available: spotsRemaining > 0
+    })
+  } catch (error) {
+    logger.error('Get spots remaining error:', { error: error instanceof Error ? error.message : String(error) })
+    res.status(500).json({
+      error: 'Failed to get spots',
+      message: 'An error occurred while fetching available spots'
+    })
+  }
+}
+
+// Helper function to generate progress message
+function getProgressMessage(
+  status: FounderStatus,
+  progress: { conversions: number; conversionsRequired: number; feedbackSubmitted: boolean; daysRemaining: number; isComplete: boolean }
+): string {
+  if (status === FounderStatus.EARNED) {
+    return 'Congratulations! You have earned lifetime Pro access!'
+  }
+
+  if (status === FounderStatus.EXPIRED) {
+    return 'Your Founder\'s Edition challenge has expired. You have been downgraded to the free tier.'
+  }
+
+  if (progress.isComplete) {
+    return 'Challenge complete! Your lifetime access is being activated...'
+  }
+
+  const parts: string[] = []
+
+  if (progress.conversions < progress.conversionsRequired) {
+    const remaining = progress.conversionsRequired - progress.conversions
+    parts.push(`Convert ${remaining} more file${remaining > 1 ? 's' : ''}`)
+  }
+
+  if (!progress.feedbackSubmitted) {
+    parts.push('submit your feedback form')
+  }
+
+  if (parts.length === 0) {
+    return 'Almost there! Complete your remaining tasks to earn lifetime access.'
+  }
+
+  return `${parts.join(' and ')} within ${progress.daysRemaining} day${progress.daysRemaining !== 1 ? 's' : ''} to earn lifetime Pro access.`
+}
