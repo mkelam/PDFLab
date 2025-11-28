@@ -32,8 +32,8 @@ export const submitFeedback = async (req: Request, res: Response): Promise<void>
       return
     }
 
-    // Get user_id from request if authenticated
-    const userId = (req as any).user?.userId || null
+    // Get user_id from request if authenticated (optionalAuth sets req.userId directly)
+    const userId = (req as any).userId || null
 
     // Get user agent from headers
     const userAgent = req.headers['user-agent'] || null
@@ -41,14 +41,33 @@ export const submitFeedback = async (req: Request, res: Response): Promise<void>
     // If authenticated, fetch user email/name from database
     let email = user_email
     let name = user_name
+    let founderFeedbackMarked = false
 
     if (userId) {
-      const user = await User.findByPk(userId, {
-        attributes: ['email', 'name']
-      })
+      const user = await User.findByPk(userId)
       if (user) {
         email = user.email
         name = user.name
+
+        // If user is an active founder and hasn't submitted feedback yet, mark it
+        if ((user as any).founder_status === 'active' && !(user as any).founder_feedback_submitted) {
+          await User.update(
+            { founder_feedback_submitted: true },
+            { where: { id: userId } }
+          )
+          founderFeedbackMarked = true
+          logger.info(`[Founder] User ${userId} submitted feedback - founder_feedback_submitted marked true`)
+
+          // Check if they've now completed the challenge (10 conversions + feedback)
+          const updatedUser = await User.findByPk(userId)
+          if (updatedUser && (updatedUser as any).founder_conversions_count >= 10) {
+            await User.update(
+              { founder_status: 'earned' },
+              { where: { id: userId } }
+            )
+            logger.info(`[Founder] User ${userId} earned lifetime Pro access after submitting feedback!`)
+          }
+        }
       }
     }
 
@@ -91,7 +110,7 @@ export const submitFeedback = async (req: Request, res: Response): Promise<void>
       // Don't fail the request if email fails
     }
 
-    res.status(201).json({
+    const response: any = {
       success: true,
       message: 'Feedback received successfully',
       feedback: {
@@ -99,7 +118,15 @@ export const submitFeedback = async (req: Request, res: Response): Promise<void>
         type: feedback.type,
         created_at: feedback.created_at
       }
-    })
+    }
+
+    // Include founder status update in response
+    if (founderFeedbackMarked) {
+      response.founder_feedback_marked = true
+      response.message = 'Feedback received! This counts towards your Founder Challenge.'
+    }
+
+    res.status(201).json(response)
   } catch (error) {
     logger.error('Submit feedback error:', { error: error instanceof Error ? error.message : String(error) })
     res.status(500).json({
