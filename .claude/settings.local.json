@@ -85,7 +85,12 @@
       "Bash(GOOGLE_CLIENT_ID=dummy GOOGLE_CLIENT_SECRET=dummy timeout 15 npm run dev:*)",
       "Bash(nul)",
       "Bash(set:*)",
-      "Bash(set GOOGLE_CLIENT_SECRET=dummy)"
+      "Bash(set GOOGLE_CLIENT_SECRET=dummy)",
+      "Bash(git show:*)",
+      "Bash(git rebase:*)",
+      "Bash(/dev/null)",
+      "Bash(rm:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch:*)"
     ],
     "deny": [],
     "ask": []
