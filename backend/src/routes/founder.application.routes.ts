@@ -6,7 +6,7 @@
 import { Router, Request, Response } from 'express'
 import { requireAuth as authenticateToken } from '../middleware/auth.middleware'
 import { requireAdmin } from '../middleware/admin.middleware'
-import sequelize from '../config/database'
+import { sequelize } from '../config/database'
 
 // Helper function to send email (placeholder - implement actual email service)
 async function sendEmail(options: { to: string; subject: string; html: string }) {
