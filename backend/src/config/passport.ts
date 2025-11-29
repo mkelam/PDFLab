@@ -4,15 +4,17 @@ import { Strategy as OAuth2Strategy } from 'passport-oauth2'
 import { User } from '../models'
 import axios from 'axios'
 
-// Google OAuth Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3006/api/auth/google/callback',
-    },
-    async (accessToken, refreshToken, profile, done) => {
+// Google OAuth Strategy - Only configure if credentials are provided
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  console.log('[Passport] Configuring Google OAuth')
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3006/api/auth/google/callback',
+      },
+      async (accessToken, refreshToken, profile, done) => {
       try {
         console.log('[Google OAuth] Callback received')
         console.log('[Google OAuth] Profile ID:', profile.id)
@@ -59,7 +61,10 @@ passport.use(
       }
     }
   )
-)
+  )
+} else {
+  console.log('[Passport] Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET required')
+}
 
 // LinkedIn OAuth Strategy (OpenID Connect) - Disabled for now
 // Only enable if LINKEDIN_CLIENT_ID is configured
