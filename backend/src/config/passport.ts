@@ -3,10 +3,11 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as OAuth2Strategy } from 'passport-oauth2'
 import { User } from '../models'
 import axios from 'axios'
+import logger from './logger'
 
 // Google OAuth Strategy - Only configure if credentials are provided
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  console.log('[Passport] Configuring Google OAuth')
+  logger.info('Configuring Google OAuth strategy')
   passport.use(
     new GoogleStrategy(
       {
@@ -16,24 +17,22 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       },
       async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log('[Google OAuth] Callback received')
-        console.log('[Google OAuth] Profile ID:', profile.id)
+        logger.debug('Google OAuth callback received', { profileId: profile.id })
 
         const email = profile.emails?.[0]?.value
-        console.log('[Google OAuth] Email:', email)
 
         if (!email) {
-          console.error('[Google OAuth] ERROR: No email found in profile')
+          logger.error('Google OAuth: No email found in profile', { profileId: profile.id })
           return done(new Error('No email found in Google profile'))
         }
 
         // Find or create user
         let user = await User.findOne({ where: { email } })
-        console.log('[Google OAuth] User lookup:', user ? 'Found existing user' : 'New user')
+        logger.debug('Google OAuth user lookup', { email, found: !!user })
 
         if (!user) {
           // Create new user
-          console.log('[Google OAuth] Creating new user:', email)
+          logger.info('Google OAuth: Creating new user', { email })
           user = await User.create({
             email,
             name: profile.displayName || email.split('@')[0],
@@ -43,27 +42,27 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             conversions_limit: 3,
             google_id: profile.id,
           })
-          console.log('[Google OAuth] ✅ New user created:', user.id)
+          logger.info('Google OAuth: New user created', { userId: user.id, email })
         } else if (!user.google_id) {
           // Link existing user to Google
-          console.log('[Google OAuth] Linking existing user to Google:', user.id)
+          logger.info('Google OAuth: Linking existing user', { userId: user.id })
           user.google_id = profile.id
           await user.save()
-          console.log('[Google OAuth] ✅ User linked to Google')
+          logger.info('Google OAuth: User linked to Google', { userId: user.id })
         } else {
-          console.log('[Google OAuth] ✅ User already linked to Google')
+          logger.debug('Google OAuth: User already linked', { userId: user.id })
         }
 
         return done(null, user)
       } catch (error) {
-        console.error('[Google OAuth] ERROR:', error)
+        logger.error('Google OAuth error', { error: error instanceof Error ? error.message : String(error) })
         return done(error as Error)
       }
     }
   )
   )
 } else {
-  console.log('[Passport] Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET required')
+  logger.warn('Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables required')
 }
 
 // LinkedIn OAuth Strategy (OpenID Connect) - Disabled for now
@@ -118,7 +117,7 @@ const linkedInStrategy = new OAuth2Strategy(
 
       return done(null, user)
     } catch (error) {
-      console.error('LinkedIn OAuth error:', error)
+      logger.error('LinkedIn OAuth error', { error: error instanceof Error ? error.message : String(error) })
       return done(error as Error)
     }
   }
@@ -148,7 +147,7 @@ linkedInStrategy.userProfile = function(accessToken: string, done: (err: Error |
     done(null, profile)
   })
   .catch((error) => {
-    console.error('LinkedIn userProfile error:', error)
+    logger.error('LinkedIn userProfile error', { error: error instanceof Error ? error.message : String(error) })
     done(error)
   })
 }
