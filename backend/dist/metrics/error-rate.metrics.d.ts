@@ -12,15 +12,15 @@ import { Counter, Histogram, Gauge } from 'prom-client';
 /**
  * Track HTTP errors by status code, endpoint, and method
  */
-export declare const httpErrors: Counter<"method" | "route" | "status_code" | "error_type" | "user_type">;
+export declare const httpErrors: Counter<"route" | "method" | "status_code" | "error_type" | "user_type">;
 /**
  * Track 4xx client errors specifically
  */
-export declare const http4xxErrors: Counter<"method" | "route" | "status_code" | "error_reason">;
+export declare const http4xxErrors: Counter<"route" | "method" | "status_code" | "error_reason">;
 /**
  * Track 5xx server errors specifically
  */
-export declare const http5xxErrors: Counter<"method" | "route" | "status_code" | "error_reason" | "error_id">;
+export declare const http5xxErrors: Counter<"route" | "method" | "status_code" | "error_reason" | "error_id">;
 /**
  * Track error response duration
  */
@@ -56,7 +56,7 @@ export declare const conversionProcessingErrors: Counter<"conversion_type" | "st
 /**
  * Database errors
  */
-export declare const databaseErrors: Counter<"error_type" | "operation" | "model">;
+export declare const databaseErrors: Counter<"model" | "error_type" | "operation">;
 /**
  * External API errors (CloudConvert, etc.)
  */

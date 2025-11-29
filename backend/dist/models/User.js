@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.SubscriptionStatus = exports.UserPlan = exports.UserRole = void 0;
+exports.User = exports.FounderStatus = exports.SubscriptionStatus = exports.UserPlan = exports.UserRole = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 var UserRole;
@@ -25,6 +25,13 @@ var SubscriptionStatus;
     SubscriptionStatus["PAST_DUE"] = "past_due";
     SubscriptionStatus["TRIALING"] = "trialing";
 })(SubscriptionStatus || (exports.SubscriptionStatus = SubscriptionStatus = {}));
+var FounderStatus;
+(function (FounderStatus) {
+    FounderStatus["NONE"] = "none";
+    FounderStatus["ACTIVE"] = "active";
+    FounderStatus["EARNED"] = "earned";
+    FounderStatus["EXPIRED"] = "expired";
+})(FounderStatus || (exports.FounderStatus = FounderStatus = {}));
 class User extends sequelize_1.Model {
     // Helper methods
     canConvert() {
@@ -63,6 +70,33 @@ class User extends sequelize_1.Model {
     }
     resetMonthlyUsage() {
         this.conversions_used = 0;
+    }
+    // Founder edition helper methods
+    isFounderActive() {
+        return this.founder_status === FounderStatus.ACTIVE;
+    }
+    isFounderEarned() {
+        return this.founder_status === FounderStatus.EARNED;
+    }
+    hasFounderDeadlinePassed() {
+        if (!this.founder_deadline)
+            return false;
+        return new Date() > this.founder_deadline;
+    }
+    hasCompletedFounderChallenge() {
+        return this.founder_conversions_count >= 10 && this.founder_feedback_submitted;
+    }
+    getFounderProgress() {
+        const now = new Date();
+        const deadline = this.founder_deadline || now;
+        const daysRemaining = Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+        return {
+            conversions: this.founder_conversions_count,
+            conversionsRequired: 10,
+            feedbackSubmitted: this.founder_feedback_submitted,
+            daysRemaining,
+            isComplete: this.hasCompletedFounderChallenge()
+        };
     }
 }
 exports.User = User;
@@ -172,6 +206,25 @@ User.init({
     linkedin_id: {
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true
+    },
+    founder_status: {
+        type: sequelize_1.DataTypes.ENUM(...Object.values(FounderStatus)),
+        defaultValue: FounderStatus.NONE,
+        allowNull: false
+    },
+    founder_deadline: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true
+    },
+    founder_feedback_submitted: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+    },
+    founder_conversions_count: {
+        type: sequelize_1.DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false
     },
     created_at: {
         type: sequelize_1.DataTypes.DATE,

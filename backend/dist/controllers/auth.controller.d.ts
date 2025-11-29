@@ -1,7 +1,4 @@
 import { Request, Response } from 'express';
-/**
- * Register a new user
- */
 export declare const register: (req: Request, res: Response) => Promise<void>;
 /**
  * Login user

@@ -34,16 +34,16 @@ export default function pdflabPro() {
       {/* Product Tour for New Users */}
       {shouldShowOnboarding() && <ProductTour />}
 
-      {/* Beta Launch Banner */}
+      {/* Founder's 100 Banner */}
       <div className="pt-20 pb-1 px-6">
         <div className="max-w-4xl mx-auto">
-          <Link href="/beta">
+          <Link href="/founder/apply">
             <Card className="glass-strong border border-primary/50 hover:border-primary transition-all duration-300 hover:scale-[1.01] cursor-pointer">
               <CardContent className="py-2 px-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                    <span className="font-semibold text-sm">🎉 60-Day Beta Insider Program - Free Pro Access!</span>
+                    <span className="font-semibold text-sm">🚀 Founder's 100 - Limited Spots - Earn Lifetime Access!</span>
                   </div>
                   <Button size="sm" className="h-7 px-3 text-xs">
                     Apply →

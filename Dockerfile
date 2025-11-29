@@ -2,6 +2,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build argument for API URL (baked into Next.js at build time)
+ARG NEXT_PUBLIC_API_URL=https://pdflab.pro
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Copy package files
 COPY package*.json ./
 
@@ -11,7 +15,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build Next.js application
+# Build Next.js application with API URL baked in
 RUN npm run build
 
 # Production image

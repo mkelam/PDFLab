@@ -18,6 +18,12 @@ export declare enum SubscriptionStatus {
     PAST_DUE = "past_due",
     TRIALING = "trialing"
 }
+export declare enum FounderStatus {
+    NONE = "none",
+    ACTIVE = "active",
+    EARNED = "earned",
+    EXPIRED = "expired"
+}
 interface UserAttributes {
     id: string;
     email: string;
@@ -42,11 +48,15 @@ interface UserAttributes {
     onboarding_skipped: boolean;
     google_id?: string;
     linkedin_id?: string;
+    founder_status: FounderStatus;
+    founder_deadline?: Date;
+    founder_feedback_submitted: boolean;
+    founder_conversions_count: number;
     created_at: Date;
     updated_at: Date;
     last_login?: Date;
 }
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at' | 'google_id' | 'linkedin_id'> {
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at' | 'google_id' | 'linkedin_id' | 'founder_status' | 'founder_deadline' | 'founder_feedback_submitted' | 'founder_conversions_count'> {
 }
 export declare class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     id: string;
@@ -72,6 +82,10 @@ export declare class User extends Model<UserAttributes, UserCreationAttributes> 
     onboarding_skipped: boolean;
     google_id?: string;
     linkedin_id?: string;
+    founder_status: FounderStatus;
+    founder_deadline?: Date;
+    founder_feedback_submitted: boolean;
+    founder_conversions_count: number;
     readonly created_at: Date;
     readonly updated_at: Date;
     last_login?: Date;
@@ -79,6 +93,17 @@ export declare class User extends Model<UserAttributes, UserCreationAttributes> 
     getMaxFileSize(): number;
     getMaxBatchSize(): number;
     resetMonthlyUsage(): void;
+    isFounderActive(): boolean;
+    isFounderEarned(): boolean;
+    hasFounderDeadlinePassed(): boolean;
+    hasCompletedFounderChallenge(): boolean;
+    getFounderProgress(): {
+        conversions: number;
+        conversionsRequired: number;
+        feedbackSubmitted: boolean;
+        daysRemaining: number;
+        isComplete: boolean;
+    };
 }
 export {};
 //# sourceMappingURL=User.d.ts.map

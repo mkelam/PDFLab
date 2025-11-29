@@ -26,20 +26,31 @@ const submitFeedback = async (req, res) => {
             res.status(400).json({ error: 'Message too long (max 5000 characters)' });
             return;
         }
-        // Get user_id from request if authenticated
-        const userId = req.user?.userId || null;
+        // Get user_id from request if authenticated (optionalAuth sets req.userId directly)
+        const userId = req.userId || null;
         // Get user agent from headers
         const userAgent = req.headers['user-agent'] || null;
         // If authenticated, fetch user email/name from database
         let email = user_email;
         let name = user_name;
+        let founderFeedbackMarked = false;
         if (userId) {
-            const user = await models_1.User.findByPk(userId, {
-                attributes: ['email', 'name']
-            });
+            const user = await models_1.User.findByPk(userId);
             if (user) {
                 email = user.email;
                 name = user.name;
+                // If user is an active founder and hasn't submitted feedback yet, mark it
+                if (user.founder_status === 'active' && !user.founder_feedback_submitted) {
+                    await models_1.User.update({ founder_feedback_submitted: true }, { where: { id: userId } });
+                    founderFeedbackMarked = true;
+                    logger_1.default.info(`[Founder] User ${userId} submitted feedback - founder_feedback_submitted marked true`);
+                    // Check if they've now completed the challenge (10 conversions + feedback)
+                    const updatedUser = await models_1.User.findByPk(userId);
+                    if (updatedUser && updatedUser.founder_conversions_count >= 10) {
+                        await models_1.User.update({ founder_status: 'earned' }, { where: { id: userId } });
+                        logger_1.default.info(`[Founder] User ${userId} earned lifetime Pro access after submitting feedback!`);
+                    }
+                }
             }
         }
         // Sanitize inputs to prevent XSS
@@ -79,7 +90,7 @@ const submitFeedback = async (req, res) => {
             logger_1.default.error('Failed to send feedback notification email:', { emailError });
             // Don't fail the request if email fails
         }
-        res.status(201).json({
+        const response = {
             success: true,
             message: 'Feedback received successfully',
             feedback: {
@@ -87,7 +98,13 @@ const submitFeedback = async (req, res) => {
                 type: feedback.type,
                 created_at: feedback.created_at
             }
-        });
+        };
+        // Include founder status update in response
+        if (founderFeedbackMarked) {
+            response.founder_feedback_marked = true;
+            response.message = 'Feedback received! This counts towards your Founder Challenge.';
+        }
+        res.status(201).json(response);
     }
     catch (error) {
         logger_1.default.error('Submit feedback error:', { error: error instanceof Error ? error.message : String(error) });

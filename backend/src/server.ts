@@ -81,6 +81,7 @@ import partnerRoutes from './routes/partner.routes'
 import partnerApplicationRoutes from './routes/partnerApplication.routes'
 import metricsRoutes from './routes/metrics.routes'
 import founderRoutes from './routes/founder.routes'
+import founderApplicationRoutes from './routes/founder.application.routes'
 
 // Import attribution middleware
 import { captureAttribution } from './middleware/attribution.middleware'
@@ -245,6 +246,7 @@ app.use('/api/profile', profileRoutes)
 app.use('/api/partners', partnerRoutes) // Influencer attribution tracking
 app.use('/api/partner-applications', partnerApplicationRoutes) // Partner application system
 app.use('/api/founder', founderRoutes) // Founder's Edition challenge
+app.use('/api/founder', founderApplicationRoutes) // Founder's Edition application workflow
 app.use('/api/admin', adminRoutes)
 app.use('/api/admin', conversionAdminRoutes)
 app.use('/api/admin/payments', paymentAdminRoutes)

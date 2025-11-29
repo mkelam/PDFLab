@@ -8,6 +8,7 @@ const path_1 = __importDefault(require("path"));
 const redis_1 = require("../config/redis");
 const cloudconvert_service_1 = require("../services/cloudconvert.service");
 const models_1 = require("../models");
+const founder_controller_1 = require("../controllers/founder.controller");
 const logger_1 = __importDefault(require("../config/logger"));
 const metrics_1 = require("../config/metrics");
 // Helper function to get absolute storage path
@@ -144,6 +145,14 @@ const initializeConversionWorker = () => {
             // 5. Increment user conversion count (skip for guest users)
             if (user_id) {
                 await models_1.User.increment('conversions_used', { where: { id: user_id } });
+                // 5b. Increment founder conversion count if user is in active founder challenge
+                const founderResult = await (0, founder_controller_1.incrementConversionCount)(user_id);
+                if (founderResult.earned) {
+                    logger_1.default.info(`[Founder] User ${user_id} earned lifetime Pro access after conversion!`);
+                }
+                else if (founderResult.count > 0) {
+                    logger_1.default.info(`[Founder] User ${user_id} founder conversion count: ${founderResult.count}/10`);
+                }
             }
             // 6. Log usage (skip for guest users - they don't have usage logs)
             const processingTime = Date.now() - startTime;

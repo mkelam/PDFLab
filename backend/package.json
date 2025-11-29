@@ -44,7 +44,7 @@
   "author": "PDFLab",
   "license": "MIT",
   "dependencies": {
-    "@sentry/node": "^10.25.0",
+    "@sentry/node": "^10.27.0",
     "@sentry/profiling-node": "^10.25.0",
     "@types/adm-zip": "^0.5.7",
     "@types/archiver": "^7.0.0",

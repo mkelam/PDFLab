@@ -109,6 +109,8 @@ const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
 const test_routes_1 = __importDefault(require("./routes/test.routes"));
 const partner_routes_1 = __importDefault(require("./routes/partner.routes"));
 const partnerApplication_routes_1 = __importDefault(require("./routes/partnerApplication.routes"));
+const founder_routes_1 = __importDefault(require("./routes/founder.routes"));
+const founder_application_routes_1 = __importDefault(require("./routes/founder.application.routes"));
 // Import attribution middleware
 const attribution_middleware_1 = require("./middleware/attribution.middleware");
 const app = (0, express_1.default)();
@@ -242,6 +244,8 @@ app.use('/api/analytics', analytics_routes_1.default);
 app.use('/api/profile', profile_routes_1.default);
 app.use('/api/partners', partner_routes_1.default); // Influencer attribution tracking
 app.use('/api/partner-applications', partnerApplication_routes_1.default); // Partner application system
+app.use('/api/founder', founder_routes_1.default); // Founder's Edition challenge
+app.use('/api/founder', founder_application_routes_1.default); // Founder's Edition application workflow
 app.use('/api/admin', admin_routes_1.default);
 app.use('/api/admin', conversion_admin_routes_1.default);
 app.use('/api/admin/payments', payment_admin_routes_1.default);

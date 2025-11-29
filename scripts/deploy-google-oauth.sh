@@ -238,8 +238,8 @@ ssh ${VPS_HOST} << 'ENDSSH'
         -e NODE_ENV=production \
         -e PORT=3006 \
         -e FRONTEND_URL=https://pdflab.pro \
-        -e GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID \
-        -e GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET \
+        -e GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
+        -e GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
         -e GOOGLE_CALLBACK_URL=https://pdflab.pro/api/auth/google/callback \
         $(docker inspect pdflab-backend-staging --format='{{range .Config.Env}}-e {{.}} {{end}}' | grep -E 'DB_|REDIS_|JWT_|SMTP_|CLOUDCONVERT_|STORAGE_|CORS_|MAX_FILE|SENTRY_') \
         pdflab-backend:google-oauth

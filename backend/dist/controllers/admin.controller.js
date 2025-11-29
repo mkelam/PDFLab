@@ -49,7 +49,7 @@ const logger_1 = __importDefault(require("../config/logger"));
  */
 const getAllUsers = async (req, res) => {
     try {
-        const { search = '', plan, role, page = '1', limit = '25', sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
+        const { search = '', plan, role, founder_status, page = '1', limit = '25', sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const offset = (pageNum - 1) * limitNum;
@@ -69,6 +69,10 @@ const getAllUsers = async (req, res) => {
         // Filter by role
         if (role && role !== 'all') {
             where.role = role;
+        }
+        // Filter by founder status
+        if (founder_status && founder_status !== 'all' && founder_status !== '') {
+            where.founder_status = founder_status;
         }
         // Get users with pagination
         const { count, rows: users } = await User_1.User.findAndCountAll({

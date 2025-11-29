@@ -102,8 +102,8 @@ docker run -d \
     -e NODE_ENV=production \
     -e PORT=3006 \
     -e FRONTEND_URL=https://pdflab.pro \
-    -e GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID \
-    -e GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET \
+    -e GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
+    -e GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
     -e GOOGLE_CALLBACK_URL=https://pdflab.pro/api/auth/google/callback \
     $existing_env \
     pdflab-backend:oauth
