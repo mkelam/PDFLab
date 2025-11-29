@@ -7,13 +7,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const database_1 = require("../config/database");
-const email_1 = require("../utils/email");
+// Helper function to send email (placeholder - implement actual email service)
+async function sendEmail(options) {
+    console.log(`Email to ${options.to}: ${options.subject}`);
+    // TODO: Implement actual email sending
+}
+// Helper function to execute queries
+async function query(sql, params) {
+    const client = await database_1.pool.connect();
+    try {
+        const result = await client.query(sql, params);
+        return result;
+    }
+    finally {
+        client.release();
+    }
+}
 const router = (0, express_1.Router)();
 /**
  * POST /api/founder/apply
  * Submit Founder's Edition application
  */
-router.post('/apply', auth_middleware_1.authenticateToken, async (req, res) => {
+router.post('/apply', auth_middleware_1.authenticate, async (req, res) => {
     try {
         const userId = req.user?.userId;
         const { reason, use_case } = req.body;
@@ -24,7 +39,7 @@ router.post('/apply', auth_middleware_1.authenticateToken, async (req, res) => {
             });
         }
         // Check if spots are still available
-        const spotsResult = await (0, database_1.query)(`SELECT
+        const spotsResult = await query(`SELECT
         100 - COUNT(*) FILTER (WHERE founder_application_status = 'approved' OR founder_status != 'none') as spots_remaining
        FROM users`);
         const spotsRemaining = spotsResult.rows[0].spots_remaining;
@@ -35,7 +50,7 @@ router.post('/apply', auth_middleware_1.authenticateToken, async (req, res) => {
             });
         }
         // Check if user already has an application
-        const existing = await (0, database_1.query)('SELECT founder_application_status FROM users WHERE id = $1', [userId]);
+        const existing = await query('SELECT founder_application_status FROM users WHERE id = $1', [userId]);
         if (existing.rows[0]?.founder_application_status !== 'none') {
             return res.status(400).json({
                 error: 'Application already exists',
@@ -44,17 +59,17 @@ router.post('/apply', auth_middleware_1.authenticateToken, async (req, res) => {
             });
         }
         // Submit application
-        await (0, database_1.query)(`UPDATE users
+        await query(`UPDATE users
        SET founder_application_status = 'pending',
            founder_application_reason = $1,
            founder_application_use_case = $2,
            founder_application_submitted_at = NOW()
        WHERE id = $3`, [reason, use_case, userId]);
         // Get user info for confirmation email
-        const userResult = await (0, database_1.query)('SELECT email, name FROM users WHERE id = $1', [userId]);
+        const userResult = await query('SELECT email, name FROM users WHERE id = $1', [userId]);
         const user = userResult.rows[0];
         // Send confirmation email
-        await (0, email_1.sendEmail)({
+        await sendEmail({
             to: user.email,
             subject: 'Founder\'s Edition Application Received',
             html: `
@@ -98,7 +113,7 @@ router.get('/applications', auth_middleware_1.requireAdmin, async (req, res) => 
         if (status && typeof status === 'string') {
             whereClause = `founder_application_status = '${status}'`;
         }
-        const result = await (0, database_1.query)(`SELECT
+        const result = await query(`SELECT
         id,
         email,
         name,
@@ -131,7 +146,7 @@ router.get('/applications', auth_middleware_1.requireAdmin, async (req, res) => 
  */
 router.get('/application-stats', auth_middleware_1.requireAdmin, async (req, res) => {
     try {
-        const result = await (0, database_1.query)(`
+        const result = await query(`
       SELECT
         COUNT(*) FILTER (WHERE founder_application_status = 'pending') as pending_count,
         COUNT(*) FILTER (WHERE founder_application_status = 'approved') as approved_count,
@@ -157,7 +172,7 @@ router.post('/approve/:userId', auth_middleware_1.requireAdmin, async (req, res)
         const { userId } = req.params;
         const adminId = req.user?.userId;
         // Get user info
-        const userResult = await (0, database_1.query)(`SELECT email, name, founder_application_status
+        const userResult = await query(`SELECT email, name, founder_application_status
        FROM users
        WHERE id = $1`, [userId]);
         if (userResult.rows.length === 0) {
@@ -173,7 +188,7 @@ router.post('/approve/:userId', auth_middleware_1.requireAdmin, async (req, res)
         // Approve application and activate founder status
         const deadline = new Date();
         deadline.setDate(deadline.getDate() + 14); // 14 days from now
-        await (0, database_1.query)(`UPDATE users
+        await query(`UPDATE users
        SET founder_application_status = 'approved',
            founder_application_reviewed_at = NOW(),
            founder_application_reviewed_by = $1,
@@ -181,7 +196,7 @@ router.post('/approve/:userId', auth_middleware_1.requireAdmin, async (req, res)
            founder_deadline = $2
        WHERE id = $3`, [adminId, deadline, userId]);
         // Send approval email
-        await (0, email_1.sendEmail)({
+        await sendEmail({
             to: user.email,
             subject: '🎉 Founder\'s Edition Application Approved!',
             html: `
@@ -234,7 +249,7 @@ router.post('/reject/:userId', auth_middleware_1.requireAdmin, async (req, res) 
             });
         }
         // Get user info
-        const userResult = await (0, database_1.query)(`SELECT email, name, founder_application_status
+        const userResult = await query(`SELECT email, name, founder_application_status
        FROM users
        WHERE id = $1`, [userId]);
         if (userResult.rows.length === 0) {
@@ -248,14 +263,14 @@ router.post('/reject/:userId', auth_middleware_1.requireAdmin, async (req, res) 
             });
         }
         // Reject application
-        await (0, database_1.query)(`UPDATE users
+        await query(`UPDATE users
        SET founder_application_status = 'rejected',
            founder_application_reviewed_at = NOW(),
            founder_application_reviewed_by = $1,
            founder_rejection_reason = $2
        WHERE id = $3`, [adminId, reason, userId]);
         // Send rejection email
-        await (0, email_1.sendEmail)({
+        await sendEmail({
             to: user.email,
             subject: 'Founder\'s Edition Application Update',
             html: `
@@ -288,10 +303,10 @@ router.post('/reject/:userId', auth_middleware_1.requireAdmin, async (req, res) 
  * GET /api/founder/my-application
  * Get current user's application status
  */
-router.get('/my-application', auth_middleware_1.authenticateToken, async (req, res) => {
+router.get('/my-application', auth_middleware_1.authenticate, async (req, res) => {
     try {
         const userId = req.user?.userId;
-        const result = await (0, database_1.query)(`SELECT
+        const result = await query(`SELECT
         founder_application_status,
         founder_application_reason,
         founder_application_use_case,

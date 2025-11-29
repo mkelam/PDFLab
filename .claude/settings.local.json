@@ -28,7 +28,10 @@
       "Bash(git push:*)",
       "Bash(java:*)",
       "Bash(git --version)",
-      "Bash(git filter-branch --tree-filter 'find . -type f \\( -name \"\"*.md\"\" -o -name \"\"*.sh\"\" \\) -exec sed -i \"\"s/587814265812-lnhhio57hgvsd25n02289cvem94fkp8r\\.apps\\.googleusercontent\\.com/YOUR_GOOGLE_CLIENT_ID/g; s/YOUR_GOOGLE_CLIENT_SECRET/YOUR_GOOGLE_CLIENT_SECRET/g\"\" {} + 2>/dev/null || true' --tag-name-filter cat -- --all)"
+      "Bash(git filter-branch --tree-filter 'find . -type f \\( -name \"\"*.md\"\" -o -name \"\"*.sh\"\" \\) -exec sed -i \"\"s/587814265812-lnhhio57hgvsd25n02289cvem94fkp8r\\.apps\\.googleusercontent\\.com/YOUR_GOOGLE_CLIENT_ID/g; s/YOUR_GOOGLE_CLIENT_SECRET/YOUR_GOOGLE_CLIENT_SECRET/g\"\" {} + 2>/dev/null || true' --tag-name-filter cat -- --all)",
+      "Bash(git remote add:*)",
+      "Bash(git log:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []
