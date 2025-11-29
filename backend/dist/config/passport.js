@@ -8,55 +8,60 @@ const passport_google_oauth20_1 = require("passport-google-oauth20");
 const passport_oauth2_1 = require("passport-oauth2");
 const models_1 = require("../models");
 const axios_1 = __importDefault(require("axios"));
-// Google OAuth Strategy
-passport_1.default.use(new passport_google_oauth20_1.Strategy({
-    clientID: process.env.GOOGLE_CLIENT_ID || '',
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3006/api/auth/google/callback',
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        console.log('[Google OAuth] Callback received');
-        console.log('[Google OAuth] Profile ID:', profile.id);
-        const email = profile.emails?.[0]?.value;
-        console.log('[Google OAuth] Email:', email);
-        if (!email) {
-            console.error('[Google OAuth] ERROR: No email found in profile');
-            return done(new Error('No email found in Google profile'));
+const logger_1 = __importDefault(require("./logger"));
+// Google OAuth Strategy - Only configure if credentials are provided
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    logger_1.default.info('Configuring Google OAuth strategy');
+    passport_1.default.use(new passport_google_oauth20_1.Strategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3006/api/auth/google/callback',
+    }, async (accessToken, refreshToken, profile, done) => {
+        try {
+            logger_1.default.debug('Google OAuth callback received', { profileId: profile.id });
+            const email = profile.emails?.[0]?.value;
+            if (!email) {
+                logger_1.default.error('Google OAuth: No email found in profile', { profileId: profile.id });
+                return done(new Error('No email found in Google profile'));
+            }
+            // Find or create user
+            let user = await models_1.User.findOne({ where: { email } });
+            logger_1.default.debug('Google OAuth user lookup', { email, found: !!user });
+            if (!user) {
+                // Create new user
+                logger_1.default.info('Google OAuth: Creating new user', { email });
+                user = await models_1.User.create({
+                    email,
+                    name: profile.displayName || email.split('@')[0],
+                    password_hash: '', // No password for OAuth users
+                    plan: 'free',
+                    conversions_used: 0,
+                    conversions_limit: 3,
+                    google_id: profile.id,
+                });
+                logger_1.default.info('Google OAuth: New user created', { userId: user.id, email });
+            }
+            else if (!user.google_id) {
+                // Link existing user to Google
+                logger_1.default.info('Google OAuth: Linking existing user', { userId: user.id });
+                user.google_id = profile.id;
+                await user.save();
+                logger_1.default.info('Google OAuth: User linked to Google', { userId: user.id });
+            }
+            else {
+                logger_1.default.debug('Google OAuth: User already linked', { userId: user.id });
+            }
+            return done(null, user);
         }
-        // Find or create user
-        let user = await models_1.User.findOne({ where: { email } });
-        console.log('[Google OAuth] User lookup:', user ? 'Found existing user' : 'New user');
-        if (!user) {
-            // Create new user
-            console.log('[Google OAuth] Creating new user:', email);
-            user = await models_1.User.create({
-                email,
-                name: profile.displayName || email.split('@')[0],
-                password_hash: '', // No password for OAuth users
-                plan: 'free',
-                conversions_used: 0,
-                conversions_limit: 3,
-                google_id: profile.id,
-            });
-            console.log('[Google OAuth] ✅ New user created:', user.id);
+        catch (error) {
+            logger_1.default.error('Google OAuth error', { error: error instanceof Error ? error.message : String(error) });
+            return done(error);
         }
-        else if (!user.google_id) {
-            // Link existing user to Google
-            console.log('[Google OAuth] Linking existing user to Google:', user.id);
-            user.google_id = profile.id;
-            await user.save();
-            console.log('[Google OAuth] ✅ User linked to Google');
-        }
-        else {
-            console.log('[Google OAuth] ✅ User already linked to Google');
-        }
-        return done(null, user);
-    }
-    catch (error) {
-        console.error('[Google OAuth] ERROR:', error);
-        return done(error);
-    }
-}));
+    }));
+}
+else {
+    logger_1.default.warn('Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables required');
+}
 // LinkedIn OAuth Strategy (OpenID Connect) - Disabled for now
 // Only enable if LINKEDIN_CLIENT_ID is configured
 if (process.env.LINKEDIN_CLIENT_ID) {
@@ -104,7 +109,7 @@ if (process.env.LINKEDIN_CLIENT_ID) {
             return done(null, user);
         }
         catch (error) {
-            console.error('LinkedIn OAuth error:', error);
+            logger_1.default.error('LinkedIn OAuth error', { error: error instanceof Error ? error.message : String(error) });
             return done(error);
         }
     });
@@ -132,7 +137,7 @@ if (process.env.LINKEDIN_CLIENT_ID) {
             done(null, profile);
         })
             .catch((error) => {
-            console.error('LinkedIn userProfile error:', error);
+            logger_1.default.error('LinkedIn userProfile error', { error: error instanceof Error ? error.message : String(error) });
             done(error);
         });
     };

@@ -183,11 +183,12 @@ OnboardingProgress.init({
     timestamps: true,
     underscored: true,
     indexes: [
-        { fields: ['user_id'], unique: true },
-        { fields: ['status'] },
-        { fields: ['created_at'] },
+        { fields: ['user_id'], unique: true, name: 'onboarding_user_id_idx' },
+        { fields: ['status'], name: 'onboarding_status_idx' },
+        { fields: ['created_at'], name: 'onboarding_created_at_idx' },
         {
-            fields: ['email_day2_sent', 'email_day5_sent', 'email_day9_sent', 'email_day14_sent']
+            fields: ['email_day2_sent', 'email_day5_sent', 'email_day9_sent', 'email_day14_sent'],
+            name: 'onboarding_email_drip_idx'
         }
     ]
 });

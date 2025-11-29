@@ -60,7 +60,7 @@ export declare const databaseErrors: Counter<"model" | "error_type" | "operation
 /**
  * External API errors (CloudConvert, etc.)
  */
-export declare const externalApiErrors: Counter<"error_type" | "api_name" | "endpoint" | "circuit_breaker_state">;
+export declare const externalApiErrors: Counter<"error_type" | "endpoint" | "api_name" | "circuit_breaker_state">;
 /**
  * Track repeated errors (same error occurring multiple times)
  */

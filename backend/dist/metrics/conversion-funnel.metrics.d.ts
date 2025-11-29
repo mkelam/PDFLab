@@ -20,7 +20,7 @@ export declare const conversionFunnelStage: Counter<"plan" | "conversion_type" |
 /**
  * Track funnel drop-offs (failures at each stage)
  */
-export declare const conversionFunnelDropoff: Counter<"plan" | "reason" | "conversion_type" | "stage" | "user_type">;
+export declare const conversionFunnelDropoff: Counter<"reason" | "plan" | "conversion_type" | "stage" | "user_type">;
 /**
  * Time spent in each funnel stage
  */
@@ -32,11 +32,11 @@ export declare const conversionFunnelActive: Gauge<"conversion_type" | "stage" |
 /**
  * Overall conversion success rate
  */
-export declare const conversionSuccess: Counter<"plan" | "conversion_type" | "output_format" | "user_type">;
+export declare const conversionSuccess: Counter<"plan" | "output_format" | "conversion_type" | "user_type">;
 /**
  * Overall conversion failure rate
  */
-export declare const conversionFailure: Counter<"plan" | "conversion_type" | "error_code" | "user_type" | "failure_reason">;
+export declare const conversionFailure: Counter<"plan" | "error_code" | "conversion_type" | "user_type" | "failure_reason">;
 /**
  * End-to-end conversion duration (upload to download)
  */

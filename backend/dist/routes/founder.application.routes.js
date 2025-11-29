@@ -5,7 +5,9 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const sequelize_1 = require("sequelize");
 const auth_middleware_1 = require("../middleware/auth.middleware");
+const admin_middleware_1 = require("../middleware/admin.middleware");
 const database_1 = require("../config/database");
 // Helper function to send email (placeholder - implement actual email service)
 async function sendEmail(options) {
@@ -14,21 +16,18 @@ async function sendEmail(options) {
 }
 // Helper function to execute queries
 async function query(sql, params) {
-    const client = await database_1.pool.connect();
-    try {
-        const result = await client.query(sql, params);
-        return result;
-    }
-    finally {
-        client.release();
-    }
+    const results = await database_1.sequelize.query(sql, {
+        replacements: params,
+        type: sequelize_1.QueryTypes.SELECT
+    });
+    return { rows: results };
 }
 const router = (0, express_1.Router)();
 /**
  * POST /api/founder/apply
  * Submit Founder's Edition application
  */
-router.post('/apply', auth_middleware_1.authenticate, async (req, res) => {
+router.post('/apply', auth_middleware_1.requireAuth, async (req, res) => {
     try {
         const userId = req.user?.userId;
         const { reason, use_case } = req.body;
@@ -106,7 +105,7 @@ router.post('/apply', auth_middleware_1.authenticate, async (req, res) => {
  * GET /api/founder/applications
  * Get all pending applications (admin only)
  */
-router.get('/applications', auth_middleware_1.requireAdmin, async (req, res) => {
+router.get('/applications', admin_middleware_1.requireAdmin, async (req, res) => {
     try {
         const { status } = req.query;
         let whereClause = "founder_application_status != 'none'";
@@ -144,7 +143,7 @@ router.get('/applications', auth_middleware_1.requireAdmin, async (req, res) => 
  * GET /api/founder/application-stats
  * Get application statistics (admin only)
  */
-router.get('/application-stats', auth_middleware_1.requireAdmin, async (req, res) => {
+router.get('/application-stats', admin_middleware_1.requireAdmin, async (req, res) => {
     try {
         const result = await query(`
       SELECT
@@ -167,7 +166,7 @@ router.get('/application-stats', auth_middleware_1.requireAdmin, async (req, res
  * POST /api/founder/approve/:userId
  * Approve a Founder's Edition application (admin only)
  */
-router.post('/approve/:userId', auth_middleware_1.requireAdmin, async (req, res) => {
+router.post('/approve/:userId', admin_middleware_1.requireAdmin, async (req, res) => {
     try {
         const { userId } = req.params;
         const adminId = req.user?.userId;
@@ -237,7 +236,7 @@ router.post('/approve/:userId', auth_middleware_1.requireAdmin, async (req, res)
  * POST /api/founder/reject/:userId
  * Reject a Founder's Edition application (admin only)
  */
-router.post('/reject/:userId', auth_middleware_1.requireAdmin, async (req, res) => {
+router.post('/reject/:userId', admin_middleware_1.requireAdmin, async (req, res) => {
     try {
         const { userId } = req.params;
         const { reason } = req.body;
@@ -303,7 +302,7 @@ router.post('/reject/:userId', auth_middleware_1.requireAdmin, async (req, res) 
  * GET /api/founder/my-application
  * Get current user's application status
  */
-router.get('/my-application', auth_middleware_1.authenticate, async (req, res) => {
+router.get('/my-application', auth_middleware_1.requireAuth, async (req, res) => {
     try {
         const userId = req.user?.userId;
         const result = await query(`SELECT
