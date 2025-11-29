@@ -209,7 +209,17 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     const updates: any = {}
     if (name !== undefined) updates.name = name
     if (email !== undefined) updates.email = email
-    if (plan !== undefined) updates.plan = plan
+    if (plan !== undefined) {
+      updates.plan = plan
+      // Update conversions_limit to match the new plan
+      const limits: { [key: string]: number } = {
+        free: 3,
+        starter: 100,
+        pro: -1, // Unlimited
+        enterprise: -1 // Unlimited
+      }
+      updates.conversions_limit = limits[plan]
+    }
     if (role !== undefined) updates.role = role
 
     await user.update(updates)
@@ -222,7 +232,9 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         email: user.email,
         name: user.name,
         role: user.role,
-        plan: user.plan
+        plan: user.plan,
+        conversions_limit: user.conversions_limit,
+        conversions_used: user.conversions_used
       }
     })
   } catch (error) {
