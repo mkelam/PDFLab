@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build argument for API URL (passed at build time)
-ARG NEXT_PUBLIC_API_URL=http://141.136.44.168:3006
+ARG NEXT_PUBLIC_API_URL=https://pdflab.pro
 
 # Set environment variable for build
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
