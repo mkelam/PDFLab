@@ -93,8 +93,8 @@ export default function EditUserPage() {
         },
         body: JSON.stringify({
           full_name: fullName || null,
-          plan,
-          conversions_limit: conversionsLimit
+          plan
+          // NOTE: conversions_limit is NOT sent - backend auto-syncs it based on plan
         })
       })
 
@@ -312,18 +312,18 @@ export default function EditUserPage() {
                 </Select>
               </div>
 
-              {/* Conversions Limit */}
+              {/* Conversions Limit (Read-only - auto-synced from plan) */}
               <div className="space-y-2">
                 <Label htmlFor="conversionsLimit">Conversions Limit</Label>
                 <Input
                   id="conversionsLimit"
-                  type="number"
-                  min="0"
-                  value={conversionsLimit}
-                  onChange={(e) => setConversionsLimit(parseInt(e.target.value) || 0)}
+                  type="text"
+                  value={conversionsLimit === -1 ? 'Unlimited' : conversionsLimit}
+                  disabled
+                  className="bg-muted/50"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Current usage: {user.conversions_used} / {conversionsLimit}
+                  Auto-synced based on plan • Current usage: {user.conversions_used} / {conversionsLimit === -1 ? '∞' : conversionsLimit}
                 </p>
               </div>
 
