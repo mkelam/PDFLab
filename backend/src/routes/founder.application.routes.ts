@@ -4,8 +4,9 @@
  */
 
 import { Router, Request, Response } from 'express'
-import { authenticate as authenticateToken, requireAdmin } from '../middleware/auth.middleware'
-import { pool as db } from '../config/database'
+import { requireAuth as authenticateToken } from '../middleware/auth.middleware'
+import { requireAdmin } from '../middleware/admin.middleware'
+import sequelize from '../config/database'
 
 // Helper function to send email (placeholder - implement actual email service)
 async function sendEmail(options: { to: string; subject: string; html: string }) {
@@ -15,13 +16,11 @@ async function sendEmail(options: { to: string; subject: string; html: string })
 
 // Helper function to execute queries
 async function query(sql: string, params?: any[]) {
-  const client = await db.connect()
-  try {
-    const result = await client.query(sql, params)
-    return result
-  } finally {
-    client.release()
-  }
+  const [results] = await sequelize.query(sql, {
+    replacements: params,
+    type: sequelize.QueryTypes.SELECT
+  })
+  return { rows: results }
 }
 
 const router = Router()
