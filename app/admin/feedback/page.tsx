@@ -7,12 +7,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Search, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CheckCircle, X, Trash2, Send, AlertCircle, Lightbulb, Bug, HelpCircle } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CheckCircle, X, Trash2, Send, AlertCircle, Lightbulb, Bug, HelpCircle, Star, Flame } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
 
 type FeedbackType = 'bug' | 'feature' | 'general' | 'other'
 type FeedbackStatus = 'new' | 'in_progress' | 'resolved' | 'dismissed'
+type FeedbackPriority = 'normal' | 'high'
 
 interface Feedback {
   id: string
@@ -25,6 +26,8 @@ interface Feedback {
   user_agent: string | null
   screenshot_url: string | null
   status: FeedbackStatus
+  priority: FeedbackPriority
+  is_founder: boolean
   admin_reply: string | null
   admin_id: string | null
   created_at: string
@@ -63,6 +66,11 @@ interface Stats {
     feature: number
     general: number
   }
+  byPriority?: {
+    founder: number
+    high: number
+    founderUnresolved: number
+  }
 }
 
 export default function FeedbackPage() {
@@ -78,6 +86,7 @@ export default function FeedbackPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [founderFilter, setFounderFilter] = useState<boolean>(false)
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null)
   const [replyText, setReplyText] = useState('')
   const [isReplying, setIsReplying] = useState(false)
@@ -93,7 +102,8 @@ export default function FeedbackPage() {
         limit: pagination.limit.toString(),
         ...(search && { search }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
-        ...(typeFilter !== 'all' && { type: typeFilter })
+        ...(typeFilter !== 'all' && { type: typeFilter }),
+        ...(founderFilter && { founder: 'true' })
       })
 
       const response = await fetch(`${API_URL}/api/admin/feedback?${params}`, {
@@ -135,7 +145,7 @@ export default function FeedbackPage() {
   useEffect(() => {
     fetchFeedback()
     fetchStats()
-  }, [pagination.page, statusFilter, typeFilter])
+  }, [pagination.page, statusFilter, typeFilter, founderFilter])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -339,13 +349,24 @@ export default function FeedbackPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card className="glass-strong border-border/50">
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-foreground">{stats.total}</div>
               <div className="text-sm text-muted-foreground">Total Feedback</div>
             </CardContent>
           </Card>
+          {stats.byPriority && stats.byPriority.founderUnresolved > 0 && (
+            <Card className="glass-strong border-amber-500/50 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  <div className="text-2xl font-bold text-amber-600">{stats.byPriority.founderUnresolved}</div>
+                </div>
+                <div className="text-sm text-amber-700 font-medium">Founder Pending</div>
+              </CardContent>
+            </Card>
+          )}
           <Card className="glass-strong border-border/50">
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-red-600">{stats.byStatus.new}</div>
@@ -395,7 +416,17 @@ export default function FeedbackPage() {
               </Button>
             </form>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={founderFilter ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFounderFilter(!founderFilter)}
+                className={founderFilter ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0" : ""}
+              >
+                <Star className={`w-4 h-4 mr-1 ${founderFilter ? 'fill-white' : ''}`} />
+                Founders Only
+              </Button>
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -472,7 +503,12 @@ export default function FeedbackPage() {
                   </thead>
                   <tbody>
                     {feedback.map((item) => (
-                      <tr key={item.id} className="border-b border-border hover:bg-muted/50 transition">
+                      <tr
+                        key={item.id}
+                        className={`border-b border-border hover:bg-muted/50 transition ${
+                          item.is_founder ? 'bg-gradient-to-r from-amber-500/5 to-orange-500/5' : ''
+                        }`}
+                      >
                         <td className="py-4">
                           <input
                             type="checkbox"
@@ -481,20 +517,37 @@ export default function FeedbackPage() {
                             className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-2 focus:ring-ring"
                           />
                         </td>
-                        <td className="py-4">{getTypeBadge(item.type)}</td>
+                        <td className="py-4">
+                          <div className="flex items-center gap-2">
+                            {item.is_founder && (
+                              <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                                <Star size={12} className="fill-white" />
+                                Founder
+                              </div>
+                            )}
+                            {getTypeBadge(item.type)}
+                          </div>
+                        </td>
                         <td className="py-4 text-foreground max-w-md">
                           <div className="truncate">{item.message}</div>
                         </td>
                         <td className="py-4 text-sm">
                           <div className="text-foreground">{item.user_name || item.user_email || 'Anonymous'}</div>
                           {item.user && (
-                            <div className="text-muted-foreground text-xs">{item.user.plan}</div>
+                            <div className={`text-xs ${item.user.plan === 'founder' ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                              {item.user.plan.toUpperCase()}
+                            </div>
                           )}
                         </td>
                         <td className="py-4">
-                          <Badge variant={getStatusBadge(item.status)}>
-                            {item.status.replace('_', ' ')}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            {item.priority === 'high' && (
+                              <Flame size={14} className="text-red-500" />
+                            )}
+                            <Badge variant={getStatusBadge(item.status)}>
+                              {item.status.replace('_', ' ')}
+                            </Badge>
+                          </div>
                         </td>
                         <td className="py-4 text-sm text-muted-foreground">
                           {new Date(item.created_at).toLocaleDateString()}
@@ -560,6 +613,12 @@ export default function FeedbackPage() {
           <div className="relative w-full max-w-2xl glass-strong rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                {selectedFeedback.is_founder && (
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                    <Star size={16} className="fill-white" />
+                    Founder
+                  </div>
+                )}
                 {getTypeBadge(selectedFeedback.type)}
                 Feedback Details
               </h2>
@@ -571,14 +630,37 @@ export default function FeedbackPage() {
               </button>
             </div>
 
+            {selectedFeedback.is_founder && (
+              <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Star size={16} className="fill-amber-500 text-amber-500" />
+                  <span className="font-medium">High Priority - Founder Feedback</span>
+                </div>
+                <p className="text-sm text-amber-600 mt-1">This feedback is from a Founder member and should be prioritized.</p>
+              </div>
+            )}
+
             <div className="space-y-4">
-              {/* Status */}
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Status</label>
-                <div className="mt-1">
-                  <Badge variant={getStatusBadge(selectedFeedback.status)}>
-                    {selectedFeedback.status.replace('_', ' ')}
-                  </Badge>
+              {/* Status & Priority */}
+              <div className="flex gap-6">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <div className="mt-1">
+                    <Badge variant={getStatusBadge(selectedFeedback.status)}>
+                      {selectedFeedback.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Priority</label>
+                  <div className="mt-1 flex items-center gap-1">
+                    {selectedFeedback.priority === 'high' && (
+                      <Flame size={14} className="text-red-500" />
+                    )}
+                    <Badge variant={selectedFeedback.priority === 'high' ? 'destructive' : 'secondary'}>
+                      {selectedFeedback.priority.toUpperCase()}
+                    </Badge>
+                  </div>
                 </div>
               </div>
 
@@ -586,13 +668,21 @@ export default function FeedbackPage() {
               <div>
                 <label className="text-sm font-medium text-muted-foreground">From</label>
                 <div className="mt-1 text-foreground">
-                  {selectedFeedback.user_name || 'Anonymous'}
+                  <div className="flex items-center gap-2">
+                    {selectedFeedback.user_name || 'Anonymous'}
+                    {selectedFeedback.is_founder && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                        <Star size={10} className="fill-white" />
+                        Founder
+                      </span>
+                    )}
+                  </div>
                   {selectedFeedback.user_email && (
-                    <span className="text-muted-foreground ml-2">({selectedFeedback.user_email})</span>
+                    <span className="text-muted-foreground text-sm">({selectedFeedback.user_email})</span>
                   )}
                   {selectedFeedback.user && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Plan: {selectedFeedback.user.plan}
+                    <div className={`text-sm mt-1 ${selectedFeedback.user.plan === 'founder' ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                      Plan: {selectedFeedback.user.plan.toUpperCase()}
                     </div>
                   )}
                 </div>

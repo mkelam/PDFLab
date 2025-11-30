@@ -13,7 +13,8 @@ export enum UserPlan {
   FREE = 'free',
   STARTER = 'starter',
   PRO = 'pro',
-  ENTERPRISE = 'enterprise'
+  ENTERPRISE = 'enterprise',
+  FOUNDER = 'founder'
 }
 
 export enum SubscriptionStatus {
@@ -84,7 +85,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 
   // Helper methods
   public canConvert(): boolean {
-    if (this.plan === UserPlan.PRO || this.plan === UserPlan.ENTERPRISE) {
+    if (this.plan === UserPlan.PRO || this.plan === UserPlan.ENTERPRISE || this.plan === UserPlan.FOUNDER) {
       return true // Unlimited
     }
     return this.conversions_used < this.conversions_limit
@@ -99,6 +100,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
       case UserPlan.PRO:
         return parseInt(process.env.MAX_FILE_SIZE_PRO || '104857600') // 100MB
       case UserPlan.ENTERPRISE:
+      case UserPlan.FOUNDER:
         return 524288000 // 500MB
       default:
         return 10485760
@@ -114,6 +116,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
       case UserPlan.PRO:
         return 20 // 20 files per batch
       case UserPlan.ENTERPRISE:
+      case UserPlan.FOUNDER:
         return 50 // 50 files per batch
       default:
         return 5

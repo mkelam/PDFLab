@@ -3,6 +3,7 @@ import { sequelize } from '../config/database'
 
 export type FeedbackType = 'bug' | 'feature' | 'general' | 'other'
 export type FeedbackStatus = 'new' | 'in_progress' | 'resolved' | 'dismissed'
+export type FeedbackPriority = 'normal' | 'high'
 
 export interface FeedbackAttributes {
   id: string
@@ -15,6 +16,8 @@ export interface FeedbackAttributes {
   user_agent: string | null
   screenshot_url: string | null
   status: FeedbackStatus
+  priority: FeedbackPriority
+  is_founder: boolean
   admin_reply: string | null
   admin_id: string | null
   created_at?: Date
@@ -22,7 +25,7 @@ export interface FeedbackAttributes {
   resolved_at?: Date | null
 }
 
-export interface FeedbackCreationAttributes extends Optional<FeedbackAttributes, 'id' | 'user_id' | 'user_email' | 'user_name' | 'page_url' | 'user_agent' | 'screenshot_url' | 'status' | 'admin_reply' | 'admin_id' | 'resolved_at'> {}
+export interface FeedbackCreationAttributes extends Optional<FeedbackAttributes, 'id' | 'user_id' | 'user_email' | 'user_name' | 'page_url' | 'user_agent' | 'screenshot_url' | 'status' | 'priority' | 'is_founder' | 'admin_reply' | 'admin_id' | 'resolved_at'> {}
 
 class Feedback extends Model<FeedbackAttributes, FeedbackCreationAttributes> implements FeedbackAttributes {
   declare id: string
@@ -35,6 +38,8 @@ class Feedback extends Model<FeedbackAttributes, FeedbackCreationAttributes> imp
   declare user_agent: string | null
   declare screenshot_url: string | null
   declare status: FeedbackStatus
+  declare priority: FeedbackPriority
+  declare is_founder: boolean
   declare admin_reply: string | null
   declare admin_id: string | null
   declare readonly created_at: Date
@@ -91,6 +96,16 @@ Feedback.init(
       allowNull: false,
       defaultValue: 'new'
     },
+    priority: {
+      type: DataTypes.ENUM('normal', 'high'),
+      allowNull: false,
+      defaultValue: 'normal'
+    },
+    is_founder: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     admin_reply: {
       type: DataTypes.TEXT,
       allowNull: true
@@ -127,7 +142,9 @@ Feedback.init(
       { fields: ['status'] },
       { fields: ['type'] },
       { fields: ['user_id'] },
-      { fields: ['created_at'] }
+      { fields: ['created_at'] },
+      { fields: ['priority'] },
+      { fields: ['is_founder'] }
     ]
   }
 )
