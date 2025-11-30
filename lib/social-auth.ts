@@ -16,8 +16,15 @@ export const socialProviders: SocialProvider[] = [
     icon: 'google',
     enabled: true, // Configured and working
     action: async () => {
-      await initiateOAuth('google')
-      return { success: true }
+      try {
+        await initiateOAuth('google')
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Google sign-in is currently unavailable. Please use email/password login.'
+        }
+      }
     }
   }
 ]
@@ -27,9 +34,37 @@ export const socialProviders: SocialProvider[] = [
  * @param providerId - The social provider ID (currently only 'google')
  */
 export async function initiateOAuth(providerId: string): Promise<void> {
-  // Redirect to backend OAuth endpoint
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
-  window.location.href = `${apiUrl}/api/auth/${providerId}`
+
+  try {
+    // Check if OAuth endpoint is available before redirecting
+    const checkUrl = `${apiUrl}/api/auth/${providerId}`
+    const response = await fetch(checkUrl, {
+      method: 'GET',
+      redirect: 'manual', // Prevent automatic redirect
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
+    // Check response status
+    if (response.status === 503) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.message || 'Google sign-in is not available at this time. Please use email/password to sign in.')
+    }
+
+    // If status is 302 (redirect) or 200, OAuth is configured - proceed with redirect
+    if (response.status === 302 || response.type === 'opaqueredirect' || response.status === 200) {
+      window.location.href = checkUrl
+      return
+    }
+
+    // Any other error status
+    throw new Error('Unable to connect to authentication service. Please try again later.')
+  } catch (error) {
+    // Re-throw the error to be caught by the action handler
+    throw error
+  }
 }
 
 /**

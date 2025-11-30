@@ -4,17 +4,34 @@ import jwt from 'jsonwebtoken'
 
 const router = Router()
 
+// Check if Google OAuth is configured
+const isGoogleOAuthConfigured = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+
 // Google OAuth login
 router.get('/auth/google', (req, res, next) => {
   console.log('[Google Routes] /auth/google route accessed')
+
+  if (!isGoogleOAuthConfigured) {
+    console.log('[Google Routes] Google OAuth not configured')
+    return res.status(503).json({
+      error: 'Google OAuth not available',
+      message: 'Google OAuth is not configured on this server. Please use email/password login or contact support.'
+    })
+  }
+
   console.log('[Google Routes] Redirecting to Google OAuth...')
   next()
 }, passport.authenticate('google', { scope: ['profile', 'email'], session: false })
 )
 
 // Google OAuth callback
-router.get('/auth/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
+router.get('/auth/google/callback', (req, res, next) => {
+  if (!isGoogleOAuthConfigured) {
+    console.log('[Google Routes] Google OAuth callback - not configured')
+    return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_not_configured`)
+  }
+  next()
+}, passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
   (req, res) => {
     console.log('[Google Routes] Callback route hit')
     const user = req.user as any
