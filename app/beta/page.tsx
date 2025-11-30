@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import { ArrowLeft, CheckCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-export default function BetaApplicationPage() {
+function BetaApplicationContent() {
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -449,5 +450,17 @@ export default function BetaApplicationPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function BetaApplicationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <BetaApplicationContent />
+    </Suspense>
   );
 }
