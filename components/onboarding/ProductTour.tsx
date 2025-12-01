@@ -17,10 +17,10 @@ const ProductTour: React.FC = () => {
   const [run, setRun] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
 
-  // Define tour steps
+  // Define tour steps with proper selectors
   const steps: Step[] = [
     {
-      target: '#upload-area',
+      target: '#tour-upload-area',
       content: (
         <div>
           <h3 className="text-lg font-semibold mb-2">Welcome to PDFLab!</h3>
@@ -32,18 +32,18 @@ const ProductTour: React.FC = () => {
       spotlightClicks: false,
     },
     {
-      target: '#conversion-formats',
+      target: '#tour-format-selection',
       content: (
         <div>
           <h3 className="text-lg font-semibold mb-2">Choose Your Format</h3>
           <p>Select from 4 conversion formats: PowerPoint, Word, Excel, or PNG images.</p>
         </div>
       ),
-      placement: 'bottom',
+      placement: 'top',
       spotlightClicks: false,
     },
     {
-      target: 'nav a[href="/dashboard"]',
+      target: '#tour-dashboard-link',
       content: (
         <div>
           <h3 className="text-lg font-semibold mb-2">Track Your Conversions</h3>
@@ -54,7 +54,7 @@ const ProductTour: React.FC = () => {
       spotlightClicks: false,
     },
     {
-      target: 'nav a[href="/pricing"]',
+      target: '#tour-pricing-link',
       content: (
         <div>
           <h3 className="text-lg font-semibold mb-2">Upgrade Anytime</h3>
@@ -92,33 +92,33 @@ const ProductTour: React.FC = () => {
   }, [progress])
 
   // Handle tour callback events
-  const handleJoyrideCallback = async (data: CallBackProps) => {
+  const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, type, index, action } = data
 
     // User closed or skipped the tour
     if (status === STATUS.SKIPPED || action === 'close') {
       setRun(false)
-      await updateProgress({ tour_completed: false })
+      // Fire and forget - don't await to avoid re-render issues
+      updateProgress({ tour_completed: false }).catch(console.error)
       return
     }
 
     // Tour finished successfully
     if (status === STATUS.FINISHED) {
       setRun(false)
-      await updateProgress({
+      // Fire and forget - don't await to avoid re-render issues
+      updateProgress({
         tour_completed: true,
         tour_step_completed: steps.length,
-      })
+      }).catch(console.error)
       return
     }
 
-    // Step changed - update progress
-    if (type === EVENTS.STEP_AFTER) {
-      const nextStep = index + 1
-      await updateProgress({
-        tour_step_completed: nextStep,
-      })
-      setStepIndex(nextStep)
+    // Step changed - update step index for controlled navigation
+    if (type === EVENTS.STEP_AFTER && action === 'next') {
+      setStepIndex(index + 1)
+    } else if (type === EVENTS.STEP_AFTER && action === 'prev') {
+      setStepIndex(index - 1)
     }
   }
 

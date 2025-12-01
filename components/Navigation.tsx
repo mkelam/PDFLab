@@ -40,7 +40,7 @@ export function Navigation() {
                 Compare
               </Button>
             </Link>
-            <Link href="/pricing">
+            <Link href="/pricing" id="tour-pricing-link">
               <Button variant="ghost" size="sm" className="text-sm">
                 Pricing
               </Button>
@@ -51,7 +51,7 @@ export function Navigation() {
             ) : user ? (
               // Authenticated user navigation
               <>
-                <Link href="/dashboard">
+                <Link href="/dashboard" id="tour-dashboard-link">
                   <Button variant="ghost" size="sm" className="text-sm">
                     <User className="w-4 h-4 mr-2" />
                     Dashboard
