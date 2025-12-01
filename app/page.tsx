@@ -69,13 +69,11 @@ export default function pdflabPro() {
           </div>
 
           {/* Unified Conversion Interface */}
-          <div className="mb-16" id="tour-upload-area">
-            <div id="tour-format-selection">
-              <UnifiedConversionInterface
-                onSuccess={handleUploadSuccess}
-                onError={handleUploadError}
-              />
-            </div>
+          <div className="mb-16">
+            <UnifiedConversionInterface
+              onSuccess={handleUploadSuccess}
+              onError={handleUploadError}
+            />
           </div>
 
           {/* Client Testimonials Carousel */}
