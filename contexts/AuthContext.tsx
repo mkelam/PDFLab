@@ -19,6 +19,8 @@ interface User {
   onboarding_completed?: boolean;
   onboarding_completed_at?: string;
   onboarding_skipped?: boolean;
+  subscription_status?: 'active' | 'canceled' | 'expired' | 'none';
+  subscription_end_date?: string;
 }
 
 interface LoginCredentials {

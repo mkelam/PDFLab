@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { useAuth, useRequireAuth } from "@/contexts/AuthContext"
 import { Navigation } from "@/components/Navigation"
 import { BetaExpirationTimer } from "@/components/BetaExpirationTimer"
-import { User, FileText, Download, Settings, LogOut, Clock, CheckCircle, XCircle } from "lucide-react"
+import { User, FileText, Download, Settings, LogOut, Clock, CheckCircle, XCircle, CreditCard, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { useOnboarding } from "@/contexts/OnboardingContext"
 import SampleTemplates from "@/components/onboarding/SampleTemplates"
@@ -33,6 +33,9 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<ConversionActivity[]>([])
   const [activityLoading, setActivityLoading] = useState(true)
   const [showWizard, setShowWizard] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
 
   const handleLogout = async () => {
     try {
@@ -40,6 +43,37 @@ export default function DashboardPage() {
       // Redirect will happen automatically
     } catch (error) {
       console.error('Logout failed:', error)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    try {
+      setCancelLoading(true)
+      setCancelError(null)
+      const token = localStorage.getItem('authToken')
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+
+      const response = await fetch(`${API_URL}/api/payfast/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to cancel subscription')
+      }
+
+      // Refresh the page to update user data
+      window.location.reload()
+    } catch (error) {
+      console.error('Cancel subscription failed:', error)
+      setCancelError(error instanceof Error ? error.message : 'Failed to cancel subscription')
+    } finally {
+      setCancelLoading(false)
     }
   }
 
@@ -217,6 +251,102 @@ export default function DashboardPage() {
                 expiresAt={user.beta_expires_at}
                 placement="dashboard"
               />
+            </div>
+          )}
+
+          {/* Subscription Management - Only for paid users */}
+          {user.plan !== 'free' && user.subscription_status === 'active' && (
+            <Card className="glass-strong border-border/50 mb-8">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Subscription Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Current Plan</p>
+                    <p className="font-medium capitalize">{user.plan} Plan</p>
+                    {user.subscription_end_date && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Next billing: {new Date(user.subscription_end_date).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCancelModal(true)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  >
+                    Cancel Subscription
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Cancellation Confirmation Modal */}
+          {showCancelModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <Card className="w-full max-w-md mx-4 glass-strong">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-red-600">
+                    <AlertTriangle className="w-5 h-5" />
+                    Cancel Subscription
+                  </CardTitle>
+                  <CardDescription>
+                    Are you sure you want to cancel your subscription?
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <p className="text-sm text-amber-800">
+                      <strong>What happens when you cancel:</strong>
+                    </p>
+                    <ul className="text-sm text-amber-700 mt-2 space-y-1 list-disc list-inside">
+                      <li>You'll keep access until the end of your billing period</li>
+                      <li>Your account will be downgraded to the Free plan</li>
+                      <li>Your conversion history will be preserved</li>
+                      <li>You can resubscribe anytime</li>
+                    </ul>
+                  </div>
+
+                  {cancelError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-sm text-red-700">{cancelError}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowCancelModal(false)
+                        setCancelError(null)
+                      }}
+                      disabled={cancelLoading}
+                    >
+                      Keep Subscription
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleCancelSubscription}
+                      disabled={cancelLoading}
+                    >
+                      {cancelLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Cancelling...
+                        </>
+                      ) : (
+                        'Yes, Cancel'
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
