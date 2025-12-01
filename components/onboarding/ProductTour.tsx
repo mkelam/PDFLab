@@ -70,7 +70,7 @@ const ProductTour: React.FC = () => {
         <div>
           <h3 className="text-lg font-semibold mb-2">You're All Set! 🎉</h3>
           <p className="mb-3">Ready to convert your first PDF? Try uploading a file now, or use one of our sample templates.</p>
-          <p className="text-sm text-gray-600">Tip: Drag and drop works too!</p>
+          <p className="text-sm opacity-70">Tip: Drag and drop works too!</p>
         </div>
       ),
       placement: 'center',
@@ -139,36 +139,43 @@ const ProductTour: React.FC = () => {
       callback={handleJoyrideCallback}
       styles={{
         options: {
-          primaryColor: 'oklch(0.72 0.15 250)', // PDFLab primary purple
-          textColor: 'oklch(0.15 0.01 250)',
-          backgroundColor: 'white',
-          arrowColor: 'white',
-          overlayColor: 'rgba(0, 0, 0, 0.5)',
+          primaryColor: '#2dd4bf', // Teal-400 for buttons
+          textColor: '#f5f5f5',
+          backgroundColor: '#1a1a1a', // Dark card background
+          arrowColor: '#1a1a1a',
+          overlayColor: 'rgba(0, 0, 0, 0.8)',
           zIndex: 10000,
         },
         tooltip: {
           borderRadius: '12px',
           padding: '20px',
           fontSize: '15px',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
         },
         tooltipTitle: {
           fontSize: '18px',
           fontWeight: 600,
           marginBottom: '8px',
+          color: '#f5f5f5',
+        },
+        tooltipContent: {
+          color: '#a3a3a3',
         },
         buttonNext: {
-          backgroundColor: 'oklch(0.72 0.15 250)',
+          backgroundColor: '#2dd4bf',
           borderRadius: '8px',
           padding: '10px 20px',
           fontSize: '14px',
           fontWeight: 500,
+          color: '#0a0a0a',
         },
         buttonBack: {
-          color: 'oklch(0.72 0.15 250)',
+          color: '#2dd4bf',
           marginRight: '10px',
         },
         buttonSkip: {
-          color: 'oklch(0.5 0.01 250)',
+          color: '#737373',
           fontSize: '14px',
         },
       }}

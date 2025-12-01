@@ -53,28 +53,28 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
       label: 'PowerPoint',
       description: 'Editable slides',
       icon: Presentation,
-      color: 'text-orange-500',
+      color: 'text-orange-400',
     },
     {
       value: 'docx',
       label: 'Word',
       description: 'Editable document',
       icon: FileText,
-      color: 'text-blue-500',
+      color: 'text-blue-400',
     },
     {
       value: 'xlsx',
       label: 'Excel',
       description: 'Editable spreadsheet',
       icon: FileSpreadsheet,
-      color: 'text-green-500',
+      color: 'text-emerald-400',
     },
     {
       value: 'png',
       label: 'Image',
       description: 'High-quality PNG',
       icon: Image,
-      color: 'text-purple-500',
+      color: 'text-teal-400',
     },
   ]
 
@@ -135,7 +135,7 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card/95 backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Quick Start Wizard</DialogTitle>
           <p className="text-muted-foreground">
@@ -151,7 +151,7 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
             </span>
             <span className="text-muted-foreground">{Math.round((step / 3) * 100)}% Complete</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300"
               style={{ width: progressWidth }}
@@ -263,7 +263,7 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
               </div>
 
               {/* Summary */}
-              <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+              <div className="bg-secondary/50 border border-border rounded-lg p-6 space-y-4">
                 <div className="flex items-start gap-4">
                   <FileText className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                   <div>
@@ -273,7 +273,7 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
+                <div className="border-t border-border pt-4">
                   <div className="flex items-start gap-4">
                     {selectedFormatObj && (
                       <>
@@ -290,19 +290,19 @@ const QuickStartWizard: React.FC<QuickStartWizardProps> = ({ isOpen, onClose }) 
               </div>
 
               {/* What Happens Next */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold mb-2 text-blue-900">What happens next?</h4>
-                <ul className="space-y-2 text-sm text-blue-800">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                <h4 className="font-semibold mb-2 text-primary">What happens next?</h4>
+                <ul className="space-y-2 text-sm text-foreground/80">
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5 text-primary" />
                     <span>We'll convert your PDF in the background (usually takes 10-30 seconds)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5 text-primary" />
                     <span>You'll be redirected to your dashboard to download the result</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5 text-primary" />
                     <span>The converted file will be available for 7 days</span>
                   </li>
                 </ul>
