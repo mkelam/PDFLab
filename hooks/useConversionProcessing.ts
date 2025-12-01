@@ -51,6 +51,16 @@ export function useConversionProcessing() {
       clearInterval(progressTimerRef.current)
     }
 
+    // Immediately set isProcessing to true and show first stage
+    const firstStage = stages[0]
+    setProcessing({
+      isProcessing: true,
+      progress: firstStage?.progress || 0,
+      stage: firstStage?.stage || "Processing...",
+      timeRemaining: firstStage?.timeRemaining,
+    })
+    currentStage = 1
+
     progressTimerRef.current = setInterval(() => {
       if (currentStage < stages.length) {
         const currentStageData = stages[currentStage]
