@@ -41,7 +41,7 @@ export function ExecuteCard({
     validFilesCount === 0 || (activeTab === "merge" && validFilesCount < 2)
 
   return (
-    <Card className="glass w-full lg:flex-1 lg:max-w-[420px]">
+    <Card id="tour-execute-area" className="glass w-full lg:flex-1 lg:max-w-[420px]">
       <CardContent className="px-3 lg:px-4 py-2 lg:py-3 flex flex-col min-h-[160px] lg:min-h-[191px] gap-1">
         <div className="text-center border-b border-primary/20 pb-2 mb-2">
           <h3 className="text-primary font-semibold text-sm lg:text-base">Step 3</h3>

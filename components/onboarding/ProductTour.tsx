@@ -43,6 +43,17 @@ const ProductTour: React.FC = () => {
       spotlightClicks: false,
     },
     {
+      target: '#tour-execute-area',
+      content: (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Process & Download</h3>
+          <p>Click the convert button to start processing. Once complete, download your converted file here.</p>
+        </div>
+      ),
+      placement: 'top',
+      spotlightClicks: false,
+    },
+    {
       target: '#tour-dashboard-link',
       content: (
         <div>

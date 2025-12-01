@@ -3,6 +3,9 @@ import type { Metadata } from "next"
 import ClientLayout from "./ClientLayout"
 import "./globals.css"
 
+// Force dynamic rendering for all pages to prevent SSR context issues
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "PDF Lab Pro - Premium Document Processing",
   description: "Convert PDFs in seconds with our premium glassmorphic interface",
