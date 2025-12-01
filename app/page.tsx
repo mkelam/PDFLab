@@ -34,7 +34,7 @@ export default function pdflabPro() {
       {/* Product Tour for New Users */}
       {shouldShowOnboarding() && <ProductTour />}
 
-      {/* Beta Launch Banner */}
+      {/* Founders 100 Banner */}
       <div className="pt-20 pb-1 px-6">
         <div className="max-w-4xl mx-auto">
           <Link href="/beta">
@@ -43,7 +43,7 @@ export default function pdflabPro() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                    <span className="font-semibold text-sm">🎉 60-Day Beta Insider Program - Free Pro Access!</span>
+                    <span className="font-semibold text-sm">🚀 Founders 100 - Join Our Exclusive Early Adopter Program!</span>
                   </div>
                   <Button size="sm" className="h-7 px-3 text-xs">
                     Apply →
