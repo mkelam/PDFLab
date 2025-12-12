@@ -58,7 +58,7 @@ chmod +x run-migration.sh
 
 #### Development:
 ```bash
-mysql -h localhost -P 3306 -u pdflab -p***REMOVED*** pdflab < 001_add_batch_processing.sql
+mysql -h localhost -P 3306 -u pdflab -p pdflab < 001_add_batch_processing.sql
 ```
 
 #### Production (VPS):
@@ -68,7 +68,7 @@ ssh root@141.136.44.168
 
 # Run migration
 cd /var/pdflab/backend/src/migrations
-mysql -h localhost -P 3306 -u pdflab -p***REMOVED*** pdflab_production < 001_add_batch_processing.sql
+mysql -h localhost -P 3306 -u pdflab -p pdflab_production < 001_add_batch_processing.sql
 ```
 
 ---
@@ -80,7 +80,7 @@ mysql -h localhost -P 3306 -u pdflab -p***REMOVED*** pdflab_production < 001_add
 docker cp 001_add_batch_processing.sql pdflab-mysql-prod:/tmp/
 
 # Execute migration
-docker exec -i pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production < /tmp/001_add_batch_processing.sql
+docker exec -i pdflab-mysql-prod mysql -u pdflab -p pdflab_production < /tmp/001_add_batch_processing.sql
 ```
 
 ---
@@ -89,16 +89,16 @@ docker exec -i pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_producti
 
 ### Development:
 ```bash
-mysql -h localhost -P 3306 -u pdflab -p***REMOVED*** pdflab < 001_add_batch_processing_rollback.sql
+mysql -h localhost -P 3306 -u pdflab -p pdflab < 001_add_batch_processing_rollback.sql
 ```
 
 ### Production:
 ```bash
 # ALWAYS create a backup first!
-mysqldump -h localhost -P 3306 -u pdflab -p***REMOVED*** pdflab_production > backup_before_rollback.sql
+mysqldump -h localhost -P 3306 -u pdflab -p pdflab_production > backup_before_rollback.sql
 
 # Then run rollback
-mysql -h localhost -P 3306 -u pdflab -p***REMOVED*** pdflab_production < 001_add_batch_processing_rollback.sql
+mysql -h localhost -P 3306 -u pdflab -p pdflab_production < 001_add_batch_processing_rollback.sql
 ```
 
 ---
@@ -157,7 +157,7 @@ Before running migrations in production:
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=change_me
 DB_NAME=pdflab
 ```
 
@@ -166,7 +166,7 @@ DB_NAME=pdflab
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=change_me
 DB_NAME=pdflab_production
 ```
 

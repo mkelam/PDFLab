@@ -149,7 +149,7 @@ scp backend/src/migrations/005_onboarding_system.sql root@141.136.44.168:/tmp/
 
 # Run migration manually
 ssh root@141.136.44.168 'docker exec -i pdflab-mysql-prod \
-  mysql -u pdflab -p***REMOVED*** pdflab_production < /tmp/005_onboarding_system.sql'
+  mysql -u pdflab -p<DB_PASSWORD> pdflab_production < /tmp/005_onboarding_system.sql'
 ```
 
 **Status:** ✅ Resolved - All tables and columns created successfully

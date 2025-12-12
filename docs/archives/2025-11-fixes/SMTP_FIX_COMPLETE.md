@@ -11,7 +11,7 @@
 
 **Issue**: SMTP authentication failure (535 error) preventing welcome emails from being sent to new users.
 
-**Root Cause**: Docker environment variable escaping issue. The SMTP password `***REMOVED***` was being escaped as `Jesus24\\!7` (double backslash) or `Jesus24\!7` (single backslash) when passed via `-e` flags, causing authentication failures with Hostinger SMTP server.
+**Root Cause**: Docker environment variable escaping issue. The SMTP password `<SMTP_PASS>` was being escaped as `Jesus24\\!7` (double backslash) or `Jesus24\!7` (single backslash) when passed via `-e` flags, causing authentication failures with Hostinger SMTP server.
 
 **Solution**: Use Docker `--env-file` instead of command-line `-e` flags to avoid shell escaping of special characters.
 
@@ -22,7 +22,7 @@
 ### Before Fix:
 ```bash
 # Container creation with -e flags
-docker run -d -e SMTP_PASS='***REMOVED***' ...
+docker run -d -e SMTP_PASS='<SMTP_PASS>' ...
 # Result: Password stored as Jesus24\!7 → SMTP auth failure
 ```
 
@@ -30,7 +30,7 @@ docker run -d -e SMTP_PASS='***REMOVED***' ...
 ```bash
 # Container creation with --env-file
 docker run -d --env-file /tmp/backend-fixed.env ...
-# Result: Password stored correctly as ***REMOVED*** → SMTP auth SUCCESS ✓
+# Result: Password stored correctly as <SMTP_PASS> → SMTP auth SUCCESS ✓
 ```
 
 ### Test Results:
@@ -63,7 +63,7 @@ docker run -d --env-file /tmp/backend-fixed.env ...
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***
+SMTP_PASS=<SMTP_PASS>
 SMTP_FROM_EMAIL=support@pdflab.pro
 SMTP_FROM_NAME=PDFLab
 SMTP_SECURE=false
@@ -87,7 +87,7 @@ curl http://141.136.44.168:3007/health
 
 # SMTP Password Verification
 docker inspect pdflab-backend-staging --format='{{range .Config.Env}}{{println .}}{{end}}' | grep SMTP_PASS
-# Result: SMTP_PASS=***REMOVED*** (NO escaping!)
+# Result: SMTP_PASS=<SMTP_PASS> (NO escaping!)
 ```
 
 ---
@@ -99,9 +99,9 @@ docker inspect pdflab-backend-staging --format='{{range .Config.Env}}{{println .
 - ✅ **Fixed**: Changed to `--network staging_pdflab-staging-network`
 
 ### 2. Password Escaping Tests
-- ❌ **Attempt 1**: `-e SMTP_PASS='***REMOVED***'` → Result: `Jesus24\\!7`
-- ❌ **Attempt 2**: `-e "SMTP_PASS=***REMOVED***"` → Result: `Jesus24\!7`
-- ✅ **Attempt 3**: `--env-file /tmp/backend-fixed.env` → Result: `***REMOVED***` ✓
+- ❌ **Attempt 1**: `-e SMTP_PASS='<SMTP_PASS>'` → Result: `Jesus24\\!7`
+- ❌ **Attempt 2**: `-e "SMTP_PASS=<SMTP_PASS>"` → Result: `Jesus24\!7`
+- ✅ **Attempt 3**: `--env-file /tmp/backend-fixed.env` → Result: `<SMTP_PASS>` ✓
 
 ### 3. Email Delivery Tests
 - ✅ **Test 1**: `smtp-fix-test-1763711150@pdflab.com` → Email sent successfully
@@ -290,7 +290,7 @@ curl -X POST http://localhost:3007/api/auth/register ...
 - Host: smtp.hostinger.com
 - Port: 587
 - User: support@pdflab.pro
-- Password: ***REMOVED***
+- Password: <SMTP_PASS>
 - Secure: false (uses STARTTLS)
 
 **Support Resources**:
@@ -325,7 +325,7 @@ docker run -d \
 # - SMTP_HOST=smtp.hostinger.com
 # - SMTP_PORT=587
 # - SMTP_USER=support@pdflab.pro
-# - SMTP_PASS=***REMOVED***
+# - SMTP_PASS=<SMTP_PASS>
 # - NODE_ENV=staging
 # - DB_HOST=mysql-staging
 # - REDIS_HOST=pdflab-redis-staging

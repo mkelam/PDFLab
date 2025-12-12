@@ -52,14 +52,14 @@ This comprehensive audit compares the production VPS implementation against the 
 | **JWT_EXPIRATION** | `15m` | N/A (uses JWT_EXPIRES_IN: 24h) | `15m` | ⚠️ Config drift |
 | **JWT_REFRESH_EXPIRATION** | `30d` | N/A | `30d` | ⚠️ Missing in prod |
 | **PAYFAST_MERCHANT_ID** | `10000100` (sandbox) | `25263515` (prod) | `25263515` (prod) | ✅ OK |
-| **PAYFAST_MERCHANT_KEY** | `46f0cd694581a` (sandbox) | `***REMOVED***` (prod) | `***REMOVED***` (prod) | ✅ OK |
+| **PAYFAST_MERCHANT_KEY** | `46f0cd694581a` (sandbox) | `<PAYFAST_MERCHANT_KEY>` (prod) | `<PAYFAST_MERCHANT_KEY>` (prod) | ✅ OK |
 | **PAYFAST_MODE** | `sandbox` | `production` | `production` | ✅ OK |
 | **CORS_ORIGIN** | Multiple localhost URLs | `https://pdflab.pro` | Multiple prod domains | ⚠️ Incomplete |
 | **STORAGE_PATH** | `./storage` | `/var/www/pdfcraft/uploads` | `/app/storage` | ⚠️ Path mismatch |
 | **MAX_FILE_SIZE** | Various by plan | `104857600` (100MB) | `524288000` (500MB) | ⚠️ Lower limit |
 | **SMTP_HOST** | `smtp.hostinger.com` | `smtp.hostinger.com` | `smtp.hostinger.com` | ✅ OK |
 | **SMTP_USER** | `support@pdflab.pro` | `noreply@pdflab.pro` | `support@pdflab.pro` | ⚠️ Email mismatch |
-| **SMTP_PASS** | `***REMOVED***` | `your-email-password` | `[SECURE]` | ❌ **PLACEHOLDER** |
+| **SMTP_PASS** | `<SMTP_PASS>` | `your-email-password` | `[SECURE]` | ❌ **PLACEHOLDER** |
 
 ### 1.2 Frontend Environment Variables
 
@@ -130,8 +130,8 @@ This comprehensive audit compares the production VPS implementation against the 
 | **Container Name** | `pdflab-mysql-prod` | ✅ OK |
 | **Database Name** | `pdflab_production` | ✅ OK |
 | **User** | `pdflab` | ✅ OK |
-| **Password** | `***REMOVED***` | ⚠️ Should be stronger (32+ chars) |
-| **Root Password** | `***REMOVED***` | ⚠️ Should be stronger (32+ chars) |
+| **Password** | `<DB_PASSWORD>` | ⚠️ Should be stronger (32+ chars) |
+| **Root Password** | `<MYSQL_ROOT_PASSWORD>` | ⚠️ Should be stronger (32+ chars) |
 | **Port** | `3306` (exposed to host) | ⚠️ Should only expose internally |
 | **Volume** | `mysql-data` (Docker volume) | ✅ OK |
 | **Init Script** | `./backend/init.sql` | ✅ OK |
@@ -434,7 +434,7 @@ This means jobs will queue in Redis but never process.
 |---------|-------|--------|
 | **Mode** | `production` | ✅ OK |
 | **Merchant ID** | `25263515` (real account) | ✅ OK |
-| **Merchant Key** | `***REMOVED***` | ✅ OK |
+| **Merchant Key** | `<PAYFAST_MERCHANT_KEY>` | ✅ OK |
 | **Passphrase** | *(empty)* | ⚠️ Recommended to set |
 | **ITN URL** | `https://pdflab.pro/api/payfast/webhook` OR `https://api.pdflab.pro/api/payfast/webhook` | ⚠️ Must be publicly accessible |
 | **Return URL** | `https://pdflab.pro/payment/success` | ✅ OK (assuming HTTPS) |
@@ -543,7 +543,7 @@ API_URL=https://api.pdflab.pro
 DB_HOST=mysql
 DB_PORT=3306
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=<DB_PASSWORD>
 DB_NAME=pdflab_production
 
 REDIS_HOST=redis
@@ -557,7 +557,7 @@ JWT_EXPIRATION=15m
 JWT_REFRESH_EXPIRATION=30d
 
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 PAYFAST_MODE=production
 
 CORS_ORIGIN=https://pdflab.pro,https://www.pdflab.pro,https://api.pdflab.pro
@@ -707,7 +707,7 @@ location /api/ {
 **Severity**: 🟡 MEDIUM
 **Impact**: Brute force vulnerability
 
-**Problem**: `***REMOVED***` and `***REMOVED***` are guessable
+**Problem**: `<DB_PASSWORD>` and `<MYSQL_ROOT_PASSWORD>` are guessable
 
 **Fix**:
 ```bash
@@ -1094,7 +1094,7 @@ docker ps -a
 docker exec pdflab-backend-prod env | grep -E "NODE_ENV|PORT|DB_|REDIS_|JWT_|PAYFAST_|CORS_"
 
 # Check database
-docker exec -it pdflab-mysql-prod mysql -uroot -p***REMOVED*** -e "SHOW DATABASES; USE pdflab_production; SHOW TABLES;"
+docker exec -it pdflab-mysql-prod mysql -uroot -p<MYSQL_ROOT_PASSWORD> -e "SHOW DATABASES; USE pdflab_production; SHOW TABLES;"
 
 # Check Redis
 docker exec -it pdflab-redis-prod redis-cli PING

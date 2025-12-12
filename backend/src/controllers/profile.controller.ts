@@ -36,10 +36,10 @@ export const getProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    res.json({ user })
+    return res.json({ user })
   } catch (error: any) {
     logger.error('Get profile error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to fetch profile',
       message: error.message
     })
@@ -88,9 +88,10 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     if (name) user.name = name
     if (email) {
+      const previousEmail = user.email
       user.email = email
       // If email changed, mark as unverified
-      if (user.email !== email) {
+      if (previousEmail !== email) {
         user.email_verified = false
         user.email_verified_at = null
       }
@@ -113,13 +114,13 @@ export const updateProfile = async (req: Request, res: Response) => {
       ]
     })
 
-    res.json({
+    return res.json({
       message: 'Profile updated successfully',
       user: updatedUser
     })
   } catch (error: any) {
     logger.error('Update profile error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to update profile',
       message: error.message
     })
@@ -168,10 +169,10 @@ export const changePassword = async (req: Request, res: Response) => {
     user.password_hash = hashedPassword
     await user.save()
 
-    res.json({ message: 'Password changed successfully' })
+    return res.json({ message: 'Password changed successfully' })
   } catch (error: any) {
     logger.error('Change password error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to change password',
       message: error.message
     })
@@ -214,10 +215,10 @@ export const deleteAccount = async (req: Request, res: Response) => {
     // Delete user (cascade will delete related records)
     await user.destroy()
 
-    res.json({ message: 'Account deleted successfully' })
+    return res.json({ message: 'Account deleted successfully' })
   } catch (error: any) {
     logger.error('Delete account error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to delete account',
       message: error.message
     })
@@ -272,7 +273,7 @@ export const getAccountStats = async (req: Request, res: Response) => {
         )
       : null
 
-    res.json({
+    return res.json({
       plan: {
         name: user.plan,
         status: user.subscription_status || 'free'
@@ -295,7 +296,7 @@ export const getAccountStats = async (req: Request, res: Response) => {
     })
   } catch (error: any) {
     logger.error('Get stats error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to fetch account statistics',
       message: error.message
     })

@@ -297,7 +297,7 @@ upgradePendingSubscriptions();
 3. Host validation (optional logging) - **TERTIARY** ✅
 
 **Why Signature is Sufficient**:
-- Uses shared secret (passphrase: `***REMOVED***`)
+- Uses shared secret (passphrase: `<PAYFAST_PASSPHRASE>`)
 - Includes all payment parameters
 - MD5 hash prevents tampering
 - Only PayFast knows the correct passphrase

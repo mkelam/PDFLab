@@ -633,7 +633,7 @@ class CloudConvertService {
 // PayFast Configuration
 const PAYFAST_CONFIG = {
   merchantId: '25263515',
-  merchantKey: '***REMOVED***',
+  merchantKey: '<PAYFAST_MERCHANT_KEY>',
   passphrase: '',  // Empty for production
   mode: 'production',
   apiUrl: 'https://www.payfast.co.za'
@@ -2323,4 +2323,3 @@ PDFLab is well-architected, thoroughly documented, and production-ready. The cod
 - **Version**: 1.0
 - **Next Review**: December 12, 2025
 - **Contact**: [GitHub Issues](https://github.com/pdflab/pdflab/issues)
-

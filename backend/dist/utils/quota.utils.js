@@ -36,6 +36,11 @@ exports.PLAN_QUOTAS = {
         conversions_limit: -1, // Unlimited
         max_file_size: 524288000, // 500MB
         batch_size: 10
+    },
+    [User_1.UserPlan.FOUNDER]: {
+        conversions_limit: -1, // Unlimited (same as enterprise)
+        max_file_size: 524288000, // 500MB
+        batch_size: 10
     }
 };
 /**

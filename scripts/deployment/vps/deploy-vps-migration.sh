@@ -23,7 +23,7 @@ VPS_IP="141.136.44.168"
 VPS_USER="root"
 DB_NAME="pdflab_production"
 DB_USER="pdflab"
-DB_PASS="***REMOVED***"
+: "${DB_PASS:?Set DB_PASS (MySQL password)}"
 MYSQL_CONTAINER="8731b5f977d0_pdflab-mysql-prod"
 
 echo -e "${YELLOW}⚠️  WARNING: This will modify the PRODUCTION database!${NC}"

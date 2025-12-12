@@ -117,7 +117,8 @@ export const initializeCleanupWorker = () => {
   })
 
   cleanupQueue.on('failed', (job, error) => {
-    logger.error(`✗ Cleanup job ${job?.id} failed:`, { error: error.message instanceof Error ? error.message.message : String(error.message) })
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`✗ Cleanup job ${job?.id} failed:`, { error: message })
   })
 }
 

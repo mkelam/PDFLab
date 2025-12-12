@@ -112,11 +112,11 @@ for (const key of PAYFAST_PARAM_ORDER) {
 ```
 
 **Root Cause**:
-Application environment variable had passphrase set to `jt7NOE43FZPn`, but PayFast dashboard had passphrase configured as `***REMOVED***`. This created completely different MD5 hashes.
+Application environment variable had passphrase set to `<REDACTED>`, but PayFast dashboard had passphrase configured as `<PAYFAST_PASSPHRASE>`. This created completely different MD5 hashes.
 
 **Technical Details**:
 - **Application**: Used `PAYFAST_PASSPHRASE=jt7NOE43FZPn`
-- **PayFast Dashboard**: Actually had `***REMOVED***`
+- **PayFast Dashboard**: Actually had `<PAYFAST_PASSPHRASE>`
 - **Result**: Signatures 87.5% different (completely mismatched)
 
 **Diagnostic Process**:
@@ -125,12 +125,12 @@ Application environment variable had passphrase set to `jt7NOE43FZPn`, but PayFa
    - Empty passphrase: `1d872fc54860c5ffad6ad3f7a9e65fe5`
    - Wrong passphrase: `cec9ce56e2ff52d8a56846025811b348`
    - Correct passphrase: `96c181b49f9718b6f0d54fbfaadd57a5`
-3. User confirmed PayFast dashboard had `***REMOVED***`
+3. User confirmed PayFast dashboard had `<PAYFAST_PASSPHRASE>`
 
 **Fix Applied**:
 ```bash
 # VPS: /root/backend.env
-PAYFAST_PASSPHRASE=***REMOVED***
+PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 ```
 
 **Resolution**:
@@ -485,8 +485,8 @@ export const handleWebhook = async (req, res) => {
 **Credentials in Use**:
 ```bash
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
-PAYFAST_PASSPHRASE=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
+PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 PAYFAST_MODE=production
 ```
 
@@ -1622,7 +1622,7 @@ PAYFAST_MERCHANT_KEY=46f0cd694581a
 # .env.production (Production)
 PAYFAST_MODE=production
 PAYFAST_MERCHANT_ID=25263515        # Production credentials
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 ```
 
 **Code Logic**:

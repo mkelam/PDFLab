@@ -6,7 +6,10 @@ $VPS_IP = "141.136.44.168"
 $VPS_USER = "root"
 $DB_NAME = "pdflab_production"
 $DB_USER = "pdflab"
-$DB_PASS = "***REMOVED***"
+$DB_PASS = $env:DB_PASS
+if ([string]::IsNullOrWhiteSpace($DB_PASS)) {
+    throw "Missing environment variable: DB_PASS"
+}
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "PDFLab VPS Migration - v1.1.0" -ForegroundColor Cyan

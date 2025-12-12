@@ -116,8 +116,8 @@ services:
     environment:
       - MYSQL_DATABASE=pdflab_production
       - MYSQL_USER=pdflab
-      - MYSQL_PASSWORD=***REMOVED***
-      - MYSQL_ROOT_PASSWORD=***REMOVED***
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
     # Port removed for security - only accessible via Docker network
     expose:
       - "3306"
@@ -133,7 +133,7 @@ services:
     networks:
       - pdflab-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p***REMOVED***"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -50,7 +50,7 @@ mkdir -p /var/pdflab/backups/pre-refactor
 # Backup MySQL database
 docker exec pdflab-mysql-prod mysqldump \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   pdflab_production \
   --single-transaction \
   --routines \
@@ -157,7 +157,7 @@ df -h > /tmp/disk_usage_before.txt
 # Check MySQL database size
 docker exec pdflab-mysql-prod mysql \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   -e "SELECT table_schema AS 'Database',
       ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)'
       FROM information_schema.TABLES
@@ -287,7 +287,7 @@ curl https://pdflab.pro/health
 # Restore MySQL backup
 docker exec -i pdflab-mysql-prod mysql \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   pdflab_production \
   < /var/pdflab/backups/pre-refactor/pdflab_YYYYMMDD_HHMMSS.sql
 
@@ -1106,8 +1106,8 @@ services:
     environment:
       - MYSQL_DATABASE=pdflab_production
       - MYSQL_USER=pdflab
-      - MYSQL_PASSWORD=***REMOVED***
-      - MYSQL_ROOT_PASSWORD=***REMOVED***
+      - MYSQL_PASSWORD=<DB_PASSWORD>
+      - MYSQL_ROOT_PASSWORD=<MYSQL_ROOT_PASSWORD>
     expose:
       - "3306"
     volumes:

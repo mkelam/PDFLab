@@ -13,10 +13,10 @@ RUN npm ci
 COPY . .
 
 # Build argument for API URL (passed at build time)
-ARG NEXT_PUBLIC_API_URL=http://141.136.44.168:3006
+ARG INTERNAL_API_URL=http://localhost:3006
 
-# Set environment variable for build
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Set environment variable for Next.js rewrites (evaluated at build time)
+ENV INTERNAL_API_URL=$INTERNAL_API_URL
 
 # Build Next.js application with output standalone
 RUN npm run build

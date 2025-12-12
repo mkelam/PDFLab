@@ -12,7 +12,7 @@ echo "============================================================"
 echo ""
 
 DB_USER="pdflab"
-DB_PASS="***REMOVED***"
+: "${DB_PASS:?Set DB_PASS (MySQL password)}"
 DB_NAME="pdflab_production"
 CONTAINER="pdflab-mysql-prod"
 

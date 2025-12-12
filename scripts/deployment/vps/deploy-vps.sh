@@ -28,11 +28,20 @@ docker compose -f docker-compose.production.yml down
 echo -e "${GREEN}✓ Containers stopped${NC}"
 
 echo -e "${YELLOW}[4/7] Creating environment file...${NC}"
-cat > .env.production << 'EOF'
-MYSQL_PASSWORD=***REMOVED***
-MYSQL_ROOT_PASSWORD=***REMOVED***
+if [ ! -f .env.production ]; then
+    : "${MYSQL_PASSWORD:?set MYSQL_PASSWORD}"
+    : "${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}"
+
+    cat > .env.production <<EOF
+MYSQL_PASSWORD=$MYSQL_PASSWORD
+MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 EOF
-echo -e "${GREEN}✓ Environment file created${NC}"
+
+    chmod 600 .env.production 2>/dev/null || true
+    echo -e "${GREEN}✓ Environment file created${NC}"
+else
+    echo -e "${GREEN}✓ Using existing .env.production${NC}"
+fi
 
 echo -e "${YELLOW}[5/7] Starting all containers...${NC}"
 docker compose -f docker-compose.production.yml --env-file .env.production up -d

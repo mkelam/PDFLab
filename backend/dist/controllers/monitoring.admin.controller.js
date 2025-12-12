@@ -33,7 +33,6 @@ const getMonitoringDashboard = async (req, res) => {
       WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
       GROUP BY DATE(timestamp)
       ORDER BY date ASC`, { type: sequelize_1.QueryTypes.SELECT });
-        // Get 7-day uptime statistics
         const uptimeRaw = await database_1.sequelize.query(`SELECT
         (SUM(CASE WHEN backend_status = 'healthy' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as backend_uptime,
         (SUM(CASE WHEN worker_status = 'healthy' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as worker_uptime,
@@ -42,11 +41,12 @@ const getMonitoringDashboard = async (req, res) => {
       FROM health_checks
       WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)`, { type: sequelize_1.QueryTypes.SELECT });
         // Convert string values to numbers
-        const uptime = uptimeRaw[0] ? {
-            backend_uptime: parseFloat(uptimeRaw[0].backend_uptime) || 0,
-            worker_uptime: parseFloat(uptimeRaw[0].worker_uptime) || 0,
-            mysql_uptime: parseFloat(uptimeRaw[0].mysql_uptime) || 0,
-            redis_uptime: parseFloat(uptimeRaw[0].redis_uptime) || 0
+        const uptimeRow = uptimeRaw[0];
+        const uptime = uptimeRow ? {
+            backend_uptime: parseFloat(String(uptimeRow.backend_uptime ?? '0')) || 0,
+            worker_uptime: parseFloat(String(uptimeRow.worker_uptime ?? '0')) || 0,
+            mysql_uptime: parseFloat(String(uptimeRow.mysql_uptime ?? '0')) || 0,
+            redis_uptime: parseFloat(String(uptimeRow.redis_uptime ?? '0')) || 0
         } : {};
         // Get recent alerts (last 10)
         const recentAlerts = await database_1.sequelize.query(`SELECT * FROM monitoring_alerts

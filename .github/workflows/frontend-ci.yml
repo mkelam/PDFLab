@@ -41,4 +41,4 @@ jobs:
       - name: Build Next.js
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:3006
+          INTERNAL_API_URL: http://localhost:3006

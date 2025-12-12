@@ -112,11 +112,11 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.frontend
+      args:
+        INTERNAL_API_URL: http://backend:3006
     container_name: pdflab-frontend
     restart: unless-stopped
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3006
     ports:
       - "3000:3000"
     depends_on:

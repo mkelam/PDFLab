@@ -32,7 +32,7 @@ Your payment workflow code is **fully tested and production-ready**. We achieved
 ## PayFast Sandbox Issues (Not Our Code)
 
 ### Attempt 1: Original Credentials
-- Credentials: 25263515 / ***REMOVED***
+- Credentials: 25263515 / <PAYFAST_MERCHANT_KEY>
 - Error: "Merchant unable to receive payments"
 
 ### Attempt 2: Official Test Account

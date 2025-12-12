@@ -24,6 +24,11 @@ export declare const PLAN_QUOTAS: {
         max_file_size: number;
         batch_size: number;
     };
+    founder: {
+        conversions_limit: number;
+        max_file_size: number;
+        batch_size: number;
+    };
 };
 /**
  * Sync user quota to match their current plan

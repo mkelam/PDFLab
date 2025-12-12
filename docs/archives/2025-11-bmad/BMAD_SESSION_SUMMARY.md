@@ -57,14 +57,14 @@
 - Error: `Invalid login: 535 5.7.8 Error: authentication failed`
 
 **Root Cause**:
-- Docker shell was escaping the exclamation mark in password `***REMOVED***`
+- Docker shell was escaping the exclamation mark in password `<SMTP_PASS>`
 - Using `-e` flags resulted in: `Jesus24\\!7` or `Jesus24\!7`
 - SMTP server rejected the incorrect password
 
 **Solution**:
 1. Created environment file `/tmp/backend-fixed.env` with unescaped password
 2. Recreated Docker container using `--env-file` flag instead of `-e` flags
-3. Verified password stored correctly: `SMTP_PASS=***REMOVED***` (no escaping)
+3. Verified password stored correctly: `SMTP_PASS=<SMTP_PASS>` (no escaping)
 
 **Result**:
 ```

@@ -8,6 +8,13 @@ exports.getCircuitBreakerStats = getCircuitBreakerStats;
 const opossum_1 = __importDefault(require("opossum"));
 const logger_1 = __importDefault(require("../config/logger"));
 const metrics_1 = require("../config/metrics");
+function getBreakerState(breaker) {
+    if (breaker.opened)
+        return 'open';
+    if (breaker.halfOpen)
+        return 'half-open';
+    return 'closed';
+}
 function createCircuitBreaker(fn, name, config) {
     const breaker = new opossum_1.default(fn, {
         timeout: config.timeout,
@@ -51,7 +58,7 @@ function createCircuitBreaker(fn, name, config) {
         metrics_1.circuitBreakerCalls.inc({ name, result: 'success' });
         logger_1.default.debug(`Circuit breaker success: ${name}`, {
             circuitBreaker: name,
-            state: breaker.status.state
+            state: getBreakerState(breaker)
         });
     });
     // Event: Request failed
@@ -59,7 +66,7 @@ function createCircuitBreaker(fn, name, config) {
         metrics_1.circuitBreakerCalls.inc({ name, result: 'failure' });
         logger_1.default.warn(`Circuit breaker failure: ${name}`, {
             circuitBreaker: name,
-            state: breaker.status.state,
+            state: getBreakerState(breaker),
             error: error.message
         });
     });
@@ -92,7 +99,7 @@ function getCircuitBreakerStats(breaker) {
         rejects: stats.rejects, // Rejected calls (circuit open)
         timeouts: stats.timeouts, // Timed out calls
         fallbacks: stats.fallbacks, // Fallback executions
-        state: breaker.status.state, // current state (open/closed/half-open)
+        state: getBreakerState(breaker), // current state (open/closed/half-open)
         isOpen: breaker.opened, // Is circuit open?
         percentiles: {
             p50: stats.percentiles['0.5'],

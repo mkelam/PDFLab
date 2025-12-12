@@ -44,12 +44,24 @@ yarn-error.log*
 .env*.local
 .env
 *.env
+.env.*
+backend/.env.*
+deployment/**/.env.*
 *-env.txt
+
+# allow example envs
+!.env.production.example
+!backend/.env.example
+!backend/.env.docker
+!backend/.env.production.example
+!deployment/**/.env.*.example
 
 # credentials and sensitive data
 /tests/fixtures/credentials
 client_secret*.json
 test-credentials.txt
+API Keys.txt
+FINAL_DEPLOYMENT_STEPS.md
 
 # vercel
 .vercel

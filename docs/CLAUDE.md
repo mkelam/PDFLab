@@ -253,7 +253,7 @@ JWT_EXPIRATION=7d
 
 # PayFast (Multi-Currency - USD)
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 PAYFAST_PASSPHRASE=
 PAYFAST_MODE=production
 
@@ -582,9 +582,236 @@ node -e "const {Sequelize} = require('sequelize'); const db = new Sequelize('pdf
 
 ---
 
-**Last Updated**: 2025-11-12
-**Project Status**: Production (Phase 1 Complete)
-**Current Version**: 1.3.0 (Phase 1)
+---
+
+## Lessons Learned (Week of Nov 24 - Dec 1, 2025)
+
+This section documents critical lessons from development work. Review before starting new features.
+
+### 1. Next.js 14 Static Generation
+
+**Problem**: Build failures with `useSearchParams()` and `useContext()` hooks.
+
+**Solution Pattern**:
+```tsx
+// page.tsx (Server Component)
+import { Suspense } from "react"
+import ClientComponent from "./ClientComponent"
+
+export const dynamic = 'force-dynamic'  // REQUIRED
+
+export default function Page() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ClientComponent />
+    </Suspense>
+  )
+}
+
+// ClientComponent.tsx (Client Component)
+"use client"
+import { useSearchParams } from 'next/navigation'
+// Now safe to use hooks
+```
+
+**Pages Affected**: `/beta`, `/get-started`, `/verify-email`, `/reset-password`, `/payment/*`, `/auth/callback`
+
+### 2. Product Tour (react-joyride)
+
+**Common Mistakes**:
+- Using CSS selectors (`.class-name`) - unreliable with Next.js
+- Placing IDs on wrapper divs instead of actual target components
+- Using async/await in callbacks (causes re-renders → auto-advance)
+
+**Correct Pattern**:
+```tsx
+// Place ID directly on the component to highlight
+<Card id="tour-upload-area">...</Card>
+
+// Tour step
+{
+  target: '#tour-upload-area',  // Explicit ID
+  spotlightClicks: false,       // Prevent accidental clicks
+}
+
+// Fire-and-forget callback (no await)
+callback: (data) => {
+  updateProgress(...).catch(console.error)  // Don't await
+}
+```
+
+### 3. Nginx Proxy Configuration
+
+**Critical Bug Found**: Rewrite rules can break API routing.
+
+```nginx
+# WRONG - strips /api prefix, causes 404s
+location /api/ {
+    rewrite ^/api/(.*)$ /$1 break;
+    proxy_pass http://localhost:3006;
+}
+
+# CORRECT - preserves path
+location /api/ {
+    proxy_pass http://localhost:3006;
+}
+```
+
+**Debugging Steps**:
+1. Test directly: `curl http://localhost:3006/api/...`
+2. Test through nginx: `curl https://pdflab.pro/api/...`
+3. Compare responses
+
+### 4. Token System Security
+
+**Token TTLs**:
+| Token Type | TTL | Storage |
+|------------|-----|---------|
+| Access Token | 15 minutes | localStorage |
+| Refresh Token | 30 days | localStorage (hashed server-side) |
+| Password Reset | 1 hour | URL parameter |
+
+**Security Checklist**:
+- [x] Tokens only in Authorization header (not URL params)
+- [x] Generic error messages ("Invalid credentials" for both wrong password AND non-existent user)
+- [x] Rate limiting on auth endpoints (5 attempts/15 min)
+- [x] Refresh tokens hashed server-side
+
+### 5. Rate Limiting Gotchas
+
+**Problem**: Tests fail with "Too many authentication attempts"
+
+**Solution**: Rate limiter uses in-memory storage. Restart backend to clear:
+```bash
+docker restart pdflab-backend-prod
+```
+
+**Configuration** (backend/src/middleware/ratelimit.middleware.ts):
+- Production: 5 attempts/15 min (with `skipSuccessfulRequests: true`)
+- Development: 1000 attempts (effectively unlimited)
+
+### 6. MySQL Identifier Limits
+
+**Problem**: Index name exceeds 64-character limit.
+
+**Solution**: Always specify explicit short index names:
+```typescript
+@Table({
+  indexes: [
+    {
+      name: 'onboard_user_step_unique',  // Max 64 chars
+      unique: true,
+      fields: ['user_id', 'step_type']
+    }
+  ]
+})
+```
+
+### 7. Docker Environment Variables
+
+**Problem**: `NEXT_PUBLIC_*` variables not working in production.
+
+**Root Cause**: These are baked into the JS bundle at BUILD time, not runtime.
+
+**Solution**:
+```dockerfile
+# Dockerfile
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Build command
+docker build --build-arg NEXT_PUBLIC_API_URL=https://api.pdflab.pro ...
+```
+
+### 8. Google OAuth Graceful Degradation
+
+**Problem**: Backend crashes when OAuth credentials not configured.
+
+**Solution**: Check and return 503:
+```typescript
+const requireGoogleOAuth = (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    return res.status(503).json({
+      error: 'OAuth not configured',
+      message: 'Google authentication is not available'
+    })
+  }
+  next()
+}
+```
+
+### 9. Password Reset Flow
+
+**Complete Flow**:
+1. `POST /api/auth/forgot-password` → generates JWT with `type: 'password_reset'`
+2. Email sent with link: `${FRONTEND_URL}/reset-password?token=${jwt}`
+3. User visits link, frontend extracts token
+4. `POST /api/auth/reset-password` with token and new password
+5. Redirect to login
+
+**Critical Config**:
+- `FRONTEND_URL` env var must match actual domain
+- `JWT_SECRET` must be consistent across services
+
+### 10. Admin Panel Quota Sync
+
+**Problem**: Changing user plan doesn't update quota limits.
+
+**Solution**: Auto-calculate quota from plan (don't expose in UI):
+```typescript
+const quotaLimits = {
+  free: 3,
+  starter: 50,
+  pro: 200,
+  enterprise: 1000,
+  founder: 1000
+}
+
+await user.update({
+  plan,
+  conversions_limit: quotaLimits[plan]  // Auto-sync
+})
+```
+
+### 11. Progress Bar State Bug
+
+**Problem**: Users click Convert but see no feedback.
+
+**Root Cause**: `isProcessing: true` was never set.
+
+**Fix**:
+```typescript
+const startProgressAnimation = () => {
+  setProgress({
+    isProcessing: true,  // REQUIRED for UI to show
+    stage: 'uploading',
+    ...
+  })
+}
+```
+
+### 12. Founder's Edition System
+
+**Challenge Rules**:
+- 100 spots cap (real scarcity)
+- 14-day probation period
+- Requirements: 10+ conversions AND feedback submitted
+- Success: Permanent lifetime Pro access
+- Failure: Downgrade to free tier
+
+**Database Fields on User**:
+```typescript
+founder_status: 'none' | 'active' | 'earned' | 'expired'
+founder_deadline: Date
+founder_feedback_submitted: boolean
+founder_conversions_count: number
+```
+
+---
+
+**Last Updated**: 2025-12-01
+**Project Status**: Production (Phase 2 In Progress)
+**Current Version**: 1.4.0 (Founder's Edition)
 **Production URL**: https://pdflab.pro
 **Phase 1 Report**: See [PHASE_1_IMPLEMENTATION_COMPLETE.md](PHASE_1_IMPLEMENTATION_COMPLETE.md)
 **Comprehensive Review**: See [COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md](COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md)

@@ -42,7 +42,7 @@ export class CloudConvertService {
     jobId?: string
     error?: string
   }>
-  private compressPDFBreaker: CircuitBreaker<[string, string, 'good' | 'recommended' | 'extreme'], {
+  private compressPDFBreaker: CircuitBreaker<[string, string, ('good' | 'recommended' | 'extreme')?], {
     success: boolean
     outputPath?: string
     jobId?: string

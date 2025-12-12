@@ -1,7 +1,7 @@
 // Debug passphrase encoding issues
 const crypto = require('crypto');
 
-const passphrase = '***REMOVED***';
+const passphrase = process.env.PAYFAST_PASSPHRASE || '<redacted>';
 
 console.log('===========================================');
 console.log('🔍 PayFast Passphrase Encoding Debug');
@@ -53,7 +53,7 @@ console.log('');
 // Test signature generation with this passphrase
 const testData = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: process.env.PAYFAST_MERCHANT_KEY || 'change_me',
   amount: '9.99',
   item_name: 'Test Plan'
 };
@@ -97,7 +97,7 @@ console.log('===========================================\n');
 console.log('1. Passphrase in .env file:');
 console.log('   - Check NO quotes around value');
 console.log('   - Check NO trailing spaces');
-console.log('   - Exact value: ***REMOVED***');
+console.log('   - Exact value: <redacted>');
 console.log('');
 
 console.log('2. Backend environment variable:');
@@ -107,8 +107,8 @@ console.log('');
 
 console.log('3. PayFast Dashboard:');
 console.log('   - Passphrase must match EXACTLY (case-sensitive)');
-console.log('   - Dashboard value: ***REMOVED***');
-console.log('   - .env value:      ***REMOVED***');
+console.log('   - Dashboard value: <redacted>');
+console.log('   - .env value:      <redacted>');
 console.log('');
 
 console.log('4. Hyphen character:');

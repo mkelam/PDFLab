@@ -138,7 +138,7 @@ ssh root@141.136.44.168 "/usr/local/bin/fix-frontend-localhost.sh"
 
 ### **Check Payment Logs:**
 ```bash
-ssh root@141.136.44.168 "docker exec pdflab-mysql-prod mysql -updflab -p***REMOVED*** -D pdflab_production -e 'SELECT * FROM payment_logs ORDER BY created_at DESC LIMIT 5;'"
+ssh root@141.136.44.168 "docker exec pdflab-mysql-prod mysql -updflab -p<DB_PASSWORD> -D pdflab_production -e 'SELECT * FROM payment_logs ORDER BY created_at DESC LIMIT 5;'"
 ```
 
 ### **Monitor Containers:**

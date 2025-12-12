@@ -3,18 +3,6 @@ import { verifyToken, JWTPayload } from '../utils/auth.utils'
 import { User } from '../models'
 import logger from '../config/logger'
 
-// Extend Express Request to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User
-      userId?: string
-      userPlan?: string
-      userRole?: string
-    }
-  }
-}
-
 /**
  * Middleware to authenticate JWT token
  */

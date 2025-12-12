@@ -155,24 +155,27 @@ async function testDatabaseConnections() {
  * Get connection pool statistics
  */
 function getPoolStats() {
+    const primaryPool = exports.sequelizePrimary.connectionManager.pool;
+    const replicaPool = exports.sequelizeReplica.connectionManager.pool;
+    const scaledPool = exports.sequelizeScaled.connectionManager.pool;
     return {
         primary: {
-            size: exports.sequelizePrimary.connectionManager.pool?.size || 0,
-            available: exports.sequelizePrimary.connectionManager.pool?.available || 0,
-            using: exports.sequelizePrimary.connectionManager.pool?.using || 0,
-            waiting: exports.sequelizePrimary.connectionManager.pool?.waiting || 0
+            size: primaryPool?.size || 0,
+            available: primaryPool?.available || 0,
+            using: primaryPool?.using || 0,
+            waiting: primaryPool?.waiting || 0
         },
         replica: {
-            size: exports.sequelizeReplica.connectionManager.pool?.size || 0,
-            available: exports.sequelizeReplica.connectionManager.pool?.available || 0,
-            using: exports.sequelizeReplica.connectionManager.pool?.using || 0,
-            waiting: exports.sequelizeReplica.connectionManager.pool?.waiting || 0
+            size: replicaPool?.size || 0,
+            available: replicaPool?.available || 0,
+            using: replicaPool?.using || 0,
+            waiting: replicaPool?.waiting || 0
         },
         scaled: {
-            size: exports.sequelizeScaled.connectionManager.pool?.size || 0,
-            available: exports.sequelizeScaled.connectionManager.pool?.available || 0,
-            using: exports.sequelizeScaled.connectionManager.pool?.using || 0,
-            waiting: exports.sequelizeScaled.connectionManager.pool?.waiting || 0
+            size: scaledPool?.size || 0,
+            available: scaledPool?.available || 0,
+            using: scaledPool?.using || 0,
+            waiting: scaledPool?.waiting || 0
         }
     };
 }

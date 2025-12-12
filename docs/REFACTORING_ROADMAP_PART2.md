@@ -42,7 +42,7 @@ echo "$(date): Starting database backup..." | tee -a /var/log/pdflab-backup.log
 # Backup MySQL database
 docker exec pdflab-mysql-prod mysqldump \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   --single-transaction \
   --routines \
   --triggers \
@@ -116,7 +116,7 @@ read
 echo "Restoring database..."
 gunzip < "$BACKUP_FILE" | docker exec -i pdflab-mysql-prod mysql \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   pdflab_production
 
 if [ $? -eq 0 ]; then

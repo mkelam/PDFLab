@@ -243,7 +243,7 @@ export const submitApplication = async (req: Request, res: Response) => {
       `
     }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Application submitted successfully',
       application_id: application.id,
       status: 'pending'
@@ -251,7 +251,7 @@ export const submitApplication = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     logger.error('Submit application error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({ error: 'Failed to submit application' })
+    return res.status(500).json({ error: 'Failed to submit application' })
   }
 }
 
@@ -274,10 +274,10 @@ export const getApplications = async (req: Request, res: Response) => {
       attributes: { exclude: ['admin_notes'] } // Hide internal notes from response
     })
 
-    res.json({ applications })
+    return res.json({ applications })
   } catch (error: any) {
     logger.error('Get applications error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({ error: 'Failed to fetch applications' })
+    return res.status(500).json({ error: 'Failed to fetch applications' })
   }
 }
 
@@ -295,10 +295,10 @@ export const getApplication = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Application not found' })
     }
 
-    res.json({ application })
+    return res.json({ application })
   } catch (error: any) {
     logger.error('Get application error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({ error: 'Failed to fetch application' })
+    return res.status(500).json({ error: 'Failed to fetch application' })
   }
 }
 
@@ -417,7 +417,7 @@ export const approveApplication = async (req: Request, res: Response) => {
       `
     }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
-    res.json({
+    return res.json({
       message: 'Application approved successfully',
       partner: {
         id: partner.id,
@@ -429,7 +429,7 @@ export const approveApplication = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     logger.error('Approve application error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({ error: 'Failed to approve application' })
+    return res.status(500).json({ error: 'Failed to approve application' })
   }
 }
 
@@ -476,11 +476,11 @@ export const rejectApplication = async (req: Request, res: Response) => {
       `
     }).catch(err => logger.error('Email error:', { error: err instanceof Error ? err.message : String(err) }))
 
-    res.json({ message: 'Application rejected' })
+    return res.json({ message: 'Application rejected' })
 
   } catch (error: any) {
     logger.error('Reject application error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({ error: 'Failed to reject application' })
+    return res.status(500).json({ error: 'Failed to reject application' })
   }
 }
 
@@ -503,10 +503,10 @@ export const flagApplication = async (req: Request, res: Response) => {
     application.admin_notes = admin_notes
     await application.save()
 
-    res.json({ message: 'Application flagged for review' })
+    return res.json({ message: 'Application flagged for review' })
 
   } catch (error: any) {
     logger.error('Flag application error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({ error: 'Failed to flag application' })
+    return res.status(500).json({ error: 'Failed to flag application' })
   }
 }

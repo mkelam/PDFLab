@@ -3,6 +3,12 @@ import { CircuitBreakerConfig } from '../config/circuit-breaker'
 import logger from '../config/logger'
 import { circuitBreakerState, circuitBreakerCalls } from '../config/metrics'
 
+function getBreakerState(breaker: CircuitBreaker<any, any>): 'open' | 'half-open' | 'closed' {
+  if (breaker.opened) return 'open'
+  if ((breaker as any).halfOpen) return 'half-open'
+  return 'closed'
+}
+
 export function createCircuitBreaker<T extends any[], R>(
   fn: (...args: T) => Promise<R>,
   name: string,
@@ -55,7 +61,7 @@ export function createCircuitBreaker<T extends any[], R>(
     circuitBreakerCalls.inc({ name, result: 'success' })
     logger.debug(`Circuit breaker success: ${name}`, {
       circuitBreaker: name,
-      state: breaker.status.state
+      state: getBreakerState(breaker)
     })
   })
 
@@ -64,7 +70,7 @@ export function createCircuitBreaker<T extends any[], R>(
     circuitBreakerCalls.inc({ name, result: 'failure' })
     logger.warn(`Circuit breaker failure: ${name}`, {
       circuitBreaker: name,
-      state: breaker.status.state,
+      state: getBreakerState(breaker),
       error: error.message
     })
   })
@@ -102,7 +108,7 @@ export function getCircuitBreakerStats(breaker: CircuitBreaker<any, any>) {
     rejects: stats.rejects,       // Rejected calls (circuit open)
     timeouts: stats.timeouts,     // Timed out calls
     fallbacks: stats.fallbacks,   // Fallback executions
-    state: breaker.status.state,  // current state (open/closed/half-open)
+    state: getBreakerState(breaker),  // current state (open/closed/half-open)
     isOpen: breaker.opened,       // Is circuit open?
     percentiles: {
       p50: stats.percentiles['0.5'],

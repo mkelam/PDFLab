@@ -208,7 +208,7 @@ const submitApplication = async (req, res) => {
         <p>Best regards,<br/>The PDFLab Team</p>
       `
         }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
-        res.status(201).json({
+        return res.status(201).json({
             message: 'Application submitted successfully',
             application_id: application.id,
             status: 'pending'
@@ -216,7 +216,7 @@ const submitApplication = async (req, res) => {
     }
     catch (error) {
         logger_1.default.error('Submit application error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({ error: 'Failed to submit application' });
+        return res.status(500).json({ error: 'Failed to submit application' });
     }
 };
 exports.submitApplication = submitApplication;
@@ -236,11 +236,11 @@ const getApplications = async (req, res) => {
             order: [[sort, 'DESC']],
             attributes: { exclude: ['admin_notes'] } // Hide internal notes from response
         });
-        res.json({ applications });
+        return res.json({ applications });
     }
     catch (error) {
         logger_1.default.error('Get applications error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({ error: 'Failed to fetch applications' });
+        return res.status(500).json({ error: 'Failed to fetch applications' });
     }
 };
 exports.getApplications = getApplications;
@@ -255,11 +255,11 @@ const getApplication = async (req, res) => {
         if (!application) {
             return res.status(404).json({ error: 'Application not found' });
         }
-        res.json({ application });
+        return res.json({ application });
     }
     catch (error) {
         logger_1.default.error('Get application error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({ error: 'Failed to fetch application' });
+        return res.status(500).json({ error: 'Failed to fetch application' });
     }
 };
 exports.getApplication = getApplication;
@@ -369,7 +369,7 @@ const approveApplication = async (req, res) => {
         <p>Best regards,<br/>The PDFLab Team</p>
       `
         }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
-        res.json({
+        return res.json({
             message: 'Application approved successfully',
             partner: {
                 id: partner.id,
@@ -381,7 +381,7 @@ const approveApplication = async (req, res) => {
     }
     catch (error) {
         logger_1.default.error('Approve application error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({ error: 'Failed to approve application' });
+        return res.status(500).json({ error: 'Failed to approve application' });
     }
 };
 exports.approveApplication = approveApplication;
@@ -422,11 +422,11 @@ const rejectApplication = async (req, res) => {
         <p>Best regards,<br/>The PDFLab Team</p>
       `
         }).catch(err => logger_1.default.error('Email error:', { error: err instanceof Error ? err.message : String(err) }));
-        res.json({ message: 'Application rejected' });
+        return res.json({ message: 'Application rejected' });
     }
     catch (error) {
         logger_1.default.error('Reject application error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({ error: 'Failed to reject application' });
+        return res.status(500).json({ error: 'Failed to reject application' });
     }
 };
 exports.rejectApplication = rejectApplication;
@@ -445,11 +445,11 @@ const flagApplication = async (req, res) => {
         application.status = 'flagged';
         application.admin_notes = admin_notes;
         await application.save();
-        res.json({ message: 'Application flagged for review' });
+        return res.json({ message: 'Application flagged for review' });
     }
     catch (error) {
         logger_1.default.error('Flag application error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({ error: 'Failed to flag application' });
+        return res.status(500).json({ error: 'Failed to flag application' });
     }
 };
 exports.flagApplication = flagApplication;

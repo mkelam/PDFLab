@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional } from 'sequelize'
 import { sequelize } from '../config/database'
+import type { PromoCode } from './PromoCode'
 
 export enum PartnerPlatform {
   YOUTUBE = 'youtube',
@@ -150,6 +151,8 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   public notes?: string
   public readonly created_at!: Date
   public readonly updated_at!: Date
+
+  public promo_codes?: PromoCode[]
 
   // Helper methods
   public getCommissionRateByTier(): number {

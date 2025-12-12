@@ -312,7 +312,7 @@ Multi-currency implementation will be considered successful if:
 
 ✅ **PayFast Integration**: Fully operational
 ✅ **Signature Generation**: Fixed with correct parameter order
-✅ **Passphrase**: Configured correctly (***REMOVED***)
+✅ **Passphrase**: Configured correctly (<PAYFAST_PASSPHRASE>)
 ✅ **Subscription Billing**: Working (monthly recurring)
 ✅ **ITN Webhooks**: Validated and processing
 

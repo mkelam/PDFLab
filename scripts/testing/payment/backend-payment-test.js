@@ -13,7 +13,7 @@ const TEST_USER = {
 // PayFast configuration for verification
 const PAYFAST_CONFIG = {
   merchantId: '25263515',
-  merchantKey: '***REMOVED***',
+  merchantKey: process.env.PAYFAST_MERCHANT_KEY || '',
   passphrase: '', // Empty in production mode
   mode: 'production'
 };

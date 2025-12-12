@@ -50,13 +50,22 @@ docker images mkelam/pdflab-frontend:latest --format "Frontend: {{.Repository}}:
 echo ""
 
 echo -e "${BLUE}[5/9] Creating environment file...${NC}"
-cat > .env.production << 'EOF'
+if [ ! -f .env.production ]; then
+    : "${MYSQL_PASSWORD:?set MYSQL_PASSWORD}"
+    : "${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}"
+
+    cat > .env.production <<EOF
 # Production Environment Variables
-MYSQL_PASSWORD=***REMOVED***
-MYSQL_ROOT_PASSWORD=***REMOVED***
+MYSQL_PASSWORD=$MYSQL_PASSWORD
+MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 NODE_ENV=production
 EOF
-echo -e "${GREEN}✓ Environment file created${NC}"
+
+    chmod 600 .env.production 2>/dev/null || true
+    echo -e "${GREEN}✓ Environment file created${NC}"
+else
+    echo -e "${GREEN}✓ Using existing .env.production${NC}"
+fi
 echo ""
 
 echo -e "${BLUE}[6/9] Starting all services...${NC}"

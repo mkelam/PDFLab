@@ -16,7 +16,7 @@ import crypto from 'crypto'
 
 const API_BASE_URL = (process.env.TEST_ENV === 'vps' || process.env.TEST_ENV === 'staging') ? 'http://141.136.44.168:3007' : 'http://localhost:3006'
 const PAYFAST_MERCHANT_ID = '25263515'
-const PAYFAST_MERCHANT_KEY = '***REMOVED***'
+const PAYFAST_MERCHANT_KEY = process.env.PAYFAST_MERCHANT_KEY || ''
 const PAYFAST_PASSPHRASE = '' // Empty in production config
 
 /**
@@ -79,11 +79,15 @@ test.describe('PayFast Payment Integration', () => {
     // Verify payment data structure
     expect(data.payment_data).toMatchObject({
       merchant_id: PAYFAST_MERCHANT_ID,
-      merchant_key: PAYFAST_MERCHANT_KEY,
       amount: '29.99',
       item_name: expect.stringContaining('Pro'),
       subscription_type: '1', // Monthly subscription
     })
+    if (PAYFAST_MERCHANT_KEY) {
+      expect(data.payment_data.merchant_key).toBe(PAYFAST_MERCHANT_KEY)
+    } else {
+      expect(typeof data.payment_data.merchant_key).toBe('string')
+    }
 
     // Verify signature is present
     expect(data.payment_data.signature).toBeDefined()

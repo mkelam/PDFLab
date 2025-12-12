@@ -71,7 +71,9 @@ export const getDashboardAnalytics = async (req: Request, res: Response) => {
 
     // Total file size processed
     const totalFileSizeBytes = allConversions.reduce((sum, job) => {
-      return sum + (parseInt(job.file_size as string) || 0)
+      const raw = job.file_size as unknown
+      const size = typeof raw === 'number' ? raw : (parseInt(String(raw ?? '0'), 10) || 0)
+      return sum + size
     }, 0)
     const totalFileSizeMB = Math.round(totalFileSizeBytes / (1024 * 1024))
 
@@ -106,7 +108,7 @@ export const getDashboardAnalytics = async (req: Request, res: Response) => {
     }))
 
     // Response
-    res.json({
+    return res.json({
       overview: {
         totalConversions,
         successfulConversions,
@@ -128,7 +130,7 @@ export const getDashboardAnalytics = async (req: Request, res: Response) => {
     })
   } catch (error: any) {
     logger.error('Analytics error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to fetch analytics',
       message: error.message
     })
@@ -194,7 +196,7 @@ export const getConversionHistory = async (req: Request, res: Response) => {
       ]
     })
 
-    res.json({
+    return res.json({
       total: count,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string),
@@ -202,7 +204,7 @@ export const getConversionHistory = async (req: Request, res: Response) => {
     })
   } catch (error: any) {
     logger.error('History error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to fetch history',
       message: error.message
     })
@@ -257,10 +259,10 @@ export const exportAnalytics = async (req: Request, res: Response) => {
     // Send as downloadable file
     res.setHeader('Content-Type', 'text/csv')
     res.setHeader('Content-Disposition', `attachment; filename="pdflab-conversions-${Date.now()}.csv"`)
-    res.send(csv)
+    return res.send(csv)
   } catch (error: any) {
     logger.error('Export error:', { error: error instanceof Error ? error.message : String(error) })
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to export data',
       message: error.message
     })

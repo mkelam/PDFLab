@@ -19,7 +19,13 @@ ssh $VPS_USER@$VPS_IP << 'EOF'
 cd /var/pdflab/app
 
 # Ensure admin user exists with correct password
-docker exec pdflab-mysql-prod mysql -u root -p***REMOVED*** pdflab_production -e "
+ROOT_PASS=\"$(grep '^MYSQL_ROOT_PASSWORD=' .env.production 2>/dev/null | head -1 | cut -d= -f2-)\"
+if [ -z \"$ROOT_PASS\" ]; then
+  echo \"ERROR: Missing MYSQL_ROOT_PASSWORD in /var/pdflab/app/.env.production\"
+  exit 1
+fi
+
+docker exec -e MYSQL_PWD=\"$ROOT_PASS\" pdflab-mysql-prod mysql -u root pdflab_production -e "
 INSERT INTO users (
   id, email, password_hash, name, role, plan,
   conversions_used, conversions_limit,

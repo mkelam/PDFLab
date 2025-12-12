@@ -295,7 +295,7 @@ Questions:
 Current working implementation:
 - Display: $4.55 USD on website
 - Payment data: amount=85.00 (ZAR)
-- Signature: Working with passphrase "***REMOVED***"
+- Signature: Working with passphrase "<PAYFAST_PASSPHRASE>"
 
 Thank you!
 ```
@@ -310,13 +310,13 @@ If you want to test multi-currency signature generation:
 // Test if adding currency parameter breaks signature
 const testData = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: '<PAYFAST_MERCHANT_KEY>',
   amount: '4.55',        // USD amount instead of ZAR
   currency: 'USD',       // Add currency parameter
   // ... other fields
 };
 
-const signature = generateSignature(testData, '***REMOVED***');
+const signature = generateSignature(testData, '<PAYFAST_PASSPHRASE>');
 // Test if PayFast accepts this
 ```
 

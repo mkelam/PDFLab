@@ -89,7 +89,7 @@ mkelam/pdflab-backend:latest
 
 **Environment Variable Required**:
 ```env
-PAYFAST_PASSPHRASE=***REMOVED***
+PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 ```
 
 **VPS Configuration**: ✅ Already set in `/root/backend.env`
@@ -127,7 +127,7 @@ PAYFAST_PASSPHRASE=***REMOVED***
 - Image: `mkelam/pdflab-backend:latest`
 - Digest: `sha256:a64dee2368b6babaebfb495dfb9fd7ed4eec6f408f66abcbcc54bbc54110257a`
 - Status: Running (healthy)
-- Passphrase: ***REMOVED*** ✅
+- Passphrase: <PAYFAST_PASSPHRASE> ✅
 
 **Git Commit**:
 - Commit: b567c8ba
@@ -199,7 +199,7 @@ docker logs pdflab-backend-prod --tail 20
 The Docker image **REQUIRES** this environment variable:
 
 ```env
-PAYFAST_PASSPHRASE=***REMOVED***
+PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 ```
 
 **Where it's set**:

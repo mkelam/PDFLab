@@ -71,7 +71,7 @@ export const productionConfig = {
   payfast: {
     mode: 'live',
     merchantId: '25263515',
-    merchantKey: '***REMOVED***',
+    merchantKey: process.env.PAYFAST_MERCHANT_KEY || '',
   },
 
   // Feature Flags

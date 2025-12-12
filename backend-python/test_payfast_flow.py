@@ -16,11 +16,12 @@ import json
 import hashlib
 from urllib.parse import urlencode
 import time
+import os
 
 # Configuration
 API_URL = "http://localhost:3007"
 PAYFAST_MERCHANT_ID = "25263515"
-PAYFAST_MERCHANT_KEY = "***REMOVED***"
+PAYFAST_MERCHANT_KEY = os.environ.get("PAYFAST_MERCHANT_KEY", "")
 PAYFAST_PASSPHRASE = ""  # Empty as per settings
 
 # Test user credentials

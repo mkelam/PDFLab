@@ -1,14 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-declare global {
-    namespace Express {
-        interface Request {
-            user?: User;
-            userId?: string;
-            userPlan?: string;
-            userRole?: string;
-        }
-    }
-}
 /**
  * Middleware to authenticate JWT token
  */

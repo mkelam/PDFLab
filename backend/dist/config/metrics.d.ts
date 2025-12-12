@@ -6,8 +6,8 @@ import client from 'prom-client';
  * Metrics are collected and exposed at /metrics endpoint for Prometheus scraping.
  */
 export declare const register: client.Registry<"text/plain; version=0.0.4; charset=utf-8">;
-export declare const httpRequestDuration: client.Histogram<"method" | "route" | "status_code">;
-export declare const httpRequestTotal: client.Counter<"method" | "route" | "status_code">;
+export declare const httpRequestDuration: client.Histogram<"route" | "method" | "status_code">;
+export declare const httpRequestTotal: client.Counter<"route" | "method" | "status_code">;
 export declare const conversionTotal: client.Counter<"format" | "status" | "conversion_type">;
 export declare const conversionDuration: client.Histogram<"format" | "conversion_type">;
 export declare const conversionFileSize: client.Histogram<"format">;
@@ -18,10 +18,10 @@ export declare const guestSessions: client.Gauge<string>;
 export declare const userRegistrations: client.Counter<"tier">;
 export declare const activeSubscriptions: client.Gauge<"tier">;
 export declare const subscriptionEvents: client.Counter<"tier" | "event_type">;
-export declare const errorTotal: client.Counter<"route" | "status_code" | "type">;
+export declare const errorTotal: client.Counter<"type" | "route" | "status_code">;
 export declare const cloudconvertErrors: client.Counter<"error_type">;
 export declare const storageUsed: client.Gauge<"type">;
-export declare const databaseQueryDuration: client.Histogram<"operation" | "model">;
+export declare const databaseQueryDuration: client.Histogram<"model" | "operation">;
 export declare const databaseConnections: client.Gauge<string>;
 export declare const redisCommandDuration: client.Histogram<"command">;
 export declare const circuitBreakerState: client.Gauge<"name">;

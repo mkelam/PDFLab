@@ -152,8 +152,8 @@ console.log("\n=== TESTING FIX ===");
 
 // Test with sample data
 const testData = {
-  merchant_id: "25263515",
-  merchant_key: "***REMOVED***",
+  merchant_id: process.env.PAYFAST_MERCHANT_ID || "25263515",
+  merchant_key: process.env.PAYFAST_MERCHANT_KEY || "change_me",
   return_url: "https://pdflab.pro/payment/success",
   cancel_url: "https://pdflab.pro/payment/cancel",
   notify_url: "https://pdflab.pro/api/payfast/webhook",

@@ -17,6 +17,7 @@ var UserPlan;
     UserPlan["STARTER"] = "starter";
     UserPlan["PRO"] = "pro";
     UserPlan["ENTERPRISE"] = "enterprise";
+    UserPlan["FOUNDER"] = "founder";
 })(UserPlan || (exports.UserPlan = UserPlan = {}));
 var SubscriptionStatus;
 (function (SubscriptionStatus) {
@@ -28,7 +29,7 @@ var SubscriptionStatus;
 class User extends sequelize_1.Model {
     // Helper methods
     canConvert() {
-        if (this.plan === UserPlan.PRO || this.plan === UserPlan.ENTERPRISE) {
+        if (this.plan === UserPlan.PRO || this.plan === UserPlan.ENTERPRISE || this.plan === UserPlan.FOUNDER) {
             return true; // Unlimited
         }
         return this.conversions_used < this.conversions_limit;
@@ -42,6 +43,7 @@ class User extends sequelize_1.Model {
             case UserPlan.PRO:
                 return parseInt(process.env.MAX_FILE_SIZE_PRO || '104857600'); // 100MB
             case UserPlan.ENTERPRISE:
+            case UserPlan.FOUNDER:
                 return 524288000; // 500MB
             default:
                 return 10485760;
@@ -56,6 +58,7 @@ class User extends sequelize_1.Model {
             case UserPlan.PRO:
                 return 20; // 20 files per batch
             case UserPlan.ENTERPRISE:
+            case UserPlan.FOUNDER:
                 return 50; // 50 files per batch
             default:
                 return 5;

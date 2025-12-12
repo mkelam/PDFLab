@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Subscription = exports.PlanType = exports.SubscriptionStatus = void 0;
+exports.Subscription = exports.PaymentProvider = exports.PlanType = exports.SubscriptionStatus = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 var SubscriptionStatus;
@@ -18,6 +18,11 @@ var PlanType;
     PlanType["PRO"] = "pro";
     PlanType["ENTERPRISE"] = "enterprise";
 })(PlanType || (exports.PlanType = PlanType = {}));
+var PaymentProvider;
+(function (PaymentProvider) {
+    PaymentProvider["PAYFAST"] = "payfast";
+    PaymentProvider["PAYGENIUS"] = "paygenius";
+})(PaymentProvider || (exports.PaymentProvider = PaymentProvider = {}));
 class Subscription extends sequelize_1.Model {
 }
 exports.Subscription = Subscription;
@@ -47,15 +52,31 @@ Subscription.init({
         allowNull: false,
         defaultValue: 'pending'
     },
+    payment_provider: {
+        type: sequelize_1.DataTypes.ENUM('payfast', 'paygenius'),
+        allowNull: true,
+        defaultValue: 'paygenius',
+        comment: 'Payment provider used for this subscription'
+    },
     payfast_token: {
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
-        comment: 'PayFast subscription token for recurring payments'
+        comment: 'PayFast subscription token for recurring payments (legacy)'
     },
     payfast_subscription_id: {
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
-        comment: 'PayFast subscription ID'
+        comment: 'PayFast subscription ID (legacy)'
+    },
+    paygenius_reference: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayGenius payment reference'
+    },
+    paygenius_subscription_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayGenius subscription reference for recurring payments'
     },
     amount: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
@@ -123,6 +144,8 @@ Subscription.init({
         { fields: ['user_id'] },
         { fields: ['status'] },
         { fields: ['payfast_token'] },
+        { fields: ['paygenius_reference'] },
+        { fields: ['paygenius_subscription_id'] },
         { fields: ['next_billing_date'] }
     ]
 });

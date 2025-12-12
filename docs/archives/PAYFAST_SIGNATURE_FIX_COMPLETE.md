@@ -276,7 +276,7 @@ const PAYFAST_PARAM_ORDER = [
 
 const data = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: '<PAYFAST_MERCHANT_KEY>',
   return_url: 'https://pdflab.pro/payment/success',
   cancel_url: 'https://pdflab.pro/payment/cancel',
   notify_url: 'https://pdflab.pro/api/payfast/webhook',

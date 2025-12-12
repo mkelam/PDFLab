@@ -27,26 +27,31 @@ const submitFeedback = async (req, res) => {
             return;
         }
         // Get user_id from request if authenticated
-        const userId = req.user?.userId || null;
+        // optionalAuth middleware sets req.user as the User model and req.userId separately
+        const userId = req.userId || req.user?.id || null;
         // Get user agent from headers
         const userAgent = req.headers['user-agent'] || null;
         // If authenticated, fetch user email/name from database
         let email = user_email;
         let name = user_name;
+        let isFounder = false;
+        let userPlan = null;
         if (userId) {
             const user = await models_1.User.findByPk(userId, {
-                attributes: ['email', 'name']
+                attributes: ['email', 'name', 'plan']
             });
             if (user) {
                 email = user.email;
                 name = user.name;
+                userPlan = user.plan;
+                isFounder = user.plan === models_1.UserPlan.FOUNDER;
             }
         }
         // Sanitize inputs to prevent XSS
         const sanitizedMessage = (0, sanitize_utils_1.sanitizeRichText)(message.trim());
         const sanitizedName = name ? (0, sanitize_utils_1.sanitizeText)(name) : null;
         const sanitizedEmail = email ? (0, sanitize_utils_1.sanitizeText)(email) : null;
-        // Create feedback
+        // Create feedback with founder priority
         const feedback = await Feedback_1.default.create({
             user_id: userId,
             user_email: sanitizedEmail,
@@ -56,24 +61,53 @@ const submitFeedback = async (req, res) => {
             page_url: page_url || null,
             user_agent: userAgent,
             screenshot_url: screenshot_url || null,
-            status: 'new'
+            status: 'new',
+            priority: isFounder ? 'high' : 'normal',
+            is_founder: isFounder
         });
         // Send email notification to admin
         try {
+            // Determine email subject and recipient based on founder status
+            const isFounderFeedback = isFounder;
+            const founderEmail = process.env.FOUNDER_EMAIL || process.env.ADMIN_EMAIL || 'admin@pdflab.pro';
+            const adminEmail = process.env.ADMIN_EMAIL || 'admin@pdflab.pro';
+            const subject = isFounderFeedback
+                ? `🌟 [FOUNDER PRIORITY] New ${type || 'general'} feedback from ${name || email || 'Founder'}`
+                : `[PDFLab] New ${type || 'general'} feedback`;
+            const priorityBanner = isFounderFeedback
+                ? `<div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <strong>🌟 FOUNDER FEEDBACK - HIGH PRIORITY</strong>
+          </div>`
+                : '';
+            const emailHtml = `
+        ${priorityBanner}
+        <h2>New Feedback Received</h2>
+        <p><strong>Type:</strong> ${type || 'general'}</p>
+        <p><strong>From:</strong> ${name || 'Anonymous'} (${email || 'No email'})</p>
+        ${isFounderFeedback ? `<p><strong>Plan:</strong> <span style="color: #d97706; font-weight: bold;">FOUNDER</span></p>` : userPlan ? `<p><strong>Plan:</strong> ${userPlan}</p>` : ''}
+        <p><strong>Priority:</strong> ${isFounderFeedback ? '<span style="color: #dc2626; font-weight: bold;">HIGH</span>' : 'Normal'}</p>
+        <p><strong>Page:</strong> ${page_url || 'Not provided'}</p>
+        <p><strong>Message:</strong></p>
+        <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 10px 0;">
+          <p style="margin: 0;">${message}</p>
+        </div>
+        <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+        <p><a href="https://pdflab.pro/admin/feedback" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">View in Admin Panel</a></p>
+      `;
+            // Send to founder email for founder feedback, otherwise to admin
             await email_service_1.default.sendEmail({
-                to: process.env.ADMIN_EMAIL || 'admin@pdflab.pro',
-                subject: `[PDFLab] New ${type || 'general'} feedback`,
-                html: `
-          <h2>New Feedback Received</h2>
-          <p><strong>Type:</strong> ${type || 'general'}</p>
-          <p><strong>From:</strong> ${name || 'Anonymous'} (${email || 'No email'})</p>
-          <p><strong>Page:</strong> ${page_url || 'Not provided'}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message}</p>
-          <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
-          <p><a href="https://pdflab.pro/admin/feedback">View in Admin Panel</a></p>
-        `
+                to: isFounderFeedback ? founderEmail : adminEmail,
+                subject,
+                html: emailHtml
             });
+            // If founder feedback and founder email is different from admin email, also notify admin
+            if (isFounderFeedback && founderEmail !== adminEmail) {
+                await email_service_1.default.sendEmail({
+                    to: adminEmail,
+                    subject: `[CC] ${subject}`,
+                    html: emailHtml
+                });
+            }
         }
         catch (emailError) {
             logger_1.default.error('Failed to send feedback notification email:', { emailError });
@@ -104,7 +138,7 @@ exports.submitFeedback = submitFeedback;
  */
 const getAllFeedback = async (req, res) => {
     try {
-        const { search = '', status, type, page = '1', limit = '25', sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
+        const { search = '', status, type, priority, founder, page = '1', limit = '25', sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const offset = (pageNum - 1) * limitNum;
@@ -118,6 +152,14 @@ const getAllFeedback = async (req, res) => {
         if (type && type !== 'all') {
             where.type = type;
         }
+        // Filter by priority
+        if (priority && priority !== 'all') {
+            where.priority = priority;
+        }
+        // Filter by founder status
+        if (founder === 'true') {
+            where.is_founder = true;
+        }
         // Search by message, email, or name
         if (search) {
             where[sequelize_1.Op.or] = [
@@ -126,7 +168,7 @@ const getAllFeedback = async (req, res) => {
                 { user_name: { [sequelize_1.Op.like]: `%${search}%` } }
             ];
         }
-        // Get feedback with pagination
+        // Get feedback with pagination - prioritize founder/high priority feedback
         const { count, rows: feedback } = await Feedback_1.default.findAndCountAll({
             where,
             include: [
@@ -143,7 +185,11 @@ const getAllFeedback = async (req, res) => {
                     required: false
                 }
             ],
-            order: [[sortBy, sortOrder]],
+            order: [
+                ['is_founder', 'DESC'], // Founder feedback first
+                ['priority', 'DESC'], // Then high priority
+                [sortBy, sortOrder]
+            ],
             limit: limitNum,
             offset
         });
@@ -182,6 +228,15 @@ const getFeedbackStats = async (req, res) => {
         const bugReports = await Feedback_1.default.count({ where: { type: 'bug' } });
         const featureRequests = await Feedback_1.default.count({ where: { type: 'feature' } });
         const generalFeedback = await Feedback_1.default.count({ where: { type: 'general' } });
+        // Founder/Priority stats
+        const founderFeedback = await Feedback_1.default.count({ where: { is_founder: true } });
+        const highPriorityFeedback = await Feedback_1.default.count({ where: { priority: 'high' } });
+        const founderUnresolved = await Feedback_1.default.count({
+            where: {
+                is_founder: true,
+                status: { [sequelize_1.Op.notIn]: ['resolved', 'dismissed'] }
+            }
+        });
         res.json({
             success: true,
             stats: {
@@ -196,6 +251,11 @@ const getFeedbackStats = async (req, res) => {
                     bug: bugReports,
                     feature: featureRequests,
                     general: generalFeedback
+                },
+                byPriority: {
+                    founder: founderFeedback,
+                    high: highPriorityFeedback,
+                    founderUnresolved: founderUnresolved
                 }
             }
         });

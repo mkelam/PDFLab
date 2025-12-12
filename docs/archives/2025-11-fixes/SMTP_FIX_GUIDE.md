@@ -13,7 +13,7 @@
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***
+SMTP_PASS=<SMTP_PASS>
 SMTP_FROM_EMAIL=support@pdflab.pro
 SMTP_FROM_NAME=PDFLab
 SMTP_SECURE=false
@@ -39,7 +39,7 @@ code: 'EAUTH'
 6. ⚠️ Special characters in password need escaping
 
 ### Most Likely Cause
-The password `***REMOVED***` contains a special character `!` which may need special handling in the .env file.
+The password `<SMTP_PASS>` contains a special character `!` which may need special handling in the .env file.
 
 **Why This Happens**:
 - Shell interprets `!` as history expansion
@@ -75,16 +75,16 @@ nano .env
 **Step 4**: Update SMTP_PASS with proper quoting
 ```bash
 # Current (may be causing issues):
-SMTP_PASS=***REMOVED***
+SMTP_PASS=<SMTP_PASS>
 
 # Fix Option A - Single quotes (recommended):
-SMTP_PASS='***REMOVED***'
+SMTP_PASS='<SMTP_PASS>'
 
 # Fix Option B - Escape exclamation mark:
 SMTP_PASS=Jesus24\!7
 
 # Fix Option C - Double quotes:
-SMTP_PASS="***REMOVED***"
+SMTP_PASS="<SMTP_PASS>"
 ```
 
 **Step 5**: Save and exit (Ctrl+X, Y, Enter)
@@ -280,7 +280,7 @@ const transporter = nodemailer.createTransport({
   secure: false,
   auth: {
     user: 'support@pdflab.pro',
-    pass: process.env.SMTP_PASS || '***REMOVED***'
+    pass: process.env.SMTP_PASS || '<SMTP_PASS>'
   }
 });
 

@@ -85,7 +85,7 @@ SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***
+SMTP_PASS=<SMTP_PASS>
 SMTP_FROM_NAME=PDFLab
 SMTP_FROM_EMAIL=support@pdflab.pro
 ```

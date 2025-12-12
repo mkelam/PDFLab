@@ -132,7 +132,7 @@ services:
       - NODE_ENV=production
       - PAYFAST_MODE=production
       - PAYFAST_MERCHANT_ID=25263515
-      - PAYFAST_MERCHANT_KEY=***REMOVED***
+      - PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
       - API_URL=https://pdflab.pro
       - FRONTEND_URL=https://pdflab.pro
       - CORS_ORIGIN=https://pdflab.pro,https://www.pdflab.pro
@@ -176,7 +176,7 @@ BACKUP_DIR="/var/backups/mysql"
 CONTAINER="pdflab-mysql-prod"
 DB_NAME="pdflab_production"
 DB_USER="pdflab"
-DB_PASS="***REMOVED***"
+DB_PASS="<DB_PASSWORD>"
 RETENTION_DAYS=7
 
 # Create timestamp

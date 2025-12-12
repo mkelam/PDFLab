@@ -6,6 +6,22 @@ const nextConfig = {
   },
   output: 'standalone',
 
+  async rewrites() {
+    const internalApiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://localhost:3006'
+
+    return {
+      afterFiles: [
+        {
+          source: '/api/:path*',
+          destination: `${internalApiUrl}/api/:path*`,
+        },
+      ],
+    }
+  },
+
   // Webpack configuration for bundle optimization
   webpack: (config, { isServer }) => {
     if (!isServer) {

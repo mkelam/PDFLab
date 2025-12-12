@@ -11,12 +11,20 @@ export declare enum PaymentType {
     ONE_TIME = "one_time",
     REFUND = "refund"
 }
+export declare enum PaymentProvider {
+    PAYFAST = "payfast",
+    PAYGENIUS = "paygenius"
+}
 interface PaymentLogAttributes {
     id: string;
     user_id: string;
     subscription_id?: string;
     transaction_id: string;
+    payment_provider?: PaymentProvider;
     payfast_payment_id?: string;
+    itn_data?: any;
+    paygenius_payment_id?: string;
+    webhook_data?: any;
     payment_type: PaymentType;
     status: PaymentStatus;
     amount_gross: number;
@@ -31,7 +39,6 @@ interface PaymentLogAttributes {
     item_name: string;
     item_description?: string;
     custom_data?: any;
-    itn_data?: any;
     error_message?: string;
     processed_at?: Date;
     created_at: Date;
@@ -44,7 +51,11 @@ declare class PaymentLog extends Model<PaymentLogAttributes, PaymentLogCreationA
     user_id: string;
     subscription_id?: string;
     transaction_id: string;
+    payment_provider?: PaymentProvider;
     payfast_payment_id?: string;
+    itn_data?: any;
+    paygenius_payment_id?: string;
+    webhook_data?: any;
     payment_type: PaymentType;
     status: PaymentStatus;
     amount_gross: number;
@@ -59,7 +70,6 @@ declare class PaymentLog extends Model<PaymentLogAttributes, PaymentLogCreationA
     item_name: string;
     item_description?: string;
     custom_data?: any;
-    itn_data?: any;
     error_message?: string;
     processed_at?: Date;
     created_at: Date;

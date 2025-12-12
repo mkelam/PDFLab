@@ -85,7 +85,7 @@ ssh root@141.136.44.168 "docker exec pdflab-backend-prod node /tmp/test-signatur
 
 ### Required Fields (All Present ✅):
 - `merchant_id`: 25263515
-- `merchant_key`: ***REMOVED***
+- `merchant_key`: <PAYFAST_MERCHANT_KEY>
 - `amount`: R85.00 / R250.00 / R1850.00
 - `item_name`: PDFLab [Plan] Plan
 - `name_first`: User's first name

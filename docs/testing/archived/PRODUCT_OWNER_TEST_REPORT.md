@@ -180,7 +180,7 @@ The following test scenarios were planned but **CANNOT BE EXECUTED** due to back
 - [ ] Validate redirect to PayFast payment page
 - [ ] Confirm payment data includes:
   - merchant_id: 25263515
-  - merchant_key: ***REMOVED***
+  - merchant_key: <PAYFAST_MERCHANT_KEY>
   - amount: 9.99
   - item_name: "PDFLab Starter Plan"
   - currency: USD

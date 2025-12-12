@@ -62,20 +62,27 @@ echo "✓ Images pulled"
 ENDSSH
 echo -e "${GREEN}✓ Images pulled on VPS${NC}"
 
-# Step 5: Run database migration
-echo -e "${YELLOW}[5/8] Running database migration (005_onboarding_system.sql)...${NC}"
+# Step 5: Copy migration file to VPS
+echo -e "${YELLOW}[5/8] Copying migration file to VPS...${NC}"
+scp backend/src/migrations/005_onboarding_system.sql $VPS_USER@$VPS_IP:/tmp/005_onboarding_system.sql
+echo -e "${GREEN}✓ Migration file copied${NC}"
+
+# Step 6: Run database migration
+echo -e "${YELLOW}[6/8] Running database migration (005_onboarding_system.sql)...${NC}"
 ssh $VPS_USER@$VPS_IP << 'ENDSSH'
 cd /var/pdflab/app
 echo "Running onboarding migration..."
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab < /tmp/005_onboarding_system.sql || echo "Migration may have already run"
+
+DB_PASS="$(grep '^MYSQL_PASSWORD=' .env.production 2>/dev/null | head -1 | cut -d= -f2-)"
+if [ -z "$DB_PASS" ]; then
+  echo "ERROR: Missing MYSQL_PASSWORD in /var/pdflab/app/.env.production"
+  exit 1
+fi
+
+docker exec -e MYSQL_PWD="$DB_PASS" pdflab-mysql-prod mysql -u pdflab pdflab < /tmp/005_onboarding_system.sql || echo "Migration may have already run"
 echo "✓ Migration executed"
 ENDSSH
 echo -e "${GREEN}✓ Database migration complete${NC}"
-
-# Step 6: Copy migration file to VPS
-echo -e "${YELLOW}[6/8] Copying migration file to VPS...${NC}"
-scp backend/src/migrations/005_onboarding_system.sql $VPS_USER@$VPS_IP:/var/pdflab/app/migrations/
-echo -e "${GREEN}✓ Migration file copied${NC}"
 
 # Step 7: Restart containers
 echo -e "${YELLOW}[7/8] Restarting containers on VPS...${NC}"

@@ -136,7 +136,7 @@ Dashboard
 **The passphrase setting for SIGNATURE GENERATION**, not:
 - ❌ Authentication ID (that's for API)
 - ❌ API Key (that's for API)
-- ❌ Merchant Key (that's ***REMOVED***)
+- ❌ Merchant Key (that's <PAYFAST_MERCHANT_KEY>)
 - ✅ **Passphrase** or **Security Passphrase** (for MD5 signatures)
 
 ---

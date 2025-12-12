@@ -88,7 +88,7 @@ The email included:
 
 ```bash
 # Database ENUM update
-docker exec 57d5d601930a_pdflab-mysql-prod mysql -updflab -p***REMOVED*** pdflab_production -e "ALTER TABLE partners MODIFY COLUMN commission_tier ENUM('bronze', 'silver', 'gold', 'platinum') NOT NULL DEFAULT 'bronze';"
+docker exec 57d5d601930a_pdflab-mysql-prod mysql -updflab -p<DB_PASSWORD> pdflab_production -e "ALTER TABLE partners MODIFY COLUMN commission_tier ENUM('bronze', 'silver', 'gold', 'platinum') NOT NULL DEFAULT 'bronze';"
 
 # Partner approval
 docker exec pdflab-backend-prod node approve-partner-direct.js

@@ -14,7 +14,11 @@ set VPS_IP=141.136.44.168
 set VPS_USER=root
 set DB_NAME=pdflab_production
 set DB_USER=pdflab
-set DB_PASS=***REMOVED***
+if "%DB_PASS%"=="" (
+    echo ERROR: Missing environment variable DB_PASS
+    echo Set DB_PASS and re-run this script.
+    exit /b 1
+)
 
 echo WARNING: This will modify the PRODUCTION database!
 echo.

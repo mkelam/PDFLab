@@ -173,22 +173,23 @@ router.post('/test/sentry-payfast-error', (req: Request, res: Response) => {
  * POST /api/test/sentry-slow-performance
  */
 router.post('/test/sentry-slow-performance', async (req: Request, res: Response) => {
-  const transaction = Sentry.startTransaction({
+  const sentryAny = Sentry as any
+  const transaction = sentryAny.startTransaction?.({
     op: 'test.performance',
     name: 'Test Slow API Response',
     tags: {
       test: true,
       alert_test: 'performance',
     },
-  });
+  }) ?? null;
 
-  Sentry.getCurrentScope().setSpan(transaction);
+  sentryAny.getCurrentScope?.()?.setSpan?.(transaction);
 
   try {
     // Simulate slow operation (3 seconds)
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    transaction.setStatus('ok');
+    transaction?.setStatus?.('ok');
 
     res.json({
       success: true,
@@ -198,10 +199,10 @@ router.post('/test/sentry-slow-performance', async (req: Request, res: Response)
       note: 'May require multiple requests to trigger P95 alert'
     });
   } catch (error) {
-    transaction.setStatus('internal_error');
+    transaction?.setStatus?.('internal_error');
     throw error;
   } finally {
-    transaction.finish();
+    transaction?.finish?.();
   }
 });
 

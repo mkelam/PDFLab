@@ -48,7 +48,7 @@ API_URL=http://141.136.44.168:3006
 
 DB_HOST=mysql
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=<DB_PASSWORD>
 DB_NAME=pdflab_production
 
 REDIS_HOST=redis
@@ -70,7 +70,7 @@ PAYFAST_MODE=sandbox
 
    ```bash
    ssh root@141.136.44.168
-   docker exec -it pdflab-mysql-prod mysql -uroot -p***REMOVED***
+   docker exec -it pdflab-mysql-prod mysql -uroot -p<MYSQL_ROOT_PASSWORD>
    USE pdflab_production;
    UPDATE users SET role = 'admin' WHERE email = 'your-email@domain.com';
    exit

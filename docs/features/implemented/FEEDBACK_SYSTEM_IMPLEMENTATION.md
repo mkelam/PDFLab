@@ -146,7 +146,7 @@ mysql -u pdflab -p pdflab < backend/src/migrations/004_feedback.sql
 ```bash
 # SSH into VPS and run:
 ssh root@141.136.44.168
-docker exec -i pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production < /path/to/004_feedback.sql
+docker exec -i pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production < /path/to/004_feedback.sql
 ```
 
 ### 2. Admin Permissions (Optional)

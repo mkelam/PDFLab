@@ -28,29 +28,29 @@ interface UserAttributes {
   id: string
   email: string
   password_hash: string
-  name?: string
+  name?: string | null
   role: UserRole
   plan: UserPlan
   conversions_used: number
   conversions_limit: number
-  stripe_customer_id?: string
-  subscription_id?: string
-  subscription_status?: SubscriptionStatus
-  subscription_end_date?: Date
+  stripe_customer_id?: string | null
+  subscription_id?: string | null
+  subscription_status?: SubscriptionStatus | null
+  subscription_end_date?: Date | null
   is_beta_user: boolean
-  beta_expires_at?: Date
+  beta_expires_at?: Date | null
   email_verified: boolean
-  email_verified_at?: Date
+  email_verified_at?: Date | null
   failed_reset_attempts: number
-  reset_locked_until?: Date
+  reset_locked_until?: Date | null
   onboarding_completed: boolean
-  onboarding_completed_at?: Date
+  onboarding_completed_at?: Date | null
   onboarding_skipped: boolean
-  google_id?: string
-  linkedin_id?: string
+  google_id?: string | null
+  linkedin_id?: string | null
   created_at: Date
   updated_at: Date
-  last_login?: Date
+  last_login?: Date | null
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'email_verified' | 'email_verified_at' | 'failed_reset_attempts' | 'reset_locked_until' | 'onboarding_completed' | 'onboarding_completed_at' | 'onboarding_skipped' | 'created_at' | 'updated_at' | 'last_login' | 'name' | 'stripe_customer_id' | 'subscription_id' | 'subscription_status' | 'subscription_end_date' | 'is_beta_user' | 'beta_expires_at' | 'google_id' | 'linkedin_id'> {}
@@ -59,29 +59,29 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public id!: string
   public email!: string
   public password_hash!: string
-  public name?: string
+  public name?: string | null
   public role!: UserRole
   public plan!: UserPlan
   public conversions_used!: number
   public conversions_limit!: number
-  public stripe_customer_id?: string
-  public subscription_id?: string
-  public subscription_status?: SubscriptionStatus
-  public subscription_end_date?: Date
+  public stripe_customer_id?: string | null
+  public subscription_id?: string | null
+  public subscription_status?: SubscriptionStatus | null
+  public subscription_end_date?: Date | null
   public is_beta_user!: boolean
-  public beta_expires_at?: Date
+  public beta_expires_at?: Date | null
   public email_verified!: boolean
-  public email_verified_at?: Date
+  public email_verified_at?: Date | null
   public failed_reset_attempts!: number
-  public reset_locked_until?: Date
+  public reset_locked_until?: Date | null
   public onboarding_completed!: boolean
-  public onboarding_completed_at?: Date
+  public onboarding_completed_at?: Date | null
   public onboarding_skipped!: boolean
-  public google_id?: string
-  public linkedin_id?: string
+  public google_id?: string | null
+  public linkedin_id?: string | null
   public readonly created_at!: Date
   public readonly updated_at!: Date
-  public last_login?: Date
+  public last_login?: Date | null
 
   // Helper methods
   public canConvert(): boolean {

@@ -46,7 +46,7 @@ Following the comprehensive VPS vs Local implementation audit, all **Phase 1 Cri
   DB_HOST=mysql
   DB_NAME=pdflab_production
   DB_USER=pdflab
-  DB_PASSWORD=***REMOVED***
+  DB_PASSWORD=<DB_PASSWORD>
   ```
 
 **1.3 Redis Configuration Fix**

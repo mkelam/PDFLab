@@ -650,7 +650,7 @@ This document provides detailed breakdown of all functions, features, and workfl
   "transaction_id": "uuid",
   "payment_data": {
     "merchant_id": "25263515",
-    "merchant_key": "***REMOVED***",
+    "merchant_key": "<PAYFAST_MERCHANT_KEY>",
     "amount": "29.99",
     "item_name": "PDFLab Pro Plan",
     "return_url": "http://localhost:3007/api/payfast/return",
@@ -1792,7 +1792,7 @@ REPLAY ATTACK SCENARIO:
 **Mode:** Production (live payments)
 
 **Merchant ID:** 25263515
-**Merchant Key:** ***REMOVED***
+**Merchant Key:** <PAYFAST_MERCHANT_KEY>
 
 **URLs:**
 - **Payment:** https://www.payfast.co.za/eng/process

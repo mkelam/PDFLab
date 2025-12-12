@@ -1,12 +1,15 @@
 // Test PayFast signature with actual passphrase
 const crypto = require('crypto');
 
-const PAYFAST_PASSPHRASE = '***REMOVED***';
+const PAYFAST_PASSPHRASE = process.env.PAYFAST_PASSPHRASE || '';
+if (!PAYFAST_PASSPHRASE) {
+  throw new Error('Missing env var: PAYFAST_PASSPHRASE');
+}
 
 // Sample payment data
 const paymentData = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: process.env.PAYFAST_MERCHANT_KEY || 'change_me',
   return_url: 'https://pdflab.pro/payment/success',
   cancel_url: 'https://pdflab.pro/payment/cancel',
   notify_url: 'https://pdflab.pro/api/payfast/webhook',

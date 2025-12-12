@@ -56,7 +56,9 @@ const getDashboardAnalytics = async (req, res) => {
         }, {});
         // Total file size processed
         const totalFileSizeBytes = allConversions.reduce((sum, job) => {
-            return sum + (parseInt(job.file_size) || 0);
+            const raw = job.file_size;
+            const size = typeof raw === 'number' ? raw : (parseInt(String(raw ?? '0'), 10) || 0);
+            return sum + size;
         }, 0);
         const totalFileSizeMB = Math.round(totalFileSizeBytes / (1024 * 1024));
         // Daily conversion trend (last 7 days)
@@ -86,7 +88,7 @@ const getDashboardAnalytics = async (req, res) => {
             file_size: job.file_size
         }));
         // Response
-        res.json({
+        return res.json({
             overview: {
                 totalConversions,
                 successfulConversions,
@@ -109,7 +111,7 @@ const getDashboardAnalytics = async (req, res) => {
     }
     catch (error) {
         logger_1.default.error('Analytics error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to fetch analytics',
             message: error.message
         });
@@ -160,7 +162,7 @@ const getConversionHistory = async (req, res) => {
                 'error_message'
             ]
         });
-        res.json({
+        return res.json({
             total: count,
             limit: parseInt(limit),
             offset: parseInt(offset),
@@ -169,7 +171,7 @@ const getConversionHistory = async (req, res) => {
     }
     catch (error) {
         logger_1.default.error('History error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to fetch history',
             message: error.message
         });
@@ -219,11 +221,11 @@ const exportAnalytics = async (req, res) => {
         // Send as downloadable file
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="pdflab-conversions-${Date.now()}.csv"`);
-        res.send(csv);
+        return res.send(csv);
     }
     catch (error) {
         logger_1.default.error('Export error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to export data',
             message: error.message
         });

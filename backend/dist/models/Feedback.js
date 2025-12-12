@@ -52,6 +52,16 @@ Feedback.init({
         allowNull: false,
         defaultValue: 'new'
     },
+    priority: {
+        type: sequelize_1.DataTypes.ENUM('normal', 'high'),
+        allowNull: false,
+        defaultValue: 'normal'
+    },
+    is_founder: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
     admin_reply: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true
@@ -87,7 +97,9 @@ Feedback.init({
         { fields: ['status'] },
         { fields: ['type'] },
         { fields: ['user_id'] },
-        { fields: ['created_at'] }
+        { fields: ['created_at'] },
+        { fields: ['priority'] },
+        { fields: ['is_founder'] }
     ]
 });
 exports.default = Feedback;

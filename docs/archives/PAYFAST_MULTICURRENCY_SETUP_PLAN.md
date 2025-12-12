@@ -67,7 +67,7 @@ experience. I have the following questions:
    - Do I need to modify my integration code?
    - Should I send USD amounts or ZAR amounts in payment data?
    - Do I need to add a "currency" parameter?
-   - Will my signature generation still work with passphrase "***REMOVED***"?
+   - Will my signature generation still work with passphrase "<PAYFAST_PASSPHRASE>"?
 
 4. EXCHANGE RATES
    - What exchange rate do you use for USD → ZAR conversion?
@@ -80,7 +80,7 @@ experience. I have the following questions:
 
 CURRENT WORKING SETUP:
 - Integration: Subscription billing (recurring payments)
-- Passphrase: ***REMOVED***
+- Passphrase: <PAYFAST_PASSPHRASE>
 - Payment data example: amount=85.00 (ZAR)
 - Signature generation: Working perfectly
 - Website: https://pdflab.pro
@@ -125,7 +125,7 @@ pdflab.pro
    - Take screenshots of what you see
 
 3. **Check Settings → Security**
-   - Confirm passphrase is still: ***REMOVED***
+   - Confirm passphrase is still: <PAYFAST_PASSPHRASE>
    - Note any multi-currency related settings
 
 4. **Check Account Type**
@@ -204,7 +204,7 @@ pdflab.pro
    // Does adding "currency" parameter change signature?
    const data = {
      merchant_id: "25263515",
-     merchant_key: "***REMOVED***",
+     merchant_key: "<PAYFAST_MERCHANT_KEY>",
      amount: "4.55",
      currency: "USD",  // ← Does this affect signature?
      // ... other fields
@@ -276,7 +276,7 @@ const PAYFAST_PARAM_ORDER_WITH_CURRENCY = [
 
 const testDataUSD = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: '<PAYFAST_MERCHANT_KEY>',
   return_url: 'https://pdflab.pro/payment/success',
   cancel_url: 'https://pdflab.pro/payment/cancel',
   notify_url: 'https://pdflab.pro/api/payfast/webhook',
@@ -323,12 +323,12 @@ console.log('=============================\n');
 console.log('Test Data:');
 console.log('  Amount: $4.55 USD');
 console.log('  Currency: USD');
-console.log('  Passphrase: ***REMOVED***\n');
+console.log('  Passphrase: <PAYFAST_PASSPHRASE>\n');
 
 const signature = generateSignature(
   testDataUSD,
   PAYFAST_PARAM_ORDER_WITH_CURRENCY,
-  '***REMOVED***'
+  '<PAYFAST_PASSPHRASE>'
 );
 
 console.log('Generated Signature:', signature);

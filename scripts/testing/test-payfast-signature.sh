@@ -62,7 +62,7 @@ const PAYFAST_PARAM_ORDER = [
 // Test payment data (Starter plan - R85)
 const testData = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: process.env.PAYFAST_MERCHANT_KEY || '',
   return_url: 'https://pdflab.pro/payment/success',
   cancel_url: 'https://pdflab.pro/payment/cancel',
   notify_url: 'https://pdflab.pro/api/payfast/webhook',
@@ -142,7 +142,7 @@ console.log('Testing Backend Service:');
 console.log('------------------------');
 try {
   const payfastService = require('./dist/services/payfast.service.js');
-  const backendSignature = payfastService.generateSignature(testData, '');
+  const backendSignature = payfastService.generateSignature(testData, process.env.PAYFAST_PASSPHRASE || '');
 
   console.log('Backend generated:', backendSignature);
   console.log('Expected:         ', signature);

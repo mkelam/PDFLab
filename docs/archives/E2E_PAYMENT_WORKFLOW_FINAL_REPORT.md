@@ -85,7 +85,7 @@ notify_url: process.env['PAYFAST_ITN_URL'] || `${apiUrl}/api/payfast/webhook`
 ### Attempt 1: Original Credentials ❌
 ```
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 ```
 **Error:** "Merchant unable to receive payments due to invalid account details"
 

@@ -228,7 +228,7 @@ If issues arise, follow these steps:
 ```bash
 ssh root@141.136.44.168
 docker exec -i 8731b5f977d0_pdflab-mysql-prod \
-  mysql -u pdflab -p'***REMOVED***' pdflab_production \
+  mysql -u pdflab -p'<DB_PASSWORD>' pdflab_production \
   < /tmp/pdflab_backup_20251109_212730.sql
 ```
 
@@ -342,7 +342,7 @@ docker logs -f pdflab-backend-prod --tail 100
 
 # Check database tables
 docker exec -i 8731b5f977d0_pdflab-mysql-prod \
-  mysql -u pdflab -p'***REMOVED***' pdflab_production \
+  mysql -u pdflab -p'<DB_PASSWORD>' pdflab_production \
   -e 'SHOW TABLES;'
 
 # Restart containers

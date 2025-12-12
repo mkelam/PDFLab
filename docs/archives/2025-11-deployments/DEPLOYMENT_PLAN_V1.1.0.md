@@ -147,10 +147,10 @@ The script will:
 ssh root@141.136.44.168
 
 # Check batch_jobs table exists
-mysql -u pdflab -p***REMOVED*** pdflab_production -e "DESCRIBE batch_jobs;"
+mysql -u pdflab -p<DB_PASSWORD> pdflab_production -e "DESCRIBE batch_jobs;"
 
 # Check conversion_jobs has new column
-mysql -u pdflab -p***REMOVED*** pdflab_production -e "DESCRIBE conversion_jobs;"
+mysql -u pdflab -p<DB_PASSWORD> pdflab_production -e "DESCRIBE conversion_jobs;"
 
 # Exit SSH
 exit
@@ -162,7 +162,7 @@ exit
 ssh root@141.136.44.168
 
 # Restore from backup
-mysql -u pdflab -p***REMOVED*** pdflab_production < /tmp/pdflab_backup_YYYYMMDD_HHMMSS.sql
+mysql -u pdflab -p<DB_PASSWORD> pdflab_production < /tmp/pdflab_backup_YYYYMMDD_HHMMSS.sql
 
 # Exit
 exit
@@ -295,7 +295,7 @@ Open browser and test https://pdflab.pro:
 ### If Phase 2 fails (Migration):
 ```bash
 ssh root@141.136.44.168
-mysql -u pdflab -p***REMOVED*** pdflab_production < /tmp/pdflab_backup_YYYYMMDD_HHMMSS.sql
+mysql -u pdflab -p<DB_PASSWORD> pdflab_production < /tmp/pdflab_backup_YYYYMMDD_HHMMSS.sql
 exit
 ```
 
@@ -381,7 +381,7 @@ exit
 **Production (VPS)**:
 - Host: 141.136.44.168:3306
 - User: pdflab
-- Pass: ***REMOVED***
+- Pass: <DB_PASSWORD>
 - DB: pdflab_production
 
 ### VPS Access
@@ -407,7 +407,7 @@ docker logs -f pdflab-frontend-prod
 docker-compose -f docker-compose.production.yml restart
 
 # Check database
-mysql -u pdflab -p***REMOVED*** pdflab_production
+mysql -u pdflab -p<DB_PASSWORD> pdflab_production
 
 # Check disk space
 df -h

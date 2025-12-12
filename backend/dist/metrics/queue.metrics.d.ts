@@ -41,7 +41,7 @@ export declare const jobRetries: Counter<"queue_name" | "job_type" | "retry_reas
 /**
  * Job failures
  */
-export declare const jobFailures: Counter<"failure_reason" | "queue_name" | "job_type" | "is_permanent">;
+export declare const jobFailures: Counter<"queue_name" | "failure_reason" | "job_type" | "is_permanent">;
 /**
  * Queue backup events (when queue depth exceeds threshold)
  */

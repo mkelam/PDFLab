@@ -101,7 +101,7 @@ CREATE TABLE `user_attribution` (
 **Execution**:
 ```bash
 docker exec 57d5d601930a_pdflab-mysql-prod mysql \
-  -u pdflab -p***REMOVED*** pdflab_production \
+  -u pdflab -p<DB_PASSWORD> pdflab_production \
   -e "CREATE TABLE user_attribution (...)"
 ```
 
@@ -545,7 +545,7 @@ curl -X POST http://localhost:3006/api/compress \
 **Command**:
 ```bash
 docker exec 57d5d601930a_pdflab-mysql-prod mysqldump \
-  -u pdflab -p***REMOVED*** pdflab_production \
+  -u pdflab -p<DB_PASSWORD> pdflab_production \
   > /root/backups/pdflab-production-backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 

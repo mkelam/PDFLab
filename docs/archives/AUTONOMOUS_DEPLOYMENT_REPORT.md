@@ -234,8 +234,8 @@ RUN npm run build  # ← Currently here
 ### Environment Variables
 ```env
 NODE_ENV=production
-MYSQL_PASSWORD=***REMOVED***
-MYSQL_ROOT_PASSWORD=***REMOVED***
+MYSQL_PASSWORD=<DB_PASSWORD>
+MYSQL_ROOT_PASSWORD=<MYSQL_ROOT_PASSWORD>
 ```
 
 ### Container Names

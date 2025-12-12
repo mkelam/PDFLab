@@ -42,10 +42,12 @@ const getAllSubscriptions = async (req, res) => {
                 { email: { [sequelize_1.Op.like]: `%${search}%` } },
                 { name: { [sequelize_1.Op.like]: `%${search}%` } }
             ];
-            // Also search by subscription ID or PayFast token
+            // Also search by subscription ID, PayFast token, or PayGenius reference
             where[sequelize_1.Op.or] = [
                 { id: { [sequelize_1.Op.like]: `%${search}%` } },
-                { payfast_token: { [sequelize_1.Op.like]: `%${search}%` } }
+                { payfast_token: { [sequelize_1.Op.like]: `%${search}%` } },
+                { paygenius_reference: { [sequelize_1.Op.like]: `%${search}%` } },
+                { paygenius_subscription_id: { [sequelize_1.Op.like]: `%${search}%` } }
             ];
         }
         // Get subscriptions with user info
@@ -357,11 +359,12 @@ const getAllTransactions = async (req, res) => {
             if (dateTo)
                 where.created_at[sequelize_1.Op.lte] = new Date(dateTo);
         }
-        // Search by transaction ID, email, or PayFast ID
+        // Search by transaction ID, email, or payment provider ID
         if (search) {
             where[sequelize_1.Op.or] = [
                 { transaction_id: { [sequelize_1.Op.like]: `%${search}%` } },
                 { payfast_payment_id: { [sequelize_1.Op.like]: `%${search}%` } },
+                { paygenius_payment_id: { [sequelize_1.Op.like]: `%${search}%` } },
                 { email_address: { [sequelize_1.Op.like]: `%${search}%` } }
             ];
         }
@@ -502,13 +505,15 @@ const processRefund = async (req, res) => {
             });
             return;
         }
-        // TODO: Integrate with PayFast refund API when available
-        // For now, we'll create a refund log entry
+        // Create a refund log entry
+        // PayGenius refunds are handled via the PayGenius API if available
         const refundLog = await payment_log_model_1.PaymentLog.create({
             user_id: transaction.user_id,
             subscription_id: transaction.subscription_id,
             transaction_id: `refund-${Date.now()}-${transaction.id.substring(0, 8)}`,
             payfast_payment_id: transaction.payfast_payment_id,
+            paygenius_payment_id: transaction.paygenius_payment_id,
+            payment_provider: transaction.payment_provider,
             payment_type: payment_log_model_1.PaymentType.REFUND,
             status: payment_log_model_1.PaymentStatus.COMPLETE,
             amount_gross: -refundAmount,
@@ -571,14 +576,16 @@ const getITNLogs = async (req, res) => {
         if (search) {
             where[sequelize_1.Op.or] = [
                 { transaction_id: { [sequelize_1.Op.like]: `%${search}%` } },
-                { payfast_payment_id: { [sequelize_1.Op.like]: `%${search}%` } }
+                { payfast_payment_id: { [sequelize_1.Op.like]: `%${search}%` } },
+                { paygenius_payment_id: { [sequelize_1.Op.like]: `%${search}%` } }
             ];
         }
         const { count, rows: logs } = await payment_log_model_1.PaymentLog.findAndCountAll({
             where,
             attributes: [
-                'id', 'transaction_id', 'payfast_payment_id', 'status',
-                'amount_gross', 'currency', 'itn_data', 'created_at'
+                'id', 'transaction_id', 'payfast_payment_id', 'paygenius_payment_id',
+                'payment_provider', 'status', 'amount_gross', 'currency',
+                'itn_data', 'webhook_data', 'created_at'
             ],
             order: [['created_at', 'DESC']],
             limit: limitNum,

@@ -36,11 +36,11 @@ const getProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json({ user });
+        return res.json({ user });
     }
     catch (error) {
         logger_1.default.error('Get profile error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to fetch profile',
             message: error.message
         });
@@ -82,9 +82,10 @@ const updateProfile = async (req, res) => {
         if (name)
             user.name = name;
         if (email) {
+            const previousEmail = user.email;
             user.email = email;
             // If email changed, mark as unverified
-            if (user.email !== email) {
+            if (previousEmail !== email) {
                 user.email_verified = false;
                 user.email_verified_at = null;
             }
@@ -104,14 +105,14 @@ const updateProfile = async (req, res) => {
                 'email_verified'
             ]
         });
-        res.json({
+        return res.json({
             message: 'Profile updated successfully',
             user: updatedUser
         });
     }
     catch (error) {
         logger_1.default.error('Update profile error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to update profile',
             message: error.message
         });
@@ -151,11 +152,11 @@ const changePassword = async (req, res) => {
         // Update password
         user.password_hash = hashedPassword;
         await user.save();
-        res.json({ message: 'Password changed successfully' });
+        return res.json({ message: 'Password changed successfully' });
     }
     catch (error) {
         logger_1.default.error('Change password error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to change password',
             message: error.message
         });
@@ -191,11 +192,11 @@ const deleteAccount = async (req, res) => {
         }
         // Delete user (cascade will delete related records)
         await user.destroy();
-        res.json({ message: 'Account deleted successfully' });
+        return res.json({ message: 'Account deleted successfully' });
     }
     catch (error) {
         logger_1.default.error('Delete account error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to delete account',
             message: error.message
         });
@@ -238,7 +239,7 @@ const getAccountStats = async (req, res) => {
         const daysUntilRenewal = user.subscription_end_date
             ? Math.floor((new Date(user.subscription_end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
             : null;
-        res.json({
+        return res.json({
             plan: {
                 name: user.plan,
                 status: user.subscription_status || 'free'
@@ -262,7 +263,7 @@ const getAccountStats = async (req, res) => {
     }
     catch (error) {
         logger_1.default.error('Get stats error:', { error: error instanceof Error ? error.message : String(error) });
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to fetch account statistics',
             message: error.message
         });

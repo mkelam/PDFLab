@@ -16,11 +16,11 @@ import { Counter, Histogram, Gauge } from 'prom-client';
 /**
  * Track each stage of the conversion funnel
  */
-export declare const conversionFunnelStage: Counter<"conversion_type" | "plan" | "stage" | "user_type">;
+export declare const conversionFunnelStage: Counter<"plan" | "conversion_type" | "stage" | "user_type">;
 /**
  * Track funnel drop-offs (failures at each stage)
  */
-export declare const conversionFunnelDropoff: Counter<"conversion_type" | "plan" | "reason" | "stage" | "user_type">;
+export declare const conversionFunnelDropoff: Counter<"reason" | "plan" | "conversion_type" | "stage" | "user_type">;
 /**
  * Time spent in each funnel stage
  */
@@ -32,11 +32,11 @@ export declare const conversionFunnelActive: Gauge<"conversion_type" | "stage" |
 /**
  * Overall conversion success rate
  */
-export declare const conversionSuccess: Counter<"conversion_type" | "plan" | "output_format" | "user_type">;
+export declare const conversionSuccess: Counter<"plan" | "output_format" | "conversion_type" | "user_type">;
 /**
  * Overall conversion failure rate
  */
-export declare const conversionFailure: Counter<"conversion_type" | "plan" | "error_code" | "user_type" | "failure_reason">;
+export declare const conversionFailure: Counter<"plan" | "error_code" | "conversion_type" | "user_type" | "failure_reason">;
 /**
  * End-to-end conversion duration (upload to download)
  */
@@ -44,7 +44,7 @@ export declare const conversionE2EDuration: Histogram<"conversion_type" | "user_
 /**
  * Distribution of uploaded file sizes
  */
-export declare const uploadedFileSizes: Histogram<"conversion_type" | "plan" | "user_type">;
+export declare const uploadedFileSizes: Histogram<"plan" | "conversion_type" | "user_type">;
 /**
  * Track which conversion formats are most popular
  */

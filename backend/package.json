@@ -8,7 +8,7 @@
     "dev:typecheck": "concurrently \"npm run dev\" \"npm run typecheck:watch\"",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch --preserveWatchOutput",
-    "build": "tsc || true",
+    "build": "tsc",
     "build:clean": "rimraf dist && npm run build",
     "build:production": "npm run build",
     "start": "node dist/server.js",
@@ -28,7 +28,7 @@
     "validate": "npm run typecheck && npm run lint:check && npm run test",
     "type-health": "tsx scripts/type-health.ts",
     "prepare": "husky install",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged --config package.json"
   },
   "lint-staged": {
     "*.ts": [

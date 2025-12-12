@@ -192,19 +192,20 @@ router.post('/test/sentry-payfast-error', (req, res) => {
  * POST /api/test/sentry-slow-performance
  */
 router.post('/test/sentry-slow-performance', async (req, res) => {
-    const transaction = Sentry.startTransaction({
+    const sentryAny = Sentry;
+    const transaction = sentryAny.startTransaction?.({
         op: 'test.performance',
         name: 'Test Slow API Response',
         tags: {
             test: true,
             alert_test: 'performance',
         },
-    });
-    Sentry.getCurrentScope().setSpan(transaction);
+    }) ?? null;
+    sentryAny.getCurrentScope?.()?.setSpan?.(transaction);
     try {
         // Simulate slow operation (3 seconds)
         await new Promise(resolve => setTimeout(resolve, 3000));
-        transaction.setStatus('ok');
+        transaction?.setStatus?.('ok');
         res.json({
             success: true,
             message: 'Slow performance test completed',
@@ -214,11 +215,11 @@ router.post('/test/sentry-slow-performance', async (req, res) => {
         });
     }
     catch (error) {
-        transaction.setStatus('internal_error');
+        transaction?.setStatus?.('internal_error');
         throw error;
     }
     finally {
-        transaction.finish();
+        transaction?.finish?.();
     }
 });
 /**

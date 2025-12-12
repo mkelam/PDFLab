@@ -300,7 +300,7 @@ docker restart pdflab-backend-prod
 ### **If Database Connection Fails:**
 ```bash
 # Check MySQL
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** -D pdflab -e "SELECT COUNT(*) FROM users;"
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> -D pdflab -e "SELECT COUNT(*) FROM users;"
 ```
 
 ---

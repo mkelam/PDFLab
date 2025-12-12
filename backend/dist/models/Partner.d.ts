@@ -1,4 +1,5 @@
 import { Model, Optional } from 'sequelize';
+import type { PromoCode } from './PromoCode';
 export declare enum PartnerPlatform {
     YOUTUBE = "youtube",
     TWITTER = "twitter",
@@ -90,6 +91,7 @@ export declare class Partner extends Model<PartnerAttributes, PartnerCreationAtt
     notes?: string;
     readonly created_at: Date;
     readonly updated_at: Date;
+    promo_codes?: PromoCode[];
     getCommissionRateByTier(): number;
     getReferralLink(): string;
     getFreeLicensesRemaining(): number;

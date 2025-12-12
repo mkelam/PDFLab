@@ -251,7 +251,7 @@ const response = await fetch(`${apiUrl}/api/payfast/initialize`, {
   "paymentUrl": "https://www.payfast.co.za/eng/process",
   "paymentData": {
     "merchant_id": "25263515",
-    "merchant_key": "***REMOVED***",
+    "merchant_key": "<PAYFAST_MERCHANT_KEY>",
     "amount": "4.55",
     "item_name": "PDFLab Starter Plan",
     // ... other PayFast fields
@@ -471,7 +471,7 @@ curl -X POST http://localhost:3006/api/payfast/initialize \
 ```env
 # PayFast Configuration
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 PAYFAST_PASSPHRASE=
 PAYFAST_MODE=production
 

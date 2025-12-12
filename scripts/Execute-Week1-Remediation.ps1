@@ -182,44 +182,58 @@ ssh ${SshUser}@${VpsIp} "cd /var/pdflab/app/backend && cp .env .env.backup-`$(da
 if (-not $DryRun) {
     Write-Info "Step 2: Create comprehensive .env file..."
 
+    $DB_PASSWORD = $env:DB_PASSWORD
+    $JWT_SECRET = $env:JWT_SECRET
+    $CLOUDCONVERT_API_KEY = $env:CLOUDCONVERT_API_KEY
+    $PAYFAST_MERCHANT_KEY = $env:PAYFAST_MERCHANT_KEY
+    $PAYFAST_PASSPHRASE = $env:PAYFAST_PASSPHRASE
+    $SMTP_PASS = $env:SMTP_PASS
+
+    if ([string]::IsNullOrWhiteSpace($DB_PASSWORD)) { throw "Missing env var: DB_PASSWORD" }
+    if ([string]::IsNullOrWhiteSpace($JWT_SECRET)) { throw "Missing env var: JWT_SECRET" }
+    if ([string]::IsNullOrWhiteSpace($CLOUDCONVERT_API_KEY)) { throw "Missing env var: CLOUDCONVERT_API_KEY" }
+    if ([string]::IsNullOrWhiteSpace($PAYFAST_MERCHANT_KEY)) { throw "Missing env var: PAYFAST_MERCHANT_KEY" }
+    if ([string]::IsNullOrWhiteSpace($PAYFAST_PASSPHRASE)) { throw "Missing env var: PAYFAST_PASSPHRASE" }
+    if ([string]::IsNullOrWhiteSpace($SMTP_PASS)) { throw "Missing env var: SMTP_PASS" }
+
     # Upload the .env content via SSH
-    $envContent = @'
-# ===== SERVER =====
-NODE_ENV=production
-PORT=3006
-API_URL=https://pdflab.pro
-FRONTEND_URL=https://pdflab.pro
-
-# ===== DATABASE =====
-DB_HOST=mysql
-DB_PORT=3306
-DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
-DB_NAME=pdflab_production
-DB_SYNC=false
-DB_ALTER=false
-
-# ===== REDIS =====
-REDIS_HOST=redis
-REDIS_PORT=6379
-
-# ===== JWT AUTHENTICATION =====
-JWT_SECRET=pT1o+3SCnI5t9xsnGpd1XNc0UKTO2hedd6tQRRHzXsS4PCjKXhbGODUEaYlVBEpPNw7vGU1tyM56uRzyUgOiew==
-JWT_EXPIRATION=15m
-JWT_REFRESH_EXPIRATION=30d
-
-# ===== CLOUDCONVERT =====
-CLOUDCONVERT_API_KEY=***REMOVED***.eyJhdWQiOiIxIiwianRpIjoiMjA0OGJmZmNiYTI0ZGUyMDE5YjU1ZGYyMGMxZWY3YTFkYzE0YTg0YWExNmMyNjZlYWQzNmNhMGMyMzNjNDM2M2Y4NWQwM2M4MTYyNjZmMjIiLCJpYXQiOjE3Mjk4NTYxNTIuMDY1MTcxLCJuYmYiOjE3Mjk4NTYxNTIuMDY1MTczLCJleHAiOjQ4ODU1Mjk3NTIuMDU5MTQyLCJzdWIiOiI2OTYxNjM2NiIsInNjb3BlcyI6WyJ1c2VyLnJlYWQiLCJ1c2VyLndyaXRlIiwidGFzay5yZWFkIiwidGFzay53cml0ZSIsIndlYmhvb2sucmVhZCIsIndlYmhvb2sud3JpdGUiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.VsZ9Tms_ksBOMLwQQq1hhRvOiJlP2e5IqN-8YC0JqFOz4M9gxYGvU7LHxqyO4cUTjEZuDCKTaPzLi-xW9eA26UfSQHcpD8gG6qEsrjIEyZPLDMHYUPmKTUgM3t4RYL82C_kv-F-bW76K-7f2tY1ybUcgv6q4YWrCe7Gfp5xB6zULGlkuOaAahV7K4vBHq6A-BGFA0XQHYC8F19_nOeZuCnuJQNdgAkV1sRqMHBdIKZ3kLIDzEJHwW0Lr-qYI4wJ-Z3W0n0s06oKyg9cqzE5nEQpRGSoMCk0u3YsGZyv7M8uhp5_7vSx6GZQw8eqBpWKNJa2pU4fQKHJqCTv35tDqEzRgqUzRwOFKlJXLDGRJ8VYS21oqd4dYYjJg0MSlO-wEtWxGOj9xvCYHp4KfHNLJhD1bYd4ZXPSH6Hb8rlM4tCjJPxTDqQHzRJG_JhVVRWDj89FqGLdZkZ1VNOGl4CwMpL7Kqe6c9JjGqq4A02sJLzRgQyPUr9aY4Cak
-CLOUDCONVERT_SANDBOX=false
-
-# ===== PAYFAST PAYMENT GATEWAY =====
-PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
-PAYFAST_PASSPHRASE=***REMOVED***
-PAYFAST_MODE=production
-PAYFAST_ITN_URL=https://pdflab.pro/api/payfast/webhook
-PAYFAST_RETURN_URL=https://pdflab.pro/payment/success
-PAYFAST_CANCEL_URL=https://pdflab.pro/payment/cancel
+    $envContent = @"
+ # ===== SERVER =====
+ NODE_ENV=production
+ PORT=3006
+ API_URL=https://pdflab.pro
+ FRONTEND_URL=https://pdflab.pro
+ 
+ # ===== DATABASE =====
+ DB_HOST=mysql
+ DB_PORT=3306
+ DB_USER=pdflab
+ DB_PASSWORD=$DB_PASSWORD
+ DB_NAME=pdflab_production
+ DB_SYNC=false
+ DB_ALTER=false
+ 
+ # ===== REDIS =====
+ REDIS_HOST=redis
+ REDIS_PORT=6379
+ 
+ # ===== JWT AUTHENTICATION =====
+ JWT_SECRET=$JWT_SECRET
+ JWT_EXPIRATION=15m
+ JWT_REFRESH_EXPIRATION=30d
+ 
+ # ===== CLOUDCONVERT =====
+ CLOUDCONVERT_API_KEY=$CLOUDCONVERT_API_KEY
+ CLOUDCONVERT_SANDBOX=false
+ 
+ # ===== PAYFAST PAYMENT GATEWAY =====
+ PAYFAST_MERCHANT_ID=25263515
+ PAYFAST_MERCHANT_KEY=$PAYFAST_MERCHANT_KEY
+ PAYFAST_PASSPHRASE=$PAYFAST_PASSPHRASE
+ PAYFAST_MODE=production
+ PAYFAST_ITN_URL=https://pdflab.pro/api/payfast/webhook
+ PAYFAST_RETURN_URL=https://pdflab.pro/payment/success
+ PAYFAST_CANCEL_URL=https://pdflab.pro/payment/cancel
 
 # ===== CORS SECURITY =====
 CORS_ORIGIN=https://pdflab.pro,https://www.pdflab.pro,https://api.pdflab.pro,https://partners.pdflab.pro
@@ -241,19 +255,19 @@ CONVERSIONS_LIMIT_STARTER=100
 CONVERSIONS_LIMIT_PRO=-1
 CONVERSIONS_LIMIT_ENTERPRISE=-1
 
-# ===== EMAIL / SMTP =====
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***
-SMTP_FROM_EMAIL=support@pdflab.pro
-SMTP_FROM_NAME=PDFLab
-EMAIL_FROM=support@pdflab.pro
+ # ===== EMAIL / SMTP =====
+ SMTP_HOST=smtp.hostinger.com
+ SMTP_PORT=587
+ SMTP_SECURE=false
+ SMTP_USER=support@pdflab.pro
+ SMTP_PASS=$SMTP_PASS
+ SMTP_FROM_EMAIL=support@pdflab.pro
+ SMTP_FROM_NAME=PDFLab
+ EMAIL_FROM=support@pdflab.pro
 
-# ===== STORAGE =====
-STORAGE_PATH=/app/storage
-'@
+ # ===== STORAGE =====
+ STORAGE_PATH=/app/storage
+"@
 
     # Create .env via SSH heredoc
     ssh ${SshUser}@${VpsIp} "cat > /var/pdflab/app/backend/.env << 'ENVEOF'

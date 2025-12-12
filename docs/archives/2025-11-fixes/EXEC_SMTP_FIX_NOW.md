@@ -9,7 +9,7 @@
 ## 🎯 What We Found
 
 **Problem**: SMTP password is double-escaped in container: `Jesus24\\!7`
-**Should Be**: `***REMOVED***` (single backslash or no escape)
+**Should Be**: `<SMTP_PASS>` (single backslash or no escape)
 **Impact**: SMTP server receives wrong password → 535 authentication error
 
 ### Current Container Environment:
@@ -22,7 +22,7 @@ SMTP_PORT=587
 
 ### What Hostinger Expects:
 ```
-Password: ***REMOVED***  (with exclamation mark, no escaping)
+Password: <SMTP_PASS>  (with exclamation mark, no escaping)
 ```
 
 ---
@@ -60,12 +60,12 @@ docker run -d \
   --network bridge \
   -p 3007:3006 \
   -e REDIS_PORT=6379 \
-  -e PAYFAST_MERCHANT_KEY=***REMOVED*** \
-  -e PAYFAST_PASSPHRASE=***REMOVED*** \
+  -e PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY> \
+  -e PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE> \
   -e FRONTEND_URL=https://pdflab.pro \
   -e DB_PASSWORD=StagingDB2024UserPass \
   -e SMTP_USER=support@pdflab.pro \
-  -e SMTP_PASS='***REMOVED***' \
+  -e SMTP_PASS='<SMTP_PASS>' \
   -e SMTP_FROM_EMAIL=support@pdflab.pro \
   -e GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID \
   -e PORT=3006 \
@@ -84,7 +84,7 @@ docker run -d \
   -e TEST_SECRET=staging_test_secret_2024 \
   -e NODE_ENV=staging \
   -e DB_NAME=pdflab_staging \
-  -e CLOUDCONVERT_API_KEY=***REMOVED***.eyJhdWQiOiIxIiwianRpIjoiYmUzMzgxMmRkZWY4YTliN2JiOTIzYmY5MTMyOTM2OGIyNjJiMzdkODlkZmFlN2FlMmJkNDA5NTVlY2VjZjcwZDUxOTI4NTJhNmIyYTQ3ZDkiLCJpYXQiOjE3NjEyNDQyNTQuNTA2MDAzLCJuYmYiOjE3NjEyNDQyNTQuNTA2MDA0LCJleHAiOjQ5MTY5MTc4NTQuNDk5OTU0LCJzdWIiOiI3MzAzMjA4MCIsInNjb3BlcyI6WyJ3ZWJob29rLndyaXRlIiwid2ViaG9vay5yZWFkIiwidGFzay53cml0ZSIsInRhc2sucmVhZCIsInVzZXIud3JpdGUiLCJ1c2VyLnJlYWQiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.bYu1XCp5kaX7t8iX-lATNDDCE_Hwm8xLD5kvKuZzKA4X3ALnejMkXAtC2NTbeEknTxUQwzyQ46733XiVcwIIxJzz49UmqTX8roJF6UTHkMkyNfOzO8H8STGYONoPSLl0ZqfAtvyK2wrXiqRhOBivgKyaB-ZCMwD1gEOGzNGKZSyvKD4DyY8D5JVVx4B9uD9N6MBwzJ08jeOT3MIAGIEJ8uqSwt25hekbdmeJgR4od-3c1GR52NDd6sPpgmvbL7ednMDeZbaXwO3KaPdyE9WuHge4zGHQKnVZpLAB25fWS-9zF-6Noe4Rl1J6UBX2sAXzug_-rChvsT0EqQveQlJIJiaAP-q21Jq2XlfohCAWnWzx7UYTaFZ9wI9239TgWtP3ZlenD1o3STvpZ_dF11h7HGZi1csyBCG8MOxpUKbb0w0WAP7ChAfVnSHwsMldxm6XocmsKn4xCQcMa0aEhPRfKKz9WmR96_5Xwc_5nSjMaL8XSwNAC5ELGENiJaUWTL7vpV78m5U1qF-w2SOJlgpCJ-V4lHwBn9gJAc2DTEaYVUjmFpWe1e37PXqPWUWoXTMlCz7tgTMx9pllFVZmJbspkvKBhwy3-EmwTqlU18d_SAuJJfbNHLNUhcEzlPPUPfaTfWl8hXenQBOX9uiXmikqwgpfaVS7gHGYGb6LM7nVG-Y \
+  -e CLOUDCONVERT_API_KEY=<REDACTED> \
   -e CLOUDCONVERT_SANDBOX=false \
   -e PAYFAST_CANCEL_URL=https://pdflab.pro/payment/cancel \
   -e REDIS_PASSWORD= \

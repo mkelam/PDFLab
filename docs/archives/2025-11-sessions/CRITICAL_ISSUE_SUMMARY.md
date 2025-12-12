@@ -58,15 +58,15 @@ curl http://localhost:3006/health
 ### 2. Passphrase Mismatch Dashboard vs .env ⚠️
 
 **Check**:
-1. PayFast Dashboard passphrase: `***REMOVED***`
-2. .env.production passphrase: `***REMOVED***`
+1. PayFast Dashboard passphrase: `<PAYFAST_PASSPHRASE>`
+2. .env.production passphrase: `<PAYFAST_PASSPHRASE>`
 3. Must match EXACTLY (case-sensitive, no spaces)
 
 **Verify .env**:
 ```bash
 ssh root@141.136.44.168
 cat /var/pdflab/app/backend/.env.production | grep PAYFAST_PASSPHRASE
-# Should show: PAYFAST_PASSPHRASE=***REMOVED***
+# Should show: PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 ```
 
 ---
@@ -74,7 +74,7 @@ cat /var/pdflab/app/backend/.env.production | grep PAYFAST_PASSPHRASE
 ### 3. PayFast Dashboard Doesn't Have Passphrase Set ⚠️
 
 **Possibility**:
-- You checked dashboard and saw `***REMOVED***`
+- You checked dashboard and saw `<PAYFAST_PASSPHRASE>`
 - But maybe it wasn't actually saved?
 - Or saved in wrong location?
 
@@ -82,7 +82,7 @@ cat /var/pdflab/app/backend/.env.production | grep PAYFAST_PASSPHRASE
 1. Log into https://www.payfast.co.za
 2. Go to **Settings** → **Integration**
 3. Find **"Passphrase"** field
-4. Verify it shows: `***REMOVED***`
+4. Verify it shows: `<PAYFAST_PASSPHRASE>`
 5. If empty or different → Re-save it
 6. If correct → Continue to next check
 
@@ -128,7 +128,7 @@ cat /var/pdflab/app/backend/.env.production
 ```
 
 **Look for**:
-- `PAYFAST_PASSPHRASE=***REMOVED***` (no quotes, no spaces)
+- `PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>` (no quotes, no spaces)
 - `PAYFAST_MODE=production`
 - `PAYFAST_MERCHANT_ID=25263515`
 
@@ -159,12 +159,12 @@ docker run -d \
 ### Step 3: Verify Passphrase Loaded
 ```bash
 docker exec pdflab-backend-prod printenv | grep PAYFAST_PASSPHRASE
-# Should output: PAYFAST_PASSPHRASE=***REMOVED***
+# Should output: PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 ```
 
 **If empty or different**:
 - `.env.production` file not being read
-- Try setting env var directly: `-e PAYFAST_PASSPHRASE=***REMOVED***`
+- Try setting env var directly: `-e PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>`
 
 ---
 
@@ -186,7 +186,7 @@ docker logs pdflab-backend-prod --tail 50
 node test-signature-with-passphrase.js
 ```
 
-**Expected signature** (with `***REMOVED***`):
+**Expected signature** (with `<PAYFAST_PASSPHRASE>`):
 - Different from signature without passphrase
 - Should be 32-character MD5 hash
 
@@ -206,8 +206,8 @@ docker run -d \
   -e DB_HOST=8731b5f977d0_pdflab-mysql-prod \
   -e REDIS_HOST=f18c830e3d31_pdflab-redis-prod \
   -e PAYFAST_MERCHANT_ID=25263515 \
-  -e PAYFAST_MERCHANT_KEY=***REMOVED*** \
-  -e PAYFAST_PASSPHRASE=***REMOVED*** \
+  -e PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY> \
+  -e PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE> \
   -e PAYFAST_MODE=production \
   -v /var/pdflab/storage:/app/storage \
   -v /var/pdflab/logs:/app/logs \
@@ -230,7 +230,7 @@ If all else fails:
 Merchant ID: 25263515
 Issue: Generated signature does not match submitted signature
 Setup: Recurring billing + Multi-currency (USD)
-Passphrase: Set in dashboard (***REMOVED***)
+Passphrase: Set in dashboard (<PAYFAST_PASSPHRASE>)
 
 Question: Are there special requirements for multi-currency recurring
 billing signatures that differ from standard signature generation?

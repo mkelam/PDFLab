@@ -13,8 +13,8 @@ export enum AttributionMethod {
 interface UserAttributionAttributes {
   id: string
   user_id: string
-  partner_id?: string // NULL if organic signup
-  promo_code_id?: string
+  partner_id?: string | null // NULL if organic signup
+  promo_code_id?: string | null
 
   // Attribution Details
   attribution_method: AttributionMethod
@@ -63,8 +63,8 @@ export class UserAttribution extends Model<UserAttributionAttributes, UserAttrib
 
   public id!: string
   public user_id!: string
-  public partner_id?: string
-  public promo_code_id?: string
+  public partner_id?: string | null
+  public promo_code_id?: string | null
 
   public attribution_method!: AttributionMethod
   public referral_url?: string
@@ -82,6 +82,10 @@ export class UserAttribution extends Model<UserAttributionAttributes, UserAttrib
 
   public readonly created_at!: Date
   public readonly updated_at!: Date
+
+  public user?: User
+  public partner?: Partner
+  public promo_code?: PromoCode
 
   // Helper methods
   public async markAsConverted(paymentAmount: number, commissionRate: number): Promise<void> {

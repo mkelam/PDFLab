@@ -74,7 +74,7 @@ mkdir -p $BACKUP_DIR
 echo "Starting MySQL backup..."
 docker exec pdflab-mysql-prod mysqldump \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   pdflab_production \
   --single-transaction \
   --routines \
@@ -2041,7 +2041,7 @@ echo ""
 # CHECK 5: Database connection
 # ============================================
 echo "5. Database Connection:"
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** -e "SELECT 1"
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> -e "SELECT 1"
 echo ""
 echo "Expected: 1"
 echo ""
@@ -2167,13 +2167,13 @@ echo ""
 
 # Conversions
 echo "Successful conversions (last hour): [CHECK DATABASE]"
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production \
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production \
   -e "SELECT COUNT(*) FROM conversions WHERE status='completed' AND created_at > NOW() - INTERVAL 1 HOUR"
 echo ""
 
 # Failed conversions
 echo "Failed conversions (last hour):"
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production \
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production \
   -e "SELECT COUNT(*) FROM conversions WHERE status='failed' AND created_at > NOW() - INTERVAL 1 HOUR"
 echo ""
 
@@ -2224,7 +2224,7 @@ echo ""
 
 # Conversion stats
 echo "Conversion statistics (last 4h):"
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production -e "
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production -e "
 SELECT 
   COUNT(*) as total,
   SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) as success,
@@ -2315,7 +2315,7 @@ echo ""
 
 # Conversions
 echo "Conversion stats (last 12h):"
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production -e "
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production -e "
 SELECT 
   COUNT(*) as total,
   SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) as success,
@@ -2388,7 +2388,7 @@ echo "--------------------"
 echo ""
 
 # Conversion stats
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production -e "
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production -e "
 SELECT 
   'Last 24 Hours' as period,
   COUNT(*) as total_conversions,
@@ -2551,7 +2551,7 @@ echo ""
 # 2. Conversion Success
 echo "2. CONVERSIONS"
 echo ""
-docker exec pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production -e "
+docker exec pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production -e "
 SELECT 
   'Last 72 Hours' as period,
   COUNT(*) as total,
@@ -2826,7 +2826,7 @@ echo "Restoring from: $DB_BACKUP"
 echo "Restoring database..."
 gunzip < "$DB_BACKUP" | docker exec -i pdflab-mysql-prod mysql \
   -u pdflab \
-  -p***REMOVED*** \
+  -p<DB_PASSWORD> \
   pdflab_production
 
 # Restart backend

@@ -53,11 +53,11 @@ export declare const downtimeEvents: Counter<"service_name" | "downtime_reason">
 /**
  * Response time percentiles
  */
-export declare const responseTimePercentiles: Gauge<"method" | "route" | "percentile">;
+export declare const responseTimePercentiles: Gauge<"route" | "method" | "percentile">;
 /**
  * Response time SLO violations
  */
-export declare const responseTimeSloViolations: Counter<"method" | "route" | "threshold_ms">;
+export declare const responseTimeSloViolations: Counter<"route" | "method" | "threshold_ms">;
 /**
  * Current SLO error rate (errors per second)
  */
@@ -81,19 +81,19 @@ export declare const conversionTimeSloViolations: Counter<"conversion_type" | "p
 /**
  * API endpoint availability
  */
-export declare const apiEndpointAvailability: Gauge<"method" | "route" | "time_window">;
+export declare const apiEndpointAvailability: Gauge<"route" | "method" | "time_window">;
 /**
  * API availability SLO violations
  */
-export declare const apiAvailabilitySloViolations: Counter<"method" | "route">;
+export declare const apiAvailabilitySloViolations: Counter<"route" | "method">;
 /**
  * Database query time percentiles
  */
-export declare const dbQueryTimePercentiles: Gauge<"operation" | "model" | "percentile">;
+export declare const dbQueryTimePercentiles: Gauge<"model" | "operation" | "percentile">;
 /**
  * Database query SLO violations
  */
-export declare const dbQuerySloViolations: Counter<"operation" | "model" | "threshold_ms">;
+export declare const dbQuerySloViolations: Counter<"model" | "operation" | "threshold_ms">;
 /**
  * Update SLO compliance
  */

@@ -16,13 +16,23 @@ export enum PlanType {
   ENTERPRISE = 'enterprise'
 }
 
+export enum PaymentProvider {
+  PAYFAST = 'payfast',
+  PAYGENIUS = 'paygenius'
+}
+
 interface SubscriptionAttributes {
   id: string
   user_id: string
   plan: PlanType
   status: SubscriptionStatus
+  payment_provider?: PaymentProvider
+  // PayFast fields (legacy)
   payfast_token?: string
   payfast_subscription_id?: string
+  // PayGenius fields
+  paygenius_reference?: string
+  paygenius_subscription_id?: string
   amount: number
   currency: string
   billing_date?: Date
@@ -43,8 +53,13 @@ class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAtt
   declare user_id: string
   declare plan: PlanType
   declare status: SubscriptionStatus
+  declare payment_provider?: PaymentProvider
+  // PayFast fields (legacy)
   declare payfast_token?: string
   declare payfast_subscription_id?: string
+  // PayGenius fields
+  declare paygenius_reference?: string
+  declare paygenius_subscription_id?: string
   declare amount: number
   declare currency: string
   declare billing_date?: Date
@@ -85,15 +100,31 @@ Subscription.init(
       allowNull: false,
       defaultValue: 'pending'
     },
+    payment_provider: {
+      type: DataTypes.ENUM('payfast', 'paygenius'),
+      allowNull: true,
+      defaultValue: 'paygenius',
+      comment: 'Payment provider used for this subscription'
+    },
     payfast_token: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      comment: 'PayFast subscription token for recurring payments'
+      comment: 'PayFast subscription token for recurring payments (legacy)'
     },
     payfast_subscription_id: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      comment: 'PayFast subscription ID'
+      comment: 'PayFast subscription ID (legacy)'
+    },
+    paygenius_reference: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayGenius payment reference'
+    },
+    paygenius_subscription_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayGenius subscription reference for recurring payments'
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
@@ -162,6 +193,8 @@ Subscription.init(
       { fields: ['user_id'] },
       { fields: ['status'] },
       { fields: ['payfast_token'] },
+      { fields: ['paygenius_reference'] },
+      { fields: ['paygenius_subscription_id'] },
       { fields: ['next_billing_date'] }
     ]
   }

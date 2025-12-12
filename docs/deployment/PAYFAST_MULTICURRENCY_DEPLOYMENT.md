@@ -343,7 +343,7 @@ Expected:
 
 ```bash
 # On VPS
-docker exec -it pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** pdflab_production
+docker exec -it pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> pdflab_production
 
 # In MySQL
 SELECT plan, amount_gross, currency, created_at

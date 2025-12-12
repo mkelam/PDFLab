@@ -18,10 +18,17 @@ docker pull mkelam/pdflab-backend:latest
 
 # Create environment file
 echo "⚙️  Creating environment configuration..."
-cat > .env.production << 'EOF'
-MYSQL_PASSWORD=***REMOVED***
-MYSQL_ROOT_PASSWORD=***REMOVED***
+if [ ! -f .env.production ]; then
+  : "${MYSQL_PASSWORD:?set MYSQL_PASSWORD}"
+  : "${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}"
+
+  cat > .env.production <<EOF
+MYSQL_PASSWORD=$MYSQL_PASSWORD
+MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 EOF
+
+  chmod 600 .env.production 2>/dev/null || true
+fi
 
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."

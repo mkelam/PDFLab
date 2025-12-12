@@ -334,17 +334,21 @@ const createPartner = async (req, res) => {
         };
         const commission_rate = tierRates[commission_tier] || 30.0;
         // Create partner
+        const referral_code = String(slug).toUpperCase().replace(/[^A-Z0-9]/g, '');
         const partner = await models_1.Partner.create({
             name,
             email,
             slug,
+            referral_code,
             platform,
             follower_count,
             website,
             commission_tier: commission_tier || Partner_1.CommissionTier.BRONZE,
             commission_rate,
             free_licenses_allocated: free_licenses_allocated || 10,
-            status: Partner_1.PartnerStatus.PENDING
+            status: Partner_1.PartnerStatus.PENDING,
+            total_clicks: 0,
+            current_month_conversions: 0
         });
         // Create default promo code
         const defaultPromoCode = `${slug.toUpperCase().replace(/-/g, '')}10`; // e.g., JEFFSU10

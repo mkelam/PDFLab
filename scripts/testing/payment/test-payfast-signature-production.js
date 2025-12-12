@@ -6,15 +6,15 @@ const crypto = require('crypto');
 // Production credentials (from .env.production)
 const PAYFAST_CONFIG = {
   merchantId: '25263515',
-  merchantKey: '***REMOVED***',
-  passphrase: '', // Currently empty - this might be the issue!
-  mode: 'production'
+  merchantKey: process.env.PAYFAST_MERCHANT_KEY || '',
+  passphrase: process.env.PAYFAST_PASSPHRASE || '', // From environment
+  mode: process.env.PAYFAST_MODE || 'production'
 };
 
 // Sample payment data (from actual production request)
 const paymentData = {
   merchant_id: '25263515',
-  merchant_key: '***REMOVED***',
+  merchant_key: process.env.PAYFAST_MERCHANT_KEY || '',
   return_url: 'https://pdflab.pro/payment/success',
   cancel_url: 'https://pdflab.pro/payment/cancel',
   notify_url: 'https://pdflab.pro/api/payfast/webhook',

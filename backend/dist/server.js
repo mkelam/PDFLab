@@ -94,6 +94,7 @@ const auth_google_routes_1 = __importDefault(require("./routes/auth.google.route
 const conversion_routes_1 = __importDefault(require("./routes/conversion.routes"));
 const batch_routes_1 = __importDefault(require("./routes/batch.routes"));
 const payfast_routes_1 = __importDefault(require("./routes/payfast.routes"));
+const paygenius_routes_1 = __importDefault(require("./routes/paygenius.routes"));
 const beta_routes_1 = __importDefault(require("./routes/beta.routes"));
 const feedback_routes_1 = __importDefault(require("./routes/feedback.routes"));
 const onboarding_routes_1 = __importDefault(require("./routes/onboarding.routes"));
@@ -111,14 +112,17 @@ const partner_routes_1 = __importDefault(require("./routes/partner.routes"));
 const partnerApplication_routes_1 = __importDefault(require("./routes/partnerApplication.routes"));
 // Import attribution middleware
 const attribution_middleware_1 = require("./middleware/attribution.middleware");
+// Import metrics middleware
+const metrics_middleware_1 = require("./middleware/metrics.middleware");
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3001');
 // Trust proxy (required for rate limiting behind Nginx)
 app.set('trust proxy', true);
 // Request correlation ID (before all other middleware)
 app.use(request_id_middleware_1.requestIdMiddleware);
+// Prometheus metrics collection (after request ID, before routes)
+app.use(metrics_middleware_1.metricsMiddleware);
 // HTTP request logging
-app.use(http_logger_middleware_1.httpLoggerMiddleware); // Prometheus metrics collection (after request ID, before routes)app.use(metricsMiddleware)
 app.use(http_logger_middleware_1.httpLoggerMiddleware);
 // Sentry middleware (only if DSN is configured)
 // Note: Modern @sentry/node doesn't require explicit middleware
@@ -234,7 +238,8 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api', auth_google_routes_1.default); // Google OAuth routes (/api/auth/google/*)
 app.use('/api/batch', batch_routes_1.default);
-app.use('/api/payfast', payfast_routes_1.default);
+app.use('/api/payfast', payfast_routes_1.default); // Legacy PayFast routes (for existing subscriptions)
+app.use('/api/paygenius', paygenius_routes_1.default); // New PayGenius payment routes
 app.use('/api/beta', beta_routes_1.default);
 app.use('/api', feedback_routes_1.default);
 app.use('/api/onboarding', onboarding_routes_1.default);

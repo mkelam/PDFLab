@@ -76,7 +76,7 @@ The staging environment has been comprehensively tested across three critical sy
 **Blocker Status**: ✅ NO BLOCKERS
 
 **SMTP Fix Details**:
-- **Problem**: Password escaping issue (`***REMOVED***` → `Jesus24\!7`)
+- **Problem**: Password escaping issue (`<SMTP_PASS>` → `Jesus24\!7`)
 - **Root Cause**: Docker shell escaping with `-e` flags
 - **Solution**: Used `--env-file /tmp/backend-fixed.env` instead of `-e` flags
 - **Result**: ✅ All emails delivering successfully
@@ -93,7 +93,7 @@ The staging environment has been comprehensively tested across three critical sy
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***  # Correctly stored (no escaping)
+SMTP_PASS=<SMTP_PASS>  # Correctly stored (no escaping)
 SMTP_SECURE=false
 ```
 
@@ -202,7 +202,7 @@ pdflab-frontend-staging   UP (port 80/443)
 #### ✅ **RESOLVED**: SMTP Authentication Failure (535 Error)
 - **Discovered**: 2025-11-21 07:30 UTC
 - **Impact**: Welcome emails, password reset emails not sending
-- **Root Cause**: Docker environment variable escaping (`***REMOVED***` → `Jesus24\!7`)
+- **Root Cause**: Docker environment variable escaping (`<SMTP_PASS>` → `Jesus24\!7`)
 - **Resolution**:
   - Created env file `/tmp/backend-fixed.env` with unescaped password
   - Recreated container using `--env-file` flag instead of `-e` flags
@@ -418,13 +418,13 @@ SMTP_PASS=Jesus24\\!7  # Double backslash (incorrect)
 ✓ Email sent successfully to email-001-retest-1763712026@pdflab.com
 ✓ Email sent successfully to testuser@pdflab.com
 ✓ Email sent successfully to smtp-success-test-1763711565@pdflab.com
-SMTP_PASS=***REMOVED***  # No escaping (correct)
+SMTP_PASS=<SMTP_PASS>  # No escaping (correct)
 ```
 
 **Container Configuration**:
 ```bash
 docker inspect pdflab-backend-staging --format='{{range .Config.Env}}{{println .}}{{end}}' | grep SMTP_PASS
-# Result: SMTP_PASS=***REMOVED***
+# Result: SMTP_PASS=<SMTP_PASS>
 ```
 
 ### B. Conversion Test Evidence
@@ -477,7 +477,7 @@ REDIS_HOST=pdflab-redis-staging
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***
+SMTP_PASS=<SMTP_PASS>
 JWT_EXPIRATION=15m
 JWT_REFRESH_EXPIRATION=30d
 ```

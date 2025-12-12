@@ -161,7 +161,7 @@ curl https://pdflab.pro/api/payfast/plans
 ssh root@141.136.44.168 "/tmp/final-payment-test.sh"
 
 # View payment logs
-docker exec pdflab-mysql-prod mysql -updflab -p***REMOVED*** \
+docker exec pdflab-mysql-prod mysql -updflab -p<DB_PASSWORD> \
   -D pdflab_production -e "SELECT * FROM payment_logs ORDER BY created_at DESC LIMIT 5;"
 
 # Restart if needed

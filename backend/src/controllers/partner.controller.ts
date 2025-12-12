@@ -371,17 +371,21 @@ export const createPartner = async (req: Request, res: Response): Promise<void> 
     const commission_rate = tierRates[commission_tier as CommissionTier] || 30.0
 
     // Create partner
+    const referral_code = String(slug).toUpperCase().replace(/[^A-Z0-9]/g, '')
     const partner = await Partner.create({
       name,
       email,
       slug,
+      referral_code,
       platform,
       follower_count,
       website,
       commission_tier: commission_tier || CommissionTier.BRONZE,
       commission_rate,
       free_licenses_allocated: free_licenses_allocated || 10,
-      status: PartnerStatus.PENDING
+      status: PartnerStatus.PENDING,
+      total_clicks: 0,
+      current_month_conversions: 0
     })
 
     // Create default promo code

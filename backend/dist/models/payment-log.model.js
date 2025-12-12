@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaymentLog = exports.PaymentType = exports.PaymentStatus = void 0;
+exports.PaymentLog = exports.PaymentProvider = exports.PaymentType = exports.PaymentStatus = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 var PaymentStatus;
@@ -17,6 +17,11 @@ var PaymentType;
     PaymentType["ONE_TIME"] = "one_time";
     PaymentType["REFUND"] = "refund";
 })(PaymentType || (exports.PaymentType = PaymentType = {}));
+var PaymentProvider;
+(function (PaymentProvider) {
+    PaymentProvider["PAYFAST"] = "payfast";
+    PaymentProvider["PAYGENIUS"] = "paygenius";
+})(PaymentProvider || (exports.PaymentProvider = PaymentProvider = {}));
 class PaymentLog extends sequelize_1.Model {
 }
 exports.PaymentLog = PaymentLog;
@@ -50,12 +55,23 @@ PaymentLog.init({
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: false,
         unique: true,
-        comment: 'Our internal transaction ID (m_payment_id)'
+        comment: 'Our internal transaction ID'
+    },
+    payment_provider: {
+        type: sequelize_1.DataTypes.ENUM('payfast', 'paygenius'),
+        allowNull: true,
+        defaultValue: 'paygenius',
+        comment: 'Payment provider used for this transaction'
     },
     payfast_payment_id: {
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
-        comment: 'PayFast payment ID (pf_payment_id)'
+        comment: 'PayFast payment ID (pf_payment_id) - legacy'
+    },
+    paygenius_payment_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayGenius payment reference'
     },
     payment_type: {
         type: sequelize_1.DataTypes.ENUM('subscription', 'subscription_payment', 'one_time', 'refund'),
@@ -126,7 +142,12 @@ PaymentLog.init({
     itn_data: {
         type: sequelize_1.DataTypes.JSON,
         allowNull: true,
-        comment: 'Full ITN notification data from PayFast'
+        comment: 'Full ITN notification data from PayFast (legacy)'
+    },
+    webhook_data: {
+        type: sequelize_1.DataTypes.JSON,
+        allowNull: true,
+        comment: 'Full webhook notification data from PayGenius'
     },
     error_message: {
         type: sequelize_1.DataTypes.TEXT,
@@ -157,6 +178,7 @@ PaymentLog.init({
         { fields: ['user_id'] },
         { fields: ['subscription_id'] },
         { fields: ['payfast_payment_id'] },
+        { fields: ['paygenius_payment_id'] },
         { fields: ['status'] },
         { fields: ['created_at'] }
     ]

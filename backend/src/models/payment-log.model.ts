@@ -15,12 +15,23 @@ export enum PaymentType {
   REFUND = 'refund'
 }
 
+export enum PaymentProvider {
+  PAYFAST = 'payfast',
+  PAYGENIUS = 'paygenius'
+}
+
 interface PaymentLogAttributes {
   id: string
   user_id: string
   subscription_id?: string
   transaction_id: string
+  payment_provider?: PaymentProvider
+  // PayFast fields (legacy)
   payfast_payment_id?: string
+  itn_data?: any
+  // PayGenius fields
+  paygenius_payment_id?: string
+  webhook_data?: any
   payment_type: PaymentType
   status: PaymentStatus
   amount_gross: number
@@ -35,7 +46,6 @@ interface PaymentLogAttributes {
   item_name: string
   item_description?: string
   custom_data?: any
-  itn_data?: any
   error_message?: string
   processed_at?: Date
   created_at: Date
@@ -49,7 +59,13 @@ class PaymentLog extends Model<PaymentLogAttributes, PaymentLogCreationAttribute
   declare user_id: string
   declare subscription_id?: string
   declare transaction_id: string
+  declare payment_provider?: PaymentProvider
+  // PayFast fields (legacy)
   declare payfast_payment_id?: string
+  declare itn_data?: any
+  // PayGenius fields
+  declare paygenius_payment_id?: string
+  declare webhook_data?: any
   declare payment_type: PaymentType
   declare status: PaymentStatus
   declare amount_gross: number
@@ -64,7 +80,6 @@ class PaymentLog extends Model<PaymentLogAttributes, PaymentLogCreationAttribute
   declare item_name: string
   declare item_description?: string
   declare custom_data?: any
-  declare itn_data?: any
   declare error_message?: string
   declare processed_at?: Date
   declare created_at: Date
@@ -102,12 +117,23 @@ PaymentLog.init(
       type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
-      comment: 'Our internal transaction ID (m_payment_id)'
+      comment: 'Our internal transaction ID'
+    },
+    payment_provider: {
+      type: DataTypes.ENUM('payfast', 'paygenius'),
+      allowNull: true,
+      defaultValue: 'paygenius',
+      comment: 'Payment provider used for this transaction'
     },
     payfast_payment_id: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      comment: 'PayFast payment ID (pf_payment_id)'
+      comment: 'PayFast payment ID (pf_payment_id) - legacy'
+    },
+    paygenius_payment_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayGenius payment reference'
     },
     payment_type: {
       type: DataTypes.ENUM('subscription', 'subscription_payment', 'one_time', 'refund'),
@@ -178,7 +204,12 @@ PaymentLog.init(
     itn_data: {
       type: DataTypes.JSON,
       allowNull: true,
-      comment: 'Full ITN notification data from PayFast'
+      comment: 'Full ITN notification data from PayFast (legacy)'
+    },
+    webhook_data: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: 'Full webhook notification data from PayGenius'
     },
     error_message: {
       type: DataTypes.TEXT,
@@ -210,6 +241,7 @@ PaymentLog.init(
       { fields: ['user_id'] },
       { fields: ['subscription_id'] },
       { fields: ['payfast_payment_id'] },
+      { fields: ['paygenius_payment_id'] },
       { fields: ['status'] },
       { fields: ['created_at'] }
     ]

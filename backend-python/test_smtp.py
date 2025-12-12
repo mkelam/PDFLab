@@ -3,6 +3,7 @@ Simple SMTP test script to verify Hostinger email credentials.
 Tests both port 465 (SSL) and port 587 (STARTTLS).
 """
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -132,7 +133,9 @@ if __name__ == "__main__":
     # Credentials from .env
     HOST = "smtp.hostinger.com"
     USERNAME = "support@pdflab.pro"
-    PASSWORD = "***REMOVED***"
+    PASSWORD = os.environ.get("SMTP_PASS")
+    if not PASSWORD:
+        raise SystemExit("Missing environment variable: SMTP_PASS")
 
     print("\nTesting with your Hostinger credentials:")
     print(f"  Email: {USERNAME}")

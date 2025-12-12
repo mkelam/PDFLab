@@ -49,7 +49,7 @@ Successfully implemented and tested complete payment workflow achieving **85.7% 
 **Current Credentials:**
 ```
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 PAYFAST_MODE=sandbox
 ```
 

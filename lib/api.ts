@@ -47,7 +47,7 @@ export interface ValidationResult {
 }
 
 // Get API URL from environment or default to localhost:3006
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 /**
  * Validate PDF file before upload

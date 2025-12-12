@@ -97,7 +97,7 @@ Performed comprehensive end-to-end testing of all database schema fixes applied 
 SMTP_HOST: smtp.hostinger.com
 SMTP_PORT: 587
 SMTP_USER: support@pdflab.pro
-SMTP_PASS: ***REMOVED*** (correctly formatted, no escaping)
+SMTP_PASS: <SMTP_PASS> (correctly formatted, no escaping)
 ```
 
 ### Verification

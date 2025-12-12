@@ -12,7 +12,7 @@
 The staging backend container is using SMTP credentials from a **baked-in .env file** inside the Docker image, NOT from an external .env file.
 
 ### Evidence
-1. **Container is using**: `support@pdflab.pro` / `***REMOVED***`
+1. **Container is using**: `support@pdflab.pro` / `<SMTP_PASS>`
 2. **Host file shows**: `noreply@pdflab.pro` / `PDFLab@Email2024!`
 3. **Container has**: No volume mounts (empty `"Mounts": []`)
 4. **Conclusion**: .env is embedded in Docker image at build time
@@ -186,7 +186,7 @@ docker run -d \
   --restart unless-stopped \
   -p 3007:3006 \
   -e SMTP_USER='support@pdflab.pro' \
-  -e SMTP_PASS='***REMOVED***' \
+  -e SMTP_PASS='<SMTP_PASS>' \
   -e SMTP_HOST='smtp.hostinger.com' \
   -e SMTP_PORT=587 \
   -e SMTP_SECURE=false \
@@ -228,7 +228,7 @@ docker rename pdflab-backend-staging-new pdflab-backend-staging
 
 ## ⚠️ Potential Issue: Special Character in Password
 
-The password `***REMOVED***` has an exclamation mark `!` which can cause issues in:
+The password `<SMTP_PASS>` has an exclamation mark `!` which can cause issues in:
 - Shell commands
 - Docker environment variables
 - SMTP authentication
@@ -239,7 +239,7 @@ Try both formats:
 
 **Format 1**: Single quotes (recommended)
 ```bash
--e SMTP_PASS='***REMOVED***'
+-e SMTP_PASS='<SMTP_PASS>'
 ```
 
 **Format 2**: Escape the exclamation mark

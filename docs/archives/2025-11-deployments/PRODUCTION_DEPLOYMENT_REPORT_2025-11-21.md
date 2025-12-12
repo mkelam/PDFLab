@@ -21,7 +21,7 @@ During the staging-to-production deployment process, we discovered that **produc
 
 | System | Status | Details |
 |--------|--------|---------|
-| SMTP Configuration | ✅ CORRECT | Password: `***REMOVED***` (no escaping) |
+| SMTP Configuration | ✅ CORRECT | Password: `<SMTP_PASS>` (no escaping) |
 | Email Delivery | ✅ WORKING | Test email sent successfully |
 | PDF Conversion | ✅ WORKING | DOCX conversion in 3 seconds |
 | Health Check | ✅ HEALTHY | Database + Redis OK |
@@ -60,15 +60,15 @@ SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***  # ✅ CORRECT (no escaping)
+SMTP_PASS=<SMTP_PASS>  # ✅ CORRECT (no escaping)
 SMTP_FROM_NAME=PDFLab
 SMTP_FROM_EMAIL=support@pdflab.pro
 ```
 
 **Comparison with Fixed Staging**:
 ```
-STAGING  SMTP_PASS: ***REMOVED*** ✅
-PRODUCTION SMTP_PASS: ***REMOVED*** ✅
+STAGING  SMTP_PASS: <SMTP_PASS> ✅
+PRODUCTION SMTP_PASS: <SMTP_PASS> ✅
 ```
 
 **Result**: ✅ **IDENTICAL CONFIGURATION** - Production already has correct SMTP setup
@@ -151,7 +151,7 @@ Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.doc
 **Backup Command**:
 ```bash
 docker exec 57d5d601930a_pdflab-mysql-prod mysqldump \
-  -u pdflab -p***REMOVED*** pdflab_production \
+  -u pdflab -p<DB_PASSWORD> pdflab_production \
   > /root/backups/pdflab-production-backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 
@@ -186,7 +186,7 @@ NODE_ENV=production
 DB_HOST=57d5d601930a_pdflab-mysql-prod
 DB_NAME=pdflab_production
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=<DB_PASSWORD>
 REDIS_HOST=54dfd3ac119a_pdflab-redis-prod
 JWT_EXPIRATION=15m
 JWT_REFRESH_EXPIRATION=30d
@@ -206,7 +206,7 @@ CLOUDCONVERT_SANDBOX=false
 | SMTP_HOST | smtp.hostinger.com | smtp.hostinger.com | ✅ |
 | SMTP_PORT | 587 | 587 | ✅ |
 | SMTP_USER | support@pdflab.pro | support@pdflab.pro | ✅ |
-| SMTP_PASS | ***REMOVED*** | ***REMOVED*** | ✅ |
+| SMTP_PASS | <SMTP_PASS> | <SMTP_PASS> | ✅ |
 | SMTP_SECURE | false | false | ✅ |
 
 **Result**: ✅ **PERFECT MATCH** - No changes needed
@@ -217,7 +217,7 @@ CLOUDCONVERT_SANDBOX=false
 |---------|---------|------------|
 | Port | 3007 | 3006 |
 | Database | pdflab_staging | pdflab_production |
-| DB Password | StagingDB2024UserPass | ***REMOVED*** |
+| DB Password | StagingDB2024UserPass | <DB_PASSWORD> |
 | NODE_ENV | staging | production |
 
 These differences are **expected and correct** for environment separation.
@@ -285,8 +285,8 @@ Production already has correct SMTP configuration
    - Location: /root/backups/
 
 2. **Verify SMTP Configuration**
-   - Production: `SMTP_PASS=***REMOVED***` ✅
-   - Staging: `SMTP_PASS=***REMOVED***` ✅
+   - Production: `SMTP_PASS=<SMTP_PASS>` ✅
+   - Staging: `SMTP_PASS=<SMTP_PASS>` ✅
    - Match: IDENTICAL
 
 3. **Test Email Delivery**
@@ -411,13 +411,13 @@ PORT=3006
 DB_HOST=57d5d601930a_pdflab-mysql-prod
 DB_NAME=pdflab_production
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=<DB_PASSWORD>
 REDIS_HOST=54dfd3ac119a_pdflab-redis-prod
 REDIS_PORT=6379
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***
+SMTP_PASS=<SMTP_PASS>
 JWT_EXPIRATION=15m
 JWT_REFRESH_EXPIRATION=30d
 CLOUDCONVERT_SANDBOX=false
@@ -435,7 +435,7 @@ NODE_ENV=staging
 PORT=3006
 DB_HOST=mysql-staging
 DB_NAME=pdflab_staging
-SMTP_PASS=***REMOVED***  # Fixed from Jesus24\\!7
+SMTP_PASS=<SMTP_PASS>  # Fixed from Jesus24\\!7
 ```
 
 ---

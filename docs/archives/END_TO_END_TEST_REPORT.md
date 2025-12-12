@@ -233,7 +233,7 @@
   "payment_url": "https://www.payfast.co.za/eng/process",
   "payment_data": {
     "merchant_id": "25263515",
-    "merchant_key": "***REMOVED***",
+    "merchant_key": "<PAYFAST_MERCHANT_KEY>",
     "return_url": "http://localhost:3006/api/payfast/return",
     "cancel_url": "http://localhost:3006/api/payfast/cancel",
     "notify_url": "http://localhost:3006/api/payfast/webhook",

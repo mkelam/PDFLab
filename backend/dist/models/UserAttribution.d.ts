@@ -1,4 +1,7 @@
 import { Model, Optional } from 'sequelize';
+import { User } from './User';
+import { Partner } from './Partner';
+import { PromoCode } from './PromoCode';
 export declare enum AttributionMethod {
     REFERRAL_LINK = "referral_link",
     PROMO_CODE = "promo_code",
@@ -7,8 +10,8 @@ export declare enum AttributionMethod {
 interface UserAttributionAttributes {
     id: string;
     user_id: string;
-    partner_id?: string;
-    promo_code_id?: string;
+    partner_id?: string | null;
+    promo_code_id?: string | null;
     attribution_method: AttributionMethod;
     referral_url?: string;
     utm_source?: string;
@@ -28,8 +31,8 @@ interface UserAttributionCreationAttributes extends Optional<UserAttributionAttr
 export declare class UserAttribution extends Model<UserAttributionAttributes, UserAttributionCreationAttributes> implements UserAttributionAttributes {
     id: string;
     user_id: string;
-    partner_id?: string;
-    promo_code_id?: string;
+    partner_id?: string | null;
+    promo_code_id?: string | null;
     attribution_method: AttributionMethod;
     referral_url?: string;
     utm_source?: string;
@@ -43,6 +46,9 @@ export declare class UserAttribution extends Model<UserAttributionAttributes, Us
     commission_paid_at?: Date;
     readonly created_at: Date;
     readonly updated_at: Date;
+    user?: User;
+    partner?: Partner;
+    promo_code?: PromoCode;
     markAsConverted(paymentAmount: number, commissionRate: number): Promise<void>;
     markCommissionPaid(): Promise<void>;
     isOrganic(): boolean;

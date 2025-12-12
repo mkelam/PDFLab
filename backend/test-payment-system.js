@@ -12,10 +12,10 @@ const TEST_USER = {
 
 // PayFast configuration for verification
 const PAYFAST_CONFIG = {
-  merchantId: '25263515',
-  merchantKey: '***REMOVED***',
-  passphrase: '', // Empty in production mode
-  mode: 'production'
+  merchantId: process.env.PAYFAST_MERCHANT_ID || '25263515',
+  merchantKey: process.env.PAYFAST_MERCHANT_KEY || '',
+  passphrase: process.env.PAYFAST_PASSPHRASE || '',
+  mode: process.env.PAYFAST_MODE || 'production'
 };
 
 // Expected amounts in ZAR

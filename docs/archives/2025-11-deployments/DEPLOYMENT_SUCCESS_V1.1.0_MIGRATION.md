@@ -173,7 +173,7 @@ ssh root@141.136.44.168
 
 # Restore from backup
 docker exec -i 8731b5f977d0_pdflab-mysql-prod \
-  mysql -u pdflab -p'***REMOVED***' pdflab_production \
+  mysql -u pdflab -p'<DB_PASSWORD>' pdflab_production \
   < /tmp/pdflab_backup_20251109_210110.sql
 
 # Restart backend

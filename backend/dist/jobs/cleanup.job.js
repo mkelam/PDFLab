@@ -88,7 +88,8 @@ const initializeCleanupWorker = () => {
         logger_1.default.info(`✓ Cleanup job ${job.id} completed:`, { result });
     });
     cleanupQueue.on('failed', (job, error) => {
-        logger_1.default.error(`✗ Cleanup job ${job?.id} failed:`, { error: error.message instanceof Error ? error.message.message : String(error.message) });
+        const message = error instanceof Error ? error.message : String(error);
+        logger_1.default.error(`✗ Cleanup job ${job?.id} failed:`, { error: message });
     });
 };
 exports.initializeCleanupWorker = initializeCleanupWorker;

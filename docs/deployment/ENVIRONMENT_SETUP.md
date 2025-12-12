@@ -167,7 +167,7 @@ JWT_SECRET=$(openssl rand -base64 64)
 | Variable | Development | Production | Required | Description |
 |----------|------------|------------|----------|-------------|
 | **PAYFAST_MERCHANT_ID** | `25263515` | `25263515` | ✅ Yes | PayFast merchant ID |
-| **PAYFAST_MERCHANT_KEY** | `***REMOVED***` | `***REMOVED***` | ✅ Yes | PayFast merchant key |
+| **PAYFAST_MERCHANT_KEY** | `<PAYFAST_MERCHANT_KEY>` | `<PAYFAST_MERCHANT_KEY>` | ✅ Yes | PayFast merchant key |
 | **PAYFAST_PASSPHRASE** | *(empty)* | `[PASSPHRASE]` | 🟡 Recommended | ITN signature passphrase |
 | **PAYFAST_MODE** | `production` | `production` | ✅ Yes | PayFast environment |
 
@@ -244,7 +244,7 @@ JWT_REFRESH_EXPIRATION=30d
 
 # PayFast
 PAYFAST_MERCHANT_ID=25263515
-PAYFAST_MERCHANT_KEY=***REMOVED***
+PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
 PAYFAST_PASSPHRASE=
 PAYFAST_MODE=production
 
@@ -362,7 +362,7 @@ MAX_FILE_SIZE=524288000
    REDIS_PASSWORD=$(openssl rand -base64 24)
    CLOUDCONVERT_API_KEY=your-api-key
    PAYFAST_MERCHANT_ID=25263515
-   PAYFAST_MERCHANT_KEY=***REMOVED***
+   PAYFAST_MERCHANT_KEY=<PAYFAST_MERCHANT_KEY>
    PAYFAST_MODE=production
    CORS_ORIGIN=https://pdflab.pro
    EOF

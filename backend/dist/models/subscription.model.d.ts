@@ -12,13 +12,20 @@ export declare enum PlanType {
     PRO = "pro",
     ENTERPRISE = "enterprise"
 }
+export declare enum PaymentProvider {
+    PAYFAST = "payfast",
+    PAYGENIUS = "paygenius"
+}
 interface SubscriptionAttributes {
     id: string;
     user_id: string;
     plan: PlanType;
     status: SubscriptionStatus;
+    payment_provider?: PaymentProvider;
     payfast_token?: string;
     payfast_subscription_id?: string;
+    paygenius_reference?: string;
+    paygenius_subscription_id?: string;
     amount: number;
     currency: string;
     billing_date?: Date;
@@ -38,8 +45,11 @@ declare class Subscription extends Model<SubscriptionAttributes, SubscriptionCre
     user_id: string;
     plan: PlanType;
     status: SubscriptionStatus;
+    payment_provider?: PaymentProvider;
     payfast_token?: string;
     payfast_subscription_id?: string;
+    paygenius_reference?: string;
+    paygenius_subscription_id?: string;
     amount: number;
     currency: string;
     billing_date?: Date;

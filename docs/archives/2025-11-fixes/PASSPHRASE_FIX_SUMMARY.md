@@ -42,7 +42,7 @@ PAYFAST_PASSPHRASE=
 
 **After**:
 ```env
-PAYFAST_PASSPHRASE=***REMOVED***
+PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>
 ```
 
 ### Step 2: Backend Restarted ✅
@@ -62,7 +62,7 @@ docker restart pdflab-backend-prod
 
 **Test signature generation**:
 ```javascript
-// With passphrase: ***REMOVED***
+// With passphrase: <PAYFAST_PASSPHRASE>
 // Generated signature: 52502041c87e900a8672d3453e1aa6e1
 ```
 
@@ -80,7 +80,7 @@ docker restart pdflab-backend-prod
 - ✅ Health check returns OK
 
 **PayFast Configuration**:
-- ✅ Passphrase matches PayFast dashboard: `***REMOVED***`
+- ✅ Passphrase matches PayFast dashboard: `<PAYFAST_PASSPHRASE>`
 - ✅ Multi-currency enabled: USD
 - ✅ Recurring billing enabled: Yes
 - ✅ Production merchant credentials: 25263515
@@ -133,13 +133,13 @@ MD5 Hash: 783ce9ec1810cb2d762d4228a76ac99b ❌ Wrong!
 **After (Fixed)**:
 ```
 Parameter String:
-merchant_id=25263515&merchant_key=...&amount=9.99&...&passphrase=***REMOVED***
+merchant_id=25263515&merchant_key=...&amount=9.99&...&passphrase=<PAYFAST_PASSPHRASE>
 
 MD5 Hash: 52502041c87e900a8672d3453e1aa6e1 ✅ Correct!
 ```
 
 **Key Difference**:
-- Passphrase appended at end: `&passphrase=***REMOVED***`
+- Passphrase appended at end: `&passphrase=<PAYFAST_PASSPHRASE>`
 - Changes the MD5 hash completely
 - Matches PayFast's expected signature
 
@@ -163,7 +163,7 @@ MD5 Hash: 52502041c87e900a8672d3453e1aa6e1 ✅ Correct!
 ### Production Server
 
 **File**: `/var/pdflab/app/backend/.env.production`
-- Added: `PAYFAST_PASSPHRASE=***REMOVED***`
+- Added: `PAYFAST_PASSPHRASE=<PAYFAST_PASSPHRASE>`
 - Backup: `.env.production.backup`
 
 **Container**: `pdflab-backend-prod`
@@ -251,7 +251,7 @@ Watch for:
 ssh root@141.136.44.168 "docker logs -f pdflab-backend-prod"
 
 # Check recent payments
-ssh root@141.136.44.168 "docker exec -it 8731b5f977d0_pdflab-mysql-prod mysql -u pdflab -p***REMOVED*** -e 'SELECT transaction_id, amount_gross, currency, status, created_at FROM pdflab_production.payment_logs ORDER BY created_at DESC LIMIT 5;'"
+ssh root@141.136.44.168 "docker exec -it 8731b5f977d0_pdflab-mysql-prod mysql -u pdflab -p<DB_PASSWORD> -e 'SELECT transaction_id, amount_gross, currency, status, created_at FROM pdflab_production.payment_logs ORDER BY created_at DESC LIMIT 5;'"
 
 # Check PayFast health
 curl https://pdflab.pro/api/payfast/plans | jq '.success'

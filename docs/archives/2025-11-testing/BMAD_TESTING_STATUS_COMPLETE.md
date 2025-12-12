@@ -29,7 +29,7 @@ All P0 (Critical) and P1 (High Priority) tests have been **successfully complete
 **Environment**: Staging (port 3007)
 
 **Actions Taken**:
-1. ✅ Identified password escaping issue (`Jesus24\\!7` → `***REMOVED***`)
+1. ✅ Identified password escaping issue (`Jesus24\\!7` → `<SMTP_PASS>`)
 2. ✅ Created environment file: `/tmp/backend-fixed.env`
 3. ✅ Recreated staging container with `--env-file` flag
 4. ✅ Verified password stored correctly (no escaping)
@@ -48,7 +48,7 @@ Status: UP and HEALTHY
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
 SMTP_USER=support@pdflab.pro
-SMTP_PASS=***REMOVED***  # ✅ CORRECT (no escaping)
+SMTP_PASS=<SMTP_PASS>  # ✅ CORRECT (no escaping)
 ```
 
 **Test Evidence**: [SMTP_FIX_COMPLETE.md](./SMTP_FIX_COMPLETE.md)
