@@ -1,0 +1,1 @@
+{"version":3,"file":"007-add-paygenius-fields.d.ts","sourceRoot":"","sources":["../../src/migrations/007-add-paygenius-fields.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAa,MAAM,WAAW,CAAA;AAErD;;;;;GAKG;AACH,wBAAsB,EAAE,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAmEtE;AAED,wBAAsB,IAAI,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAexE"}
