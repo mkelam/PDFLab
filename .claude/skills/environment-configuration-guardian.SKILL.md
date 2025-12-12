@@ -62,7 +62,7 @@ PORT=3006
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=<DB_PASSWORD>
 DB_NAME=pdflab
 
 # Redis (Local)
@@ -107,7 +107,7 @@ PORT=3006
 DB_HOST=8731b5f977d0_pdflab-mysql-prod  # Docker hostname
 DB_PORT=3306
 DB_USER=pdflab
-DB_PASSWORD=***REMOVED***  # ✅ Different from dev
+DB_PASSWORD=<DB_PASSWORD>  # ✅ Different from dev
 DB_NAME=pdflab_production
 
 # Redis (Docker Container)
