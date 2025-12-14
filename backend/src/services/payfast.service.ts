@@ -142,14 +142,15 @@ const PAYFAST_PARAM_ORDER = [
  */
 export function generateSignature(data: Record<string, any>, passphrase: string = ''): string {
   // Create parameter string using PayFast's required parameter order
-  // IMPORTANT: Per PayFast docs, values should NOT be URL-encoded for signature generation
+  // IMPORTANT: PayFast requires URL-encoded values for signature generation
+  // Use encodeURIComponent and replace %20 with + (PayFast uses + for spaces)
   let paramString = ''
 
   for (const key of PAYFAST_PARAM_ORDER) {
     // Skip signature field and empty/null/undefined values
     if (key !== 'signature' && data[key] !== '' && data[key] !== null && data[key] !== undefined) {
-      // PayFast requires raw values (not URL-encoded) for signature calculation
-      paramString += `${key}=${String(data[key]).trim()}&`
+      // URL encode the value and replace %20 with + for PayFast compatibility
+      paramString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`
     }
   }
 
@@ -158,7 +159,7 @@ export function generateSignature(data: Record<string, any>, passphrase: string 
 
   // Add passphrase if configured (required for both sandbox and production if set in PayFast dashboard)
   if (passphrase) {
-    paramString += `&passphrase=${passphrase.trim()}`
+    paramString += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`
   }
 
   // Generate MD5 hash and return lowercase hex
