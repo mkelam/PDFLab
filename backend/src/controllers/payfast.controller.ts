@@ -19,17 +19,18 @@ const renderWithLayout = async (view: string, data: any = {}): Promise<string> =
   return ejs.renderFile(layoutPath, { ...data, body })
 }
 
-// Pricing plans configuration
+// Pricing plans configuration - Founder's Edition Pricing
 // PayFast supports multi-currency via dashboard settings (Settings > Multi-currency)
 // Once enabled, PayFast automatically handles currency conversion and display
 const PRICING_PLANS = {
   free: {
     name: 'Free',
     price: 0,             // $0/month USD
-    conversions: 3,
+    originalPrice: 0,
+    conversions: 10,      // 10 conversions per month
     maxFileSize: 10485760, // 10MB
     features: {
-      conversionsPerMonth: 3,
+      conversionsPerMonth: 10,
       maxFileSize: 10485760,
       ocrOverlayAccess: false,
       advancedFeatures: false,
@@ -39,7 +40,8 @@ const PRICING_PLANS = {
   },
   starter: {
     name: 'Starter',
-    price: 9.99,          // $9.99/month USD
+    price: 4.55,          // Founder's Edition: $4.55/month USD (was $9.99)
+    originalPrice: 9.99,
     conversions: 100,
     maxFileSize: 26214400, // 25MB
     features: {
@@ -53,7 +55,8 @@ const PRICING_PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 29.99,         // $29.99/month USD
+    price: 13.50,         // Founder's Edition: $13.50/month USD (was $29.99)
+    originalPrice: 29.99,
     conversions: -1, // Unlimited
     maxFileSize: 104857600, // 100MB
     features: {
@@ -67,7 +70,8 @@ const PRICING_PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: 99.99,         // $99.99/month USD
+    price: 0,             // Custom pricing - contact sales
+    originalPrice: 99.99,
     conversions: -1, // Unlimited
     maxFileSize: 524288000, // 500MB
     features: {

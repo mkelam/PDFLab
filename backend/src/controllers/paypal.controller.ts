@@ -14,15 +14,16 @@ import { PaymentLog, PaymentStatus, PaymentType } from '../models/payment-log.mo
 import { updateUserPlan } from '../utils/quota.utils'
 import logger from '../config/logger'
 
-// Pricing plans configuration (same as other controllers)
+// Pricing plans configuration - Founder's Edition Pricing
 const PRICING_PLANS = {
   free: {
     name: 'Free',
     price: 0,
-    conversions: 3,
+    originalPrice: 0,
+    conversions: 10,      // 10 conversions per month
     maxFileSize: 10485760,
     features: {
-      conversionsPerMonth: 3,
+      conversionsPerMonth: 10,
       maxFileSize: 10485760,
       ocrOverlayAccess: false,
       advancedFeatures: false,
@@ -32,7 +33,8 @@ const PRICING_PLANS = {
   },
   starter: {
     name: 'Starter',
-    price: 9.99,
+    price: 4.55,          // Founder's Edition: $4.55/month (was $9.99)
+    originalPrice: 9.99,
     conversions: 100,
     maxFileSize: 26214400,
     features: {
@@ -46,7 +48,8 @@ const PRICING_PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 29.99,
+    price: 13.50,         // Founder's Edition: $13.50/month (was $29.99)
+    originalPrice: 29.99,
     conversions: -1,
     maxFileSize: 104857600,
     features: {
@@ -60,7 +63,8 @@ const PRICING_PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: 99.99,
+    price: 0,             // Custom pricing - contact sales
+    originalPrice: 99.99,
     conversions: -1,
     maxFileSize: 524288000,
     features: {
