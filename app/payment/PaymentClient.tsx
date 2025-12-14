@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Check, Shield, Infinity, Loader2, Lock, AlertCircle } from "lucide-react"
+import { ArrowLeft, Check, Shield, Infinity, Loader2, Lock, AlertCircle, CreditCard } from "lucide-react"
 import { useAuth, useRequireAuth } from "@/contexts/AuthContext"
 
 interface PlanDetails {
@@ -19,6 +19,8 @@ interface PlanDetails {
   icon: JSX.Element
   features: string[]
 }
+
+type PaymentProvider = "payfast" | "paypal"
 
 const PLAN_DETAILS: Record<string, PlanDetails> = {
   starter: {
@@ -55,6 +57,13 @@ const PLAN_DETAILS: Record<string, PlanDetails> = {
   }
 }
 
+// PayPal SVG Icon component
+const PayPalIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.773.773 0 0 1 .764-.648h6.38c2.121 0 3.707.628 4.715 1.863.898 1.1 1.218 2.523.94 4.21-.027.175-.06.354-.1.538-.583 2.736-2.197 4.523-4.812 5.327-.813.25-1.715.377-2.66.377H8.187a.773.773 0 0 0-.764.648l-.347 2.302zM19.04 8.17c-.026.166-.058.338-.095.514-.58 2.707-2.17 4.476-4.754 5.27-.801.246-1.69.371-2.621.371H9.586l-.863 5.738a.773.773 0 0 1-.764.648H5.89l.343-2.268 1.105-7.32a.773.773 0 0 1 .764-.648h1.982c.946 0 1.847-.127 2.66-.377 2.615-.804 4.229-2.591 4.812-5.327.04-.184.073-.363.1-.538.138-.894.138-1.652-.012-2.303-.13-.575-.36-1.08-.675-1.518 1.31.96 2.013 2.51 2.013 4.758 0 .866-.098 1.657-.284 2.367-.023.077-.047.154-.073.233z"/>
+  </svg>
+)
+
 export default function PaymentClient() {
   useRequireAuth() // Redirect to login if not authenticated
 
@@ -63,6 +72,7 @@ export default function PaymentClient() {
   const { user } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState("")
+  const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>("paypal")
 
   const planId = searchParams.get("plan") || "starter"
   const plan = PLAN_DETAILS[planId]
@@ -84,45 +94,74 @@ export default function PaymentClient() {
         throw new Error("Not authenticated")
       }
 
-      // Initialize PayFast payment
-      const response = await fetch(`${apiUrl}/api/payfast/initialize`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          plan: planId,
-          userEmail: user.email,
-          userName: user.name || user.email.split("@")[0]
-        })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Payment initialization failed")
-      }
-
-      if (data.success && data.paymentUrl && data.paymentData) {
-        // Create and submit a form to PayFast with payment data
-        const form = document.createElement('form')
-        form.method = 'POST'
-        form.action = data.paymentUrl
-
-        // Add all payment data as hidden form fields
-        Object.keys(data.paymentData).forEach(key => {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = key
-          input.value = data.paymentData[key]
-          form.appendChild(input)
+      if (selectedProvider === "paypal") {
+        // Initialize PayPal payment
+        const response = await fetch(`${apiUrl}/api/paypal/initialize`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            plan: planId,
+            userEmail: user.email,
+            userName: user.name || user.email.split("@")[0]
+          })
         })
 
-        document.body.appendChild(form)
-        form.submit()
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || data.message || "Payment initialization failed")
+        }
+
+        if (data.success && data.approveUrl) {
+          // Redirect to PayPal for approval
+          window.location.href = data.approveUrl
+        } else {
+          throw new Error("No approval URL received from PayPal")
+        }
       } else {
-        throw new Error("No payment URL or payment data received")
+        // Initialize PayFast payment (legacy)
+        const response = await fetch(`${apiUrl}/api/payfast/initialize`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            plan: planId,
+            userEmail: user.email,
+            userName: user.name || user.email.split("@")[0]
+          })
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || data.message || "Payment initialization failed")
+        }
+
+        if (data.success && data.paymentUrl && data.paymentData) {
+          // Create and submit a form to PayFast with payment data
+          const form = document.createElement('form')
+          form.method = 'POST'
+          form.action = data.paymentUrl
+
+          // Add all payment data as hidden form fields
+          Object.keys(data.paymentData).forEach(key => {
+            const input = document.createElement('input')
+            input.type = 'hidden'
+            input.name = key
+            input.value = data.paymentData[key]
+            form.appendChild(input)
+          })
+
+          document.body.appendChild(form)
+          form.submit()
+        } else {
+          throw new Error("No payment URL or payment data received")
+        }
       }
     } catch (error) {
       console.error("Payment error:", error)
@@ -216,6 +255,60 @@ export default function PaymentClient() {
               </div>
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="p-6 rounded-lg border border-border/40 bg-card/50">
+              <h3 className="font-semibold mb-4">Select Payment Method</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {/* PayPal Option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedProvider("paypal")}
+                  className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                    selectedProvider === "paypal"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/40 hover:border-border"
+                  }`}
+                >
+                  <div className={`p-2 rounded-full ${
+                    selectedProvider === "paypal" ? "bg-[#003087] text-white" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <PayPalIcon className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium">PayPal</p>
+                    <p className="text-xs text-muted-foreground">Fast & Secure</p>
+                  </div>
+                  {selectedProvider === "paypal" && (
+                    <Check className="w-5 h-5 text-primary ml-auto" />
+                  )}
+                </button>
+
+                {/* Credit Card Option (via PayFast) */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedProvider("payfast")}
+                  className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                    selectedProvider === "payfast"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/40 hover:border-border"
+                  }`}
+                >
+                  <div className={`p-2 rounded-full ${
+                    selectedProvider === "payfast" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium">Credit Card</p>
+                    <p className="text-xs text-muted-foreground">Visa, Mastercard</p>
+                  </div>
+                  {selectedProvider === "payfast" && (
+                    <Check className="w-5 h-5 text-primary ml-auto" />
+                  )}
+                </button>
+              </div>
+            </div>
+
             {/* Payment Details */}
             <div className="p-6 rounded-lg border border-border/40 bg-card/50">
               <h3 className="font-semibold mb-4">Payment Details</h3>
@@ -258,6 +351,11 @@ export default function PaymentClient() {
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   Processing...
                 </>
+              ) : selectedProvider === "paypal" ? (
+                <>
+                  <PayPalIcon className="w-5 h-5 mr-2" />
+                  Pay with PayPal
+                </>
               ) : (
                 <>
                   <Lock className="w-5 h-5 mr-2" />
@@ -272,8 +370,8 @@ export default function PaymentClient() {
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium mb-1">Secure Payment Processing</p>
                 <p>
-                  Your payment is securely processed by PayFast. We never store your credit card information.
-                  All transactions are encrypted and PCI DSS compliant.
+                  Your payment is securely processed by {selectedProvider === "paypal" ? "PayPal" : "PayFast"}.
+                  We never store your credit card information. All transactions are encrypted and PCI DSS compliant.
                 </p>
               </div>
             </div>

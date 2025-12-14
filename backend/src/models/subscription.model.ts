@@ -18,7 +18,8 @@ export enum PlanType {
 
 export enum PaymentProvider {
   PAYFAST = 'payfast',
-  PAYGENIUS = 'paygenius'
+  PAYGENIUS = 'paygenius',
+  PAYPAL = 'paypal'
 }
 
 interface SubscriptionAttributes {
@@ -33,6 +34,9 @@ interface SubscriptionAttributes {
   // PayGenius fields
   paygenius_reference?: string
   paygenius_subscription_id?: string
+  // PayPal fields
+  paypal_subscription_id?: string
+  paypal_order_id?: string
   amount: number
   currency: string
   billing_date?: Date
@@ -60,6 +64,9 @@ class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAtt
   // PayGenius fields
   declare paygenius_reference?: string
   declare paygenius_subscription_id?: string
+  // PayPal fields
+  declare paypal_subscription_id?: string
+  declare paypal_order_id?: string
   declare amount: number
   declare currency: string
   declare billing_date?: Date
@@ -101,7 +108,7 @@ Subscription.init(
       defaultValue: 'pending'
     },
     payment_provider: {
-      type: DataTypes.ENUM('payfast', 'paygenius'),
+      type: DataTypes.ENUM('payfast', 'paygenius', 'paypal'),
       allowNull: true,
       defaultValue: 'paygenius',
       comment: 'Payment provider used for this subscription'
@@ -125,6 +132,16 @@ Subscription.init(
       type: DataTypes.STRING(255),
       allowNull: true,
       comment: 'PayGenius subscription reference for recurring payments'
+    },
+    paypal_subscription_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayPal subscription ID for recurring payments'
+    },
+    paypal_order_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayPal order ID for one-time payments'
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
@@ -195,6 +212,8 @@ Subscription.init(
       { fields: ['payfast_token'] },
       { fields: ['paygenius_reference'] },
       { fields: ['paygenius_subscription_id'] },
+      { fields: ['paypal_subscription_id'] },
+      { fields: ['paypal_order_id'] },
       { fields: ['next_billing_date'] }
     ]
   }

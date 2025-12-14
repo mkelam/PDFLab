@@ -17,7 +17,8 @@ export enum PaymentType {
 
 export enum PaymentProvider {
   PAYFAST = 'payfast',
-  PAYGENIUS = 'paygenius'
+  PAYGENIUS = 'paygenius',
+  PAYPAL = 'paypal'
 }
 
 interface PaymentLogAttributes {
@@ -32,6 +33,9 @@ interface PaymentLogAttributes {
   // PayGenius fields
   paygenius_payment_id?: string
   webhook_data?: any
+  // PayPal fields
+  paypal_payment_id?: string
+  paypal_order_id?: string
   payment_type: PaymentType
   status: PaymentStatus
   amount_gross: number
@@ -66,6 +70,9 @@ class PaymentLog extends Model<PaymentLogAttributes, PaymentLogCreationAttribute
   // PayGenius fields
   declare paygenius_payment_id?: string
   declare webhook_data?: any
+  // PayPal fields
+  declare paypal_payment_id?: string
+  declare paypal_order_id?: string
   declare payment_type: PaymentType
   declare status: PaymentStatus
   declare amount_gross: number
@@ -120,7 +127,7 @@ PaymentLog.init(
       comment: 'Our internal transaction ID'
     },
     payment_provider: {
-      type: DataTypes.ENUM('payfast', 'paygenius'),
+      type: DataTypes.ENUM('payfast', 'paygenius', 'paypal'),
       allowNull: true,
       defaultValue: 'paygenius',
       comment: 'Payment provider used for this transaction'
@@ -134,6 +141,16 @@ PaymentLog.init(
       type: DataTypes.STRING(255),
       allowNull: true,
       comment: 'PayGenius payment reference'
+    },
+    paypal_payment_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayPal payment or capture ID'
+    },
+    paypal_order_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'PayPal order ID'
     },
     payment_type: {
       type: DataTypes.ENUM('subscription', 'subscription_payment', 'one_time', 'refund'),
@@ -242,6 +259,8 @@ PaymentLog.init(
       { fields: ['subscription_id'] },
       { fields: ['payfast_payment_id'] },
       { fields: ['paygenius_payment_id'] },
+      { fields: ['paypal_payment_id'] },
+      { fields: ['paypal_order_id'] },
       { fields: ['status'] },
       { fields: ['created_at'] }
     ]

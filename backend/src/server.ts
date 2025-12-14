@@ -65,6 +65,7 @@ import conversionRoutes from './routes/conversion.routes'
 import batchRoutes from './routes/batch.routes'
 import payfastRoutes from './routes/payfast.routes'
 import paygeniusRoutes from './routes/paygenius.routes'
+import paypalRoutes from './routes/paypal.routes'
 import betaRoutes from './routes/beta.routes'
 import feedbackRoutes from './routes/feedback.routes'
 import onboardingRoutes from './routes/onboarding.routes'
@@ -239,7 +240,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api', googleAuthRoutes)  // Google OAuth routes (/api/auth/google/*)
 app.use('/api/batch', batchRoutes)
 app.use('/api/payfast', payfastRoutes)  // Legacy PayFast routes (for existing subscriptions)
-app.use('/api/paygenius', paygeniusRoutes)  // New PayGenius payment routes
+app.use('/api/paygenius', paygeniusRoutes)  // PayGenius payment routes
+app.use('/api/paypal', paypalRoutes)  // PayPal payment routes
 app.use('/api/beta', betaRoutes)
 app.use('/api', feedbackRoutes)
 app.use('/api/onboarding', onboardingRoutes)
