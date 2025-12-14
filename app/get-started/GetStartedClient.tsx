@@ -65,7 +65,7 @@ export default function GetStartedClient() {
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
 
-  const planId = searchParams.get("plan") || "starter"
+  const planId = searchParams?.get("plan") || "starter"
   const plan = PLAN_DETAILS[planId]
 
   // If user is already logged in, redirect to payment

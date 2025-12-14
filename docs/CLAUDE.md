@@ -807,9 +807,91 @@ founder_feedback_submitted: boolean
 founder_conversions_count: number
 ```
 
+### 13. Google OAuth Double-Click Bug
+
+**Problem**: Google OAuth button requires two clicks to work.
+
+**Root Cause**: The OAuth action was returning `{ success: true }` immediately after calling `window.location.href`, causing the login handler to continue executing (checking result, trying to redirect) while the browser was already navigating to Google.
+
+**Wrong Pattern**:
+```typescript
+action: async () => {
+  await initiateOAuth('google')  // Sets window.location.href
+  return { success: true }        // BAD: Runs before redirect completes
+}
+```
+
+**Correct Pattern**:
+```typescript
+action: async () => {
+  initiateOAuth('google')         // Sets window.location.href
+  return new Promise(() => {})    // Never resolves - browser navigates away
+}
+```
+
+**Key Insight**: When triggering a browser navigation via `window.location.href`, return a promise that never resolves to prevent any post-redirect code from executing.
+
+### 14. Redis Authentication Mismatch
+
+**Problem**: Backend health check returns 503 (DEGRADED) with `redis: "FAIL"`.
+
+**Root Cause**: Backend was configured with `REDIS_PASSWORD` but Redis server had no password set. Redis rejects auth attempts when no password is configured.
+
+**Error Message**:
+```
+ERR AUTH <password> called without any password configured for the default user
+```
+
+**Fix**: Either:
+1. Remove `REDIS_PASSWORD` from backend `.env.production` if Redis has no password, OR
+2. Set password on Redis: `docker exec redis redis-cli CONFIG SET requirepass "password"`
+
+**Verification**:
+```bash
+curl -s http://localhost:3006/health
+# Should return: {"status":"OK","checks":{"database":"OK","redis":"OK"}}
+```
+
 ---
 
-**Last Updated**: 2025-12-01
+## CRITICAL DEVELOPMENT PRACTICE
+
+### ALWAYS TEST YOUR SOLUTION BEFORE MARKING IT AS DONE
+
+**This is NON-NEGOTIABLE**. Every fix, feature, or change must be verified in the target environment before considering it complete.
+
+**Testing Checklist**:
+1. **Local Testing**: Run locally and verify the fix works
+2. **Build Verification**: Ensure `npm run build` succeeds without errors
+3. **Production Deploy**: Push to production environment
+4. **Production Verification**: Test the actual production URL/endpoint
+5. **Edge Cases**: Test related functionality that might be affected
+
+**Examples of Proper Testing**:
+```bash
+# After fixing Google OAuth:
+ssh root@141.136.44.168 "curl -s http://localhost:3006/health"
+# Verify: {"status":"OK"}
+
+# After fixing an API endpoint:
+curl -s https://pdflab.pro/api/endpoint-name
+# Verify: Expected response
+
+# After frontend changes:
+# Actually click through the UI flow in production
+```
+
+**DO NOT**:
+- Mark a task complete after only making code changes
+- Assume "it should work" without verification
+- Skip production testing because local testing passed
+- Consider deployment complete without checking container health
+
+**If you can't test it, you haven't finished it.**
+
+---
+
+**Last Updated**: 2025-12-14
 **Project Status**: Production (Phase 2 In Progress)
 **Current Version**: 1.4.0 (Founder's Edition)
 **Production URL**: https://pdflab.pro

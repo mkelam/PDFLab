@@ -10,8 +10,8 @@ export default function AuthCallbackClient() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const token = searchParams.get('token')
-      const refreshToken = searchParams.get('refreshToken')
+      const token = searchParams?.get('token')
+      const refreshToken = searchParams?.get('refreshToken')
 
       if (token && refreshToken) {
         try {

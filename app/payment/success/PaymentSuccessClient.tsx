@@ -16,8 +16,8 @@ export default function PaymentSuccessClient() {
   const [verificationComplete, setVerificationComplete] = useState(false)
 
   // PayFast returns these parameters
-  const paymentId = searchParams.get("pf_payment_id")
-  const transactionId = searchParams.get("m_payment_id")
+  const paymentId = searchParams?.get("pf_payment_id")
+  const transactionId = searchParams?.get("m_payment_id")
 
   useEffect(() => {
     // Simulate verification delay (ITN webhook usually arrives within seconds)

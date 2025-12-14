@@ -28,8 +28,11 @@ export const socialProviders: SocialProvider[] = [
     icon: <GoogleIcon />,
     enabled: true,
     action: async () => {
-      await initiateOAuth('google')
-      return { success: true }
+      // This redirects the browser - we return a promise that never resolves
+      // because the page will navigate away before the promise completes
+      initiateOAuth('google')
+      // Return a promise that never resolves to prevent any post-redirect code from running
+      return new Promise(() => {})
     }
   }
 ]

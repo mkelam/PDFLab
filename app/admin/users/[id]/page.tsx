@@ -34,7 +34,7 @@ interface UserDetail {
 export default function EditUserPage() {
   const params = useParams()
   const router = useRouter()
-  const userId = params.id as string
+  const userId = params?.id as string
   const { user: currentUser, isLoading: authLoading } = useRequireAuth()
 
   const [user, setUser] = useState<UserDetail | null>(null)

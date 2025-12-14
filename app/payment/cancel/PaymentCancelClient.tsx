@@ -11,7 +11,7 @@ export default function PaymentCancelClient() {
   const searchParams = useSearchParams()
 
   // Get the plan they were trying to purchase (if available)
-  const planId = searchParams.get("plan") || "starter"
+  const planId = searchParams?.get("plan") || "starter"
 
   const handleRetryPayment = () => {
     router.push(`/payment?plan=${planId}`)

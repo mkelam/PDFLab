@@ -74,7 +74,7 @@ export default function PaymentClient() {
   const [error, setError] = useState("")
   const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>("paypal")
 
-  const planId = searchParams.get("plan") || "starter"
+  const planId = searchParams?.get("plan") || "starter"
   const plan = PLAN_DETAILS[planId]
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006"
