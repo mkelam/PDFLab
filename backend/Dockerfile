@@ -20,8 +20,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install build dependencies for native modules
-RUN apk add --no-cache python3 make g++
+# Install build dependencies for native modules and Python for PDF tracker
+RUN apk add --no-cache python3 py3-pip make g++ && \
+    pip3 install --break-system-packages praw>=7.7.0
 
 # Copy package files
 COPY package*.json ./
@@ -35,8 +36,11 @@ RUN npm ci --omit=dev --ignore-scripts && \
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy PDF tracker scripts
+COPY scripts/pdf-tracker ./scripts/pdf-tracker
+
 # Create necessary directories for volume mount points
-RUN mkdir -p storage/uploads storage/outputs logs
+RUN mkdir -p storage/uploads storage/outputs logs scripts/pdf-tracker
 
 # Expose port
 EXPOSE 3006

@@ -36,21 +36,44 @@ const RESULTS_FILE = path.join(TRACKER_DIR, 'tracker_results.json')
 
 // Default configuration (fallback)
 const DEFAULT_CONFIG: ConfigSnapshot = {
-  subreddits: ['GetMotivated', 'LifeProTips', 'GetStudying', 'selfimprovement', 'DecidingToBeBetter', 'gtd'],
+  subreddits: [
+    'GetMotivated',
+    'LifeProTips',
+    'GetStudying',
+    'selfimprovement',
+    'DecidingToBeBetter',
+    'gtd'
+  ],
   pdf_keywords: ['pdf', 'ebook', 'template', 'download', 'printable'],
-  complaint_keywords: ['wont load', 'doesnt work', 'cant open', 'hate', 'broken', 'crash', 'annoying', 'frustrated'],
+  complaint_keywords: [
+    'wont load',
+    'doesnt work',
+    'cant open',
+    'hate',
+    'broken',
+    'crash',
+    'annoying',
+    'frustrated'
+  ],
   viral_threshold: 10
 }
 
 // Helper to sync config to JSON file (for Python script compatibility)
 const syncConfigToFile = (config: PdfTrackerConfig): void => {
   try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify({
-      subreddits: config.subreddits,
-      pdf_keywords: config.pdf_keywords,
-      complaint_keywords: config.complaint_keywords,
-      viral_threshold: config.viral_threshold
-    }, null, 2))
+    fs.writeFileSync(
+      CONFIG_FILE,
+      JSON.stringify(
+        {
+          subreddits: config.subreddits,
+          pdf_keywords: config.pdf_keywords,
+          complaint_keywords: config.complaint_keywords,
+          viral_threshold: config.viral_threshold
+        },
+        null,
+        2
+      )
+    )
   } catch (error) {
     logger.error('Error syncing config to file', { error })
   }
@@ -168,13 +191,18 @@ export const addConfigItem = async (req: Request, res: Response): Promise<void> 
     const category = body.category
     const value = body.value
 
-    if (typeof category !== 'string' || typeof value !== 'string' || category === '' || value === '') {
+    if (
+      typeof category !== 'string' ||
+      typeof value !== 'string' ||
+      category === '' ||
+      value === ''
+    ) {
       res.status(400).json({ error: 'Category and value are required' })
       return
     }
 
     const validCategories = ['subreddits', 'pdf_keywords', 'complaint_keywords'] as const
-    type ValidCategory = typeof validCategories[number]
+    type ValidCategory = (typeof validCategories)[number]
 
     if (!validCategories.includes(category as ValidCategory)) {
       res.status(400).json({ error: 'Invalid category' })
@@ -229,13 +257,18 @@ export const removeConfigItem = async (req: Request, res: Response): Promise<voi
     const category = body.category
     const value = body.value
 
-    if (typeof category !== 'string' || typeof value !== 'string' || category === '' || value === '') {
+    if (
+      typeof category !== 'string' ||
+      typeof value !== 'string' ||
+      category === '' ||
+      value === ''
+    ) {
       res.status(400).json({ error: 'Category and value are required' })
       return
     }
 
     const validCategories = ['subreddits', 'pdf_keywords', 'complaint_keywords'] as const
-    type ValidCategory = typeof validCategories[number]
+    type ValidCategory = (typeof validCategories)[number]
 
     if (!validCategories.includes(category as ValidCategory)) {
       res.status(400).json({ error: 'Invalid category' })
@@ -285,7 +318,7 @@ export const getResults = async (_req: Request, res: Response): Promise<void> =>
     })
 
     // Transform to match the expected frontend format
-    const formattedReports = reports.map(report => ({
+    const formattedReports = reports.map((report) => ({
       date: report.report_date,
       generated: report.generated_at.toISOString().replace('T', ' ').substring(0, 19),
       subreddits_monitored: report.config_snapshot.subreddits,
@@ -347,7 +380,19 @@ export const runTracker = async (req: Request, res: Response): Promise<void> => 
   try {
     // Check if script exists
     if (!fs.existsSync(TRACKER_SCRIPT)) {
-      res.status(500).json({ error: 'Tracker script not found' })
+      logger.warn('PDF Tracker script not available in this environment', {
+        expectedPath: TRACKER_SCRIPT,
+        trackerDir: TRACKER_DIR
+      })
+      res.status(503).json({
+        error: 'PDF Tracker script not available',
+        message:
+          'The PDF Tracker Python script is not deployed to this server. Run the tracker locally or configure the server with the required Python environment.',
+        details: {
+          expectedPath: TRACKER_SCRIPT,
+          available: false
+        }
+      })
       return
     }
 
@@ -359,8 +404,8 @@ export const runTracker = async (req: Request, res: Response): Promise<void> => 
 
     logger.info('Running PDF tracker', { adminId: req.user?.id })
 
-    // Run the Python script
-    const python: ChildProcess = spawn('python', [TRACKER_SCRIPT], {
+    // Run the Python script (use python3 for Alpine Linux)
+    const python: ChildProcess = spawn('python3', [TRACKER_SCRIPT], {
       cwd: TRACKER_DIR,
       env: { ...process.env }
     })
@@ -399,12 +444,15 @@ export const runTracker = async (req: Request, res: Response): Promise<void> => 
 
               // Get current config for snapshot
               const currentConfig = await PdfTrackerConfig.getActiveConfig()
-              const configSnapshot: ConfigSnapshot = currentConfig !== null ? {
-                subreddits: currentConfig.subreddits,
-                pdf_keywords: currentConfig.pdf_keywords,
-                complaint_keywords: currentConfig.complaint_keywords,
-                viral_threshold: currentConfig.viral_threshold
-              } : DEFAULT_CONFIG
+              const configSnapshot: ConfigSnapshot =
+                currentConfig !== null
+                  ? {
+                      subreddits: currentConfig.subreddits,
+                      pdf_keywords: currentConfig.pdf_keywords,
+                      complaint_keywords: currentConfig.complaint_keywords,
+                      viral_threshold: currentConfig.viral_threshold
+                    }
+                  : DEFAULT_CONFIG
 
               // Upsert the report (update if same date exists, create if not)
               const [report, created] = await PdfTrackerReport.upsert({
@@ -415,7 +463,11 @@ export const runTracker = async (req: Request, res: Response): Promise<void> => 
                 config_snapshot: configSnapshot
               })
 
-              logger.info('Report saved to database', { date: latestResult.date, created, reportId: report.id })
+              logger.info('Report saved to database', {
+                date: latestResult.date,
+                created,
+                reportId: report.id
+              })
 
               res.json({
                 success: true,
@@ -463,7 +515,6 @@ export const runTracker = async (req: Request, res: Response): Promise<void> => 
         details: error.message
       })
     })
-
   } catch (error) {
     logger.error('Error running PDF tracker', { error })
     res.status(500).json({ error: 'Failed to run tracker' })
@@ -488,13 +539,16 @@ export const getStats = async (_req: Request, res: Response): Promise<void> => {
       pdfKeywords: config?.pdf_keywords.length ?? 0,
       complaintKeywords: config?.complaint_keywords.length ?? 0,
       viralThreshold: config?.viral_threshold ?? 10,
-      latestReport: latestReport !== null ? {
-        date: latestReport.report_date,
-        generated: latestReport.generated_at.toISOString().replace('T', ' ').substring(0, 19),
-        totalPostsScanned: latestReport.stats.total_posts_scanned,
-        pdfPostsFound: latestReport.stats.pdf_posts_found,
-        complaintsFound: latestReport.stats.complaints_found
-      } : null
+      latestReport:
+        latestReport !== null
+          ? {
+              date: latestReport.report_date,
+              generated: latestReport.generated_at.toISOString().replace('T', ' ').substring(0, 19),
+              totalPostsScanned: latestReport.stats.total_posts_scanned,
+              pdfPostsFound: latestReport.stats.pdf_posts_found,
+              complaintsFound: latestReport.stats.complaints_found
+            }
+          : null
     }
 
     res.json({ stats })
