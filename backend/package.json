@@ -14,6 +14,7 @@
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",
     "migrate": "node dist/scripts/migrate.js",
+    "migrate:pdf-tracker": "tsx src/scripts/migrate-pdf-tracker.ts",
     "seed": "node dist/scripts/seed.js",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",

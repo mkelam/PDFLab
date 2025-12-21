@@ -82,6 +82,7 @@ import testRoutes from './routes/test.routes'
 import partnerRoutes from './routes/partner.routes'
 import partnerApplicationRoutes from './routes/partnerApplication.routes'
 import metricsRoutes from './routes/metrics.routes'
+import pdfTrackerAdminRoutes from './routes/pdf-tracker.admin.routes'
 
 // Import attribution middleware
 import { captureAttribution } from './middleware/attribution.middleware'
@@ -256,6 +257,7 @@ app.use('/api/admin/system', systemAdminRoutes)
 app.use('/api/admin/system', circuitBreakerRoutes)
 app.use('/api/admin/analytics', analyticsAdminRoutes)
 app.use('/api/admin/audit-logs', auditAdminRoutes)
+app.use('/api/admin', pdfTrackerAdminRoutes)
 app.use('/api', conversionRoutes)
 
 // Test routes (only in development/staging - NOT production)

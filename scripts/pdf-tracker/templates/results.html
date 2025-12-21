@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker Results - PDFLab.Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* PDFLab.Pro Design System */
+        :root {
+            --background: oklch(0.05 0 0);
+            --foreground: oklch(0.95 0 0);
+            --card: oklch(0 0 0 / 0.5);
+            --card-foreground: oklch(0.95 0 0);
+            --primary: oklch(0.6 0.1 180);
+            --primary-foreground: oklch(0.95 0 0);
+            --secondary: oklch(0.12 0 0);
+            --muted: oklch(0.12 0 0);
+            --muted-foreground: oklch(0.65 0 0);
+            --border: oklch(1 0 0 / 0.15);
+            --input: oklch(0.15 0 0);
+            --destructive: oklch(0.5 0.2 25);
+            --success: oklch(0.5 0.15 145);
+            --warning: oklch(0.6 0.15 85);
+            --radius: 0.75rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background:
+                linear-gradient(oklch(1 0 0 / 0.05), oklch(1 0 0 / 0.05)),
+                url("/static/images/circuit-board-bg.png") center / cover no-repeat fixed,
+                var(--background);
+            min-height: 100vh;
+            color: var(--foreground);
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: oklch(0.05 0 0 / 0.85);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--foreground);
+        }
+
+        .nav-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--background);
+        }
+
+        .nav-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .nav-title span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--muted-foreground);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--foreground);
+            background: var(--secondary);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: oklch(0.6 0.1 180 / 0.15);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 88px 24px 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--muted-foreground);
+            font-size: 0.95rem;
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header .icon {
+            color: var(--primary);
+        }
+
+        .report-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .report-item {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--foreground);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-item:hover {
+            background: var(--secondary);
+        }
+
+        .report-item.active {
+            background: oklch(0.6 0.1 180 / 0.15);
+            border-left: 3px solid var(--primary);
+        }
+
+        .report-item .date {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .report-item .label {
+            font-size: 0.8rem;
+            color: var(--muted-foreground);
+            margin-top: 2px;
+        }
+
+        /* Main content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.zero {
+            color: var(--muted-foreground);
+        }
+
+        .stat-value.warning {
+            color: var(--warning);
+        }
+
+        .stat-value.success {
+            color: var(--success);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--muted-foreground);
+        }
+
+        /* Report content */
+        .report-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .report-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .report-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .report-meta {
+            font-size: 0.85rem;
+            color: var(--muted-foreground);
+        }
+
+        .report-body {
+            padding: 24px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        /* Subreddit sections */
+        .subreddit-section {
+            margin-bottom: 32px;
+        }
+
+        .subreddit-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subreddit-header .badge {
+            background: var(--secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .no-posts {
+            color: var(--muted-foreground);
+            font-style: italic;
+            padding: 12px;
+            background: var(--secondary);
+            border-radius: 8px;
+        }
+
+        .error-message {
+            color: var(--destructive);
+            padding: 12px;
+            background: oklch(0.5 0.2 25 / 0.1);
+            border-radius: 8px;
+            border: 1px solid oklch(0.5 0.2 25 / 0.3);
+        }
+
+        /* Post cards */
+        .post-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .post-card.complaint {
+            border-left: 3px solid var(--warning);
+        }
+
+        .post-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .post-title a {
+            color: var(--foreground);
+            text-decoration: none;
+        }
+
+        .post-title a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: var(--muted-foreground);
+            margin-bottom: 12px;
+        }
+
+        .post-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .post-preview {
+            color: var(--muted-foreground);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: oklch(0 0 0 / 0.3);
+            border-radius: 6px;
+        }
+
+        .keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .keyword-badge {
+            background: oklch(0.6 0.1 180 / 0.2);
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .keyword-badge.warning {
+            background: oklch(0.6 0.15 85 / 0.2);
+            color: var(--warning);
+        }
+
+        .complaint-alert {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: oklch(0.6 0.15 85 / 0.1);
+            border: 1px solid oklch(0.6 0.15 85 / 0.3);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--warning);
+            margin-bottom: 12px;
+        }
+
+        /* Comments */
+        .comments-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .comments-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--muted-foreground);
+        }
+
+        .comment-item {
+            padding: 10px;
+            background: oklch(0 0 0 / 0.3);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .comment-item.complaint {
+            border-left: 2px solid var(--warning);
+        }
+
+        .comment-score {
+            color: var(--muted-foreground);
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted-foreground);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--foreground);
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: oklch(1 0 0 / 0.15);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: oklch(1 0 0 / 0.25);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--muted-foreground);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Subreddits monitored */
+        .monitored-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .monitored-badge {
+            background: var(--secondary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--muted-foreground);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="/" class="nav-brand">
+            <div class="nav-logo">PDF</div>
+            <div class="nav-title">PDFLab<span>.Pro</span></div>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Configuration</a>
+            <a href="/results" class="nav-link active">Results</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Tracker Results</h1>
+            <p class="subtitle">View daily PDF tracking reports from Reddit</p>
+        </header>
+
+        {% if reports %}
+        <div class="layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="icon">&#128197;</span>
+                        Reports ({{ reports|length }})
+                    </div>
+                    <div class="report-list">
+                        {% for report in reports %}
+                        <a href="/results?date={{ report.date }}"
+                           class="report-item {% if report.date == selected_date %}active{% endif %}">
+                            <div class="date">{{ report.date }}</div>
+                            <div class="label">
+                                {{ report.stats.pdf_posts_found }} posts found
+                                {% if report.stats.complaints_found > 0 %}
+                                | {{ report.stats.complaints_found }} complaints
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                {% if current_report %}
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ current_report.stats.total_posts_scanned }}</div>
+                        <div class="stat-label">Posts Scanned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value {% if current_report.stats.pdf_posts_found > 0 %}success{% else %}zero{% endif %}">
+                            {{ current_report.stats.pdf_posts_found }}
+                        </div>
+                        <div class="stat-label">PDF Posts Found</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value {% if current_report.stats.complaints_found > 0 %}warning{% else %}zero{% endif %}">
+                            {{ current_report.stats.complaints_found }}
+                        </div>
+                        <div class="stat-label">Complaints</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value zero">{{ current_report.viral_threshold }}+</div>
+                        <div class="stat-label">Upvote Threshold</div>
+                    </div>
+                </div>
+
+                <!-- Report Content -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-title">Report: {{ selected_date }}</div>
+                        <div class="report-meta">Generated: {{ current_report.generated }}</div>
+                    </div>
+                    <div class="report-body">
+                        <!-- Monitored Subreddits -->
+                        <div class="monitored-list">
+                            {% for sub in current_report.subreddits_monitored %}
+                            <span class="monitored-badge">r/{{ sub }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Subreddit Results -->
+                        {% for sub_result in current_report.subreddit_results %}
+                        <div class="subreddit-section">
+                            <div class="subreddit-header">
+                                r/{{ sub_result.name }}
+                                <span class="badge">{{ sub_result.posts|length }} posts</span>
+                            </div>
+
+                            {% if sub_result.error %}
+                            <div class="error-message">
+                                Error: {{ sub_result.error }}
+                            </div>
+                            {% elif sub_result.posts|length == 0 %}
+                            <div class="no-posts">
+                                No PDF-related viral posts in the last 24 hours.
+                            </div>
+                            {% else %}
+                                {% for post in sub_result.posts %}
+                                <div class="post-card {% if post.is_complaint %}complaint{% endif %}">
+                                    <div class="post-title">
+                                        <a href="{{ post.url }}" target="_blank">{{ post.title }}</a>
+                                    </div>
+                                    <div class="post-meta">
+                                        <span class="post-meta-item">&#11014; {{ post.score }} upvotes</span>
+                                        <span class="post-meta-item">&#128172; {{ post.num_comments }} comments</span>
+                                    </div>
+
+                                    {% if post.pdf_keywords %}
+                                    <div class="keywords-list">
+                                        {% for kw in post.pdf_keywords %}
+                                        <span class="keyword-badge">{{ kw }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if post.is_complaint %}
+                                    <div class="complaint-alert">
+                                        &#9888; COMPLAINT DETECTED - Keywords: {{ post.complaint_keywords|join(', ') }}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if post.content_preview %}
+                                    <div class="post-preview">
+                                        {{ post.content_preview }}...
+                                    </div>
+                                    {% endif %}
+
+                                    {% if post.comments %}
+                                    <div class="comments-section">
+                                        <div class="comments-title">Relevant Comments ({{ post.comments|length }})</div>
+                                        {% for comment in post.comments[:5] %}
+                                        <div class="comment-item {% if comment.is_complaint %}complaint{% endif %}">
+                                            <div class="comment-score">Score: {{ comment.score }}</div>
+                                            <div>{{ comment.body }}...</div>
+                                            {% if comment.is_complaint %}
+                                            <div style="margin-top: 6px; color: var(--warning); font-size: 0.8rem;">
+                                                &#9888; Complaint: {{ comment.complaint_keywords|join(', ') }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="card">
+            <div class="empty-state">
+                <div class="icon">&#128196;</div>
+                <h3>No Reports Yet</h3>
+                <p>Run the PDF tracker to generate your first report.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <footer class="footer">
+            <p>Part of <a href="/">PDFLab.Pro</a> - Convert PDFs to Office Files in Seconds</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -22,19 +22,19 @@ export { PromoCode, DiscountType } from './PromoCode'
 export { UserAttribution, AttributionMethod } from './UserAttribution'
 export { default as PartnerApplication } from './PartnerApplication'
 
+// PDF Tracker
+export { default as PdfTrackerReport } from './PdfTrackerReport'
+export type { TrackerStats, TrackerPost, TrackerComment, SubredditResult, ConfigSnapshot } from './PdfTrackerReport'
+export { default as PdfTrackerConfig } from './PdfTrackerConfig'
+
 // Set up model associations
 import { User } from './User'
 import { Subscription } from './subscription.model'
 import { PaymentLog } from './payment-log.model'
-import { ConversionJob } from './ConversionJob'
 import { AdminAuditLog } from './AdminAuditLog'
 import { PasswordHistory } from './PasswordHistory'
 import Feedback from './Feedback'
 import OnboardingProgress from './OnboardingProgress'
-import OnboardingTemplate from './OnboardingTemplate'
-import { Partner } from './Partner'
-import { PromoCode } from './PromoCode'
-import { UserAttribution } from './UserAttribution'
 
 // User <-> Subscription (one-to-many)
 User.hasMany(Subscription, {

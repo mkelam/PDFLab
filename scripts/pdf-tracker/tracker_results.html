@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker Results - PDFLab.Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: oklch(0.05 0 0);
+            --foreground: oklch(0.95 0 0);
+            --card: oklch(0 0 0 / 0.5);
+            --primary: oklch(0.6 0.1 180);
+            --secondary: oklch(0.12 0 0);
+            --muted-foreground: oklch(0.65 0 0);
+            --border: oklch(1 0 0 / 0.15);
+            --success: oklch(0.5 0.15 145);
+            --warning: oklch(0.6 0.15 85);
+            --destructive: oklch(0.5 0.2 25);
+            --radius: 0.75rem;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            color: var(--foreground);
+            padding: 24px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--muted-foreground); font-size: 0.95rem; margin-bottom: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 8px; }
+        .stat-value.zero { color: var(--muted-foreground); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-label { font-size: 0.85rem; color: var(--muted-foreground); }
+        .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .card-body { padding: 20px; }
+        .subreddit-section { margin-bottom: 24px; }
+        .subreddit-header { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .badge { background: var(--secondary); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--muted-foreground); }
+        .no-posts { color: var(--muted-foreground); font-style: italic; padding: 12px; background: var(--secondary); border-radius: 8px; }
+        .error-message { color: var(--destructive); padding: 12px; background: oklch(0.5 0.2 25 / 0.1); border-radius: 8px; }
+        .post-card { background: var(--secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+        .post-card.complaint { border-left: 3px solid var(--warning); }
+        .post-title { font-weight: 600; margin-bottom: 8px; }
+        .post-title a { color: var(--foreground); text-decoration: none; }
+        .post-title a:hover { color: var(--primary); }
+        .post-meta { display: flex; gap: 16px; font-size: 0.85rem; color: var(--muted-foreground); margin-bottom: 12px; }
+        .keywords-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .keyword-badge { background: oklch(0.6 0.1 180 / 0.2); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .complaint-alert { background: oklch(0.6 0.15 85 / 0.1); border: 1px solid oklch(0.6 0.15 85 / 0.3); padding: 10px; border-radius: 6px; font-size: 0.85rem; color: var(--warning); margin-bottom: 12px; }
+        .post-preview { color: var(--muted-foreground); font-size: 0.9rem; padding: 12px; background: oklch(0 0 0 / 0.3); border-radius: 6px; margin-bottom: 12px; }
+        .comments-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .comments-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--muted-foreground); }
+        .comment-item { padding: 10px; background: oklch(0 0 0 / 0.3); border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; }
+        .comment-item.complaint { border-left: 2px solid var(--warning); }
+        .comment-score { color: var(--muted-foreground); font-size: 0.75rem; margin-bottom: 4px; }
+        .monitored-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .monitored-badge { background: var(--secondary); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; color: var(--muted-foreground); }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--muted-foreground); }
+        .report-selector { margin-bottom: 24px; }
+        .report-selector select { background: var(--secondary); color: var(--foreground); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Tracker Results</h1>
+        <p class="subtitle">Daily viral PDF tracking reports from Reddit</p>
+
+        <div class="report-selector">
+            <select id="reportSelect" onchange="showReport(this.value)">
+                <option value="0" selected>2025-12-21 - 8 posts found</option>
+            </select>
+        </div>
+
+        <div id="reportContent"></div>
+    </div>
+
+    <script>
+        const reports = [{"date": "2025-12-21", "generated": "2025-12-21 12:49:51", "subreddits_monitored": ["GetMotivated", "LifeProTips", "GetStudying", "selfimprovement", "DecidingToBeBetter", "gtd", "books"], "viral_threshold": 1, "stats": {"total_posts_scanned": 350, "pdf_posts_found": 8, "complaints_found": 2, "comments_with_pdf": 25, "comments_with_complaints": 2}, "subreddit_results": [{"name": "GetMotivated", "posts": [{"title": "[Discussion] Motivational Quotes for Book for My Kids", "url": "https://reddit.com/r/GetMotivated/comments/1prh2u5/discussion_motivational_quotes_for_book_for_my/", "score": 2, "num_comments": 1, "content_preview": "One of my goals for 2026 is to write a book of quotes for my young adult kids that will help inspire them, motivate them and get them through the tough times we all face. My plan is to have a quote and then write a few words of my own to explain why this quote is meaningful to me. I hope they will k", "pdf_keywords": ["book"], "is_complaint": true, "complaint_keywords": ["hate"], "comments": []}], "error": null}, {"name": "LifeProTips", "posts": [], "error": null}, {"name": "GetStudying", "posts": [], "error": null}, {"name": "selfimprovement", "posts": [{"title": "Most self help books and movements are doomed personality cults", "url": "https://reddit.com/r/selfimprovement/comments/1prnbt0/most_self_help_books_and_movements_are_doomed/", "score": 5, "num_comments": 3, "content_preview": "I will use Power of Now as an example, since it is one of the more famous books.\n\nThe author rips off Eastern philosophy and presents a non academic and inferior version of it, mixed with some personal beliefs. The book became wildly popular solely due to pure luck: because Oprah endorsed it (keep t", "pdf_keywords": ["book"], "is_complaint": false, "complaint_keywords": [], "comments": [{"body": "Honestly this is a pretty solid take but you're kinda overthinking it\n\n  \nMost people buying self-help books aren't actually looking to change, they're looking to feel like they're doing something about their problems without the discomfort of real work. It's way easier to buy a $15 book and feel pr", "score": 2, "is_complaint": false, "complaint_keywords": []}, {"body": "Therapy really only works for people in crisis. I sought therapy this year and was 3 for 3 therapists telling me there is nothing wrong with me and I was wasting my money and time. I was pissed but then I did some reading and have really imrpoved my overall sense of well being.\n\n\nThis is because on ", "score": 2, "is_complaint": false, "complaint_keywords": []}]}], "error": null}, {"name": "DecidingToBeBetter", "posts": [], "error": null}, {"name": "gtd", "posts": [], "error": null}, {"name": "books", "posts": [{"title": "\"Wild Dark Shore\" by Charlotte McConaghy has affected me deeply", "url": "https://reddit.com/r/books/comments/1propl5/wild_dark_shore_by_charlotte_mcconaghy_has/", "score": 32, "num_comments": 13, "content_preview": "I think it places as the second best of everything I read this year. Here are some words to help me process how this book made me feel with almost no spoilers except general plot points here and there:\n\nHow do you face the end of everything, of this world, of your world ?\n\nDo you shrink into yoursel", "pdf_keywords": ["book"], "is_complaint": true, "complaint_keywords": ["broken"], "comments": [{"body": "This has also become one of my all time favorites. I was deeply affected and will think about this book for a long time. One of my favorite quotes:\n\n“But here is the nature of life. That we must live things with our whole selves, knowing they will die.”", "score": 11, "is_complaint": false, "complaint_keywords": []}, {"body": "Me too. It was an incredible book.", "score": 6, "is_complaint": false, "complaint_keywords": []}, {"body": "Sounds like I need to add this to the list. Been looking for something that hits different after burning through mostly fantasy this year. The themes you're describing remind me of why I got into reading in the first place - that gut punch feeling when a book actually makes you sit with something un", "score": 2, "is_complaint": false, "complaint_keywords": []}, {"body": "This book absolutely destroyed me in the best way possible. That quote you shared hits so hard - the whole idea of loving something fully while knowing it's temporary just captures the entire human experience", "score": 2, "is_complaint": false, "complaint_keywords": []}]}, {"title": "I read The Little Prince and enjoyed it but not sure why.", "url": "https://reddit.com/r/books/comments/1prdlrz/i_read_the_little_prince_and_enjoyed_it_but_not/", "score": 57, "num_comments": 20, "content_preview": "I’ve been asking for recommendations for books that are a bit philosophical but also in simple language and short enough so I don't get bored because I’ve been really struggling emotionally with mental health issues recently and find it hard to stay focused.\n\nI was first recommended The Boy, the Mol", "pdf_keywords": ["book"], "is_complaint": false, "complaint_keywords": [], "comments": [{"body": "I think it’s because it’s written more masterfully, and you actually have to work for it. Saint-Exupéry doesn’t just hand moral lessons to you; he mixes them subtly into the story. The characters themselves are layered and complex. Take the narrator and the Little Prince: the narrator is an adult, y", "score": 60, "is_complaint": false, "complaint_keywords": []}, {"body": "I'm so glad you enjoyed The Little Prince! (And gave The Alchemist a try)\n\nI think The Little Prince is good because it gives something different to its reader depending on their age: to young readers, it gives them adventure, a look at the follies of the grown-up world, but allows the Prince to gro", "score": 13, "is_complaint": true, "complaint_keywords": ["crash"]}, {"body": "Think outside the box. That you enjoyed the book is not a problem. That you don't know why is not a problem. That you're preoccupied with knowing why might be. Just let go into the experience. Embrace the mystery. Don't be like those adults from those planets, you know? ;p", "score": 3, "is_complaint": false, "complaint_keywords": []}, {"body": "I don’t think the book is simplistic, it just seems that way.  I think it’s actually got a lot of depth. I feel like I’ve gotten something different out of it every time I’ve read it.", "score": 3, "is_complaint": false, "complaint_keywords": []}, {"body": "This is why we read. Something in a good book is imparted beyond the story, but from the writing itself, with something of you in the mix. That's the magic.", "score": 2, "is_complaint": false, "complaint_keywords": []}, {"body": "I recommend that you read \\*The Life of Pi\\*. There is much it shares in terms of theme with \\*The Little Prince\\*. And I think that will help clarify your understanding of why you like the Saint-Exupery book.", "score": 1, "is_complaint": false, "complaint_keywords": []}, {"body": "Please watch The Little Prince movie. It captures the book so well and then some!", "score": 1, "is_complaint": false, "complaint_keywords": []}, {"body": "(Psst. You enjoyed it because it's a good book)", "score": 1, "is_complaint": false, "complaint_keywords": []}, {"body": "He was a pilot, yes. My favourite book by him is Vol de nuit (Night Flight), which draws on his experience of flying for an airmail company in South America.", "score": 6, "is_complaint": false, "complaint_keywords": []}, {"body": ">While for the pilot, while also learning patience, and seeing the world in a new light again, there's melancholy, of seeing that young little boy come into his life, yet being ripped away, without being able to do anything about it. I think I read that the author himself was a pilot, in the early d", "score": 3, "is_complaint": true, "complaint_keywords": ["crash"]}]}, {"title": "Anyone read What We Do Is Secret by Kief Hillsbery?", "url": "https://reddit.com/r/books/comments/1prxl7z/anyone_read_what_we_do_is_secret_by_kief_hillsbery/", "score": 3, "num_comments": 2, "content_preview": "I read this book for the first time around 13 and it's still one of my all-time favourite books but I don't know that many people who've read it, and even less who actually liked it.\n\nThe whole book is told in this very lyrical word-play with lots of rhyming and rhythmic meter. Because of this, it's", "pdf_keywords": ["book"], "is_complaint": false, "complaint_keywords": [], "comments": []}, {"title": "What book do you gift yourself for the holidays and why?", "url": "https://reddit.com/r/books/comments/1prf4qi/what_book_do_you_gift_yourself_for_the_holidays/", "score": 23, "num_comments": 44, "content_preview": "The holidays feel like a different reading season for many people. The pace of life slows down, evenings feel longer, and the kind of book that feels right often changes. Instead of reading to finish something or learn something, some of us read simply to sit with a story.\n\nFor me, the book I gift m", "pdf_keywords": ["book"], "is_complaint": false, "complaint_keywords": [], "comments": [{"body": "Just started rereading East of Eden which will pass the time till new year. I haven’t read it since 2008 so it feels like a new book again.", "score": 21, "is_complaint": false, "complaint_keywords": []}, {"body": "A Dictionary of Modern American Usage.  I’ve always wanted one as a bathroom book, and this year it’s happening.", "score": 4, "is_complaint": false, "complaint_keywords": []}, {"body": "I don't change my reading habits over Christmas, though sometimes I feel like I should. I like the idea of selecting an Agatha Christie novel to read at Christmas. Or something wintery or cozy. Maybe I'll try it this year, but since Christmas is only a few days away, I think I'll be in the middle of", "score": 2, "is_complaint": false, "complaint_keywords": []}, {"body": "Taking a moment to be pedantic here: how do you gift yourself a book? Wouldn't this mean anything you buy for yourself is a gift to yourself? \n\n\nAnyway, I'm reading A Christmas Carol and other Christmas Stories by Dickens for the first time this year. ", "score": 2, "is_complaint": false, "complaint_keywords": []}, {"body": "I usually get myself a nice edition of a book, either one that I love or one that I know I’ll love. \n\nThis year I bought myself a leatherbound edition of Le Morte D’Arthur, which I plan on slowly working my way through throughout 2026.", "score": 2, "is_complaint": false, "complaint_keywords": []}, {"body": "I bought myself Cat’s Cradle because I somehow still haven’t read that book despite loving Slaughterhouse Five.", "score": 1, "is_complaint": false, "complaint_keywords": []}, {"body": "That is a great choice. Enough time has passed that it really does feel new again. It is the kind of book that hits differently at different stages of life.", "score": 4, "is_complaint": false, "complaint_keywords": []}, {"body": "So beautiful.  My favorite thing about this book is that you could set it down for a week and come back to it and it doesn’t matter if you can’t remember exactly the plot, the writing is so beautiful it pulls you back in.", "score": 2, "is_complaint": false, "complaint_keywords": []}]}, {"title": "Sterling Watson - Night Letter", "url": "https://reddit.com/r/books/comments/1prteff/sterling_watson_night_letter/", "score": 2, "num_comments": 1, "content_preview": "I had heard a random interview with Sterling Watson (maybe on NPR?) and he was taking about a novel that takes place in north florida (my neck of the woods) that served a a sequel to a book he wrote 20 years ago. \n\n  \nI happened to see the older book, Sweet Dream Baby (2002) in a used bookstore and ", "pdf_keywords": ["book"], "is_complaint": false, "complaint_keywords": [], "comments": [{"body": "I know that delightful, stubborn aftertaste of a book you can't stop thinking about, and your description makes that Florida dusk feel almost present. \n\n  \nTry reading one chapter each night and write a single sentence about what the protagonist wants, like a margin note. Which scene has stayed with", "score": 1, "is_complaint": false, "complaint_keywords": []}]}, {"title": "“The Lies We Inherit” by Angela R Key was a boon I couldn’t bring myself to put down until it was done.", "url": "https://reddit.com/r/books/comments/1pro1iw/the_lies_we_inherit_by_angela_r_key_was_a_boon_i/", "score": 3, "num_comments": 2, "content_preview": "Mental illness runs in both sides of the family, so is varying degrees of gaslighting and narcissism. Finding a book where a young woman was convinced by family her memory was unreliable and she needed to stop pushing for the truth drew me in instantly as a result. I just had to figure out if her fa", "pdf_keywords": ["book"], "is_complaint": false, "complaint_keywords": [], "comments": []}], "error": null}]}];
+
+        function showReport(index) {
+            const report = reports[index];
+            if (!report) {
+                document.getElementById('reportContent').innerHTML = '<div class="empty-state"><h3>No Reports Yet</h3><p>Run the PDF tracker to generate reports.</p></div>';
+                return;
+            }
+
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${report.stats.total_posts_scanned}</div>
+                        <div class="stat-label">Posts Scanned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value ${report.stats.pdf_posts_found > 0 ? 'success' : 'zero'}">${report.stats.pdf_posts_found}</div>
+                        <div class="stat-label">PDF Posts Found</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value ${report.stats.complaints_found > 0 ? 'warning' : 'zero'}">${report.stats.complaints_found}</div>
+                        <div class="stat-label">Complaints</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value zero">${report.viral_threshold}+</div>
+                        <div class="stat-label">Upvote Threshold</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Report: ${report.date} - Generated: ${report.generated}</div>
+                    <div class="card-body">
+                        <div class="monitored-list">
+                            ${report.subreddits_monitored.map(s => `<span class="monitored-badge">r/${s}</span>`).join('')}
+                        </div>
+            `;
+
+            for (const sub of report.subreddit_results) {
+                html += `
+                    <div class="subreddit-section">
+                        <div class="subreddit-header">
+                            r/${sub.name}
+                            <span class="badge">${sub.posts.length} posts</span>
+                        </div>
+                `;
+
+                if (sub.error) {
+                    html += `<div class="error-message">Error: ${sub.error}</div>`;
+                } else if (sub.posts.length === 0) {
+                    html += `<div class="no-posts">No PDF-related viral posts in the last 24 hours.</div>`;
+                } else {
+                    for (const post of sub.posts) {
+                        html += `
+                            <div class="post-card ${post.is_complaint ? 'complaint' : ''}">
+                                <div class="post-title"><a href="${post.url}" target="_blank">${post.title}</a></div>
+                                <div class="post-meta">
+                                    <span>${post.score} upvotes</span>
+                                    <span>${post.num_comments} comments</span>
+                                </div>
+                        `;
+
+                        if (post.pdf_keywords && post.pdf_keywords.length > 0) {
+                            html += `<div class="keywords-list">${post.pdf_keywords.map(k => `<span class="keyword-badge">${k}</span>`).join('')}</div>`;
+                        }
+
+                        if (post.is_complaint) {
+                            html += `<div class="complaint-alert">COMPLAINT DETECTED - Keywords: ${post.complaint_keywords.join(', ')}</div>`;
+                        }
+
+                        if (post.content_preview) {
+                            html += `<div class="post-preview">${post.content_preview}...</div>`;
+                        }
+
+                        if (post.comments && post.comments.length > 0) {
+                            html += `
+                                <div class="comments-section">
+                                    <div class="comments-title">Relevant Comments (${post.comments.length})</div>
+                            `;
+                            for (const comment of post.comments.slice(0, 5)) {
+                                html += `
+                                    <div class="comment-item ${comment.is_complaint ? 'complaint' : ''}">
+                                        <div class="comment-score">Score: ${comment.score}</div>
+                                        <div>${comment.body}...</div>
+                                        ${comment.is_complaint ? `<div style="margin-top:6px;color:var(--warning);font-size:0.8rem;">Complaint: ${comment.complaint_keywords.join(', ')}</div>` : ''}
+                                    </div>
+                                `;
+                            }
+                            html += `</div>`;
+                        }
+
+                        html += `</div>`;
+                    }
+                }
+
+                html += `</div>`;
+            }
+
+            html += `</div></div>`;
+            document.getElementById('reportContent').innerHTML = html;
+        }
+
+        // Show first report on load
+        showReport(0);
+    </script>
+</body>
+</html>
