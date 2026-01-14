@@ -4,25 +4,26 @@
  * Bundle Size Monitoring Script
  *
  * Checks Next.js bundle sizes after build and alerts if they exceed thresholds.
- * Run this script after `npm run build` to verify bundle sizes.
  *
  * Usage:
  *   node scripts/check-bundle-size.js
+ *   node scripts/check-bundle-size.js --all
  *
  * Exit codes:
  *   0 - All bundle sizes are within limits
- *   1 - One or more bundles exceed size limits
+ *   1 - One or more bundles exceed size limits (or assets missing)
  */
 
 const fs = require('fs')
 const path = require('path')
+const zlib = require('zlib')
 
-// Bundle size limits (in KB)
+// Bundle size limits (in kB (decimal), gzipped) to match Next.js build output.
 const LIMITS = {
-  homepage: 350,        // Homepage first load JS
-  framework: 200,       // React/Next.js framework bundle
-  adminPages: 280,      // Admin pages first load
-  otherPages: 300,      // All other pages first load
+  homepage: 350, // Homepage first load JS
+  framework: 200, // React/Next.js framework bundle
+  adminPages: 280, // Admin pages first load
+  otherPages: 300, // All other pages first load
 }
 
 // ANSI color codes for terminal output
@@ -35,106 +36,198 @@ const colors = {
   cyan: '\x1b[36m',
 }
 
-function parseNextBuildStats() {
-  const buildManifest = path.join(process.cwd(), '.next/build-manifest.json')
-  const appBuildManifest = path.join(process.cwd(), '.next/app-build-manifest.json')
+const nextDir = path.join(process.cwd(), '.next')
+const sizeCacheKB = new Map()
 
-  if (!fs.existsSync(buildManifest)) {
-    console.error(`${colors.red}Error: Build manifest not found. Run 'npm run build' first.${colors.reset}`)
-    process.exit(1)
-  }
+let hasFailures = false
 
-  const manifest = JSON.parse(fs.readFileSync(buildManifest, 'utf8'))
-
-  console.log(`\n${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`)
-  console.log(`${colors.cyan}          PDFLAB BUNDLE SIZE REPORT${colors.reset}`)
-  console.log(`${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`)
-
-  // Get framework chunk size
-  const frameworkChunks = manifest.pages['/_app'] || []
-  const frameworkSize = calculateChunkSize(frameworkChunks)
-
-  console.log(`${colors.blue}Framework Bundle:${colors.reset}`)
-  console.log(`  Size: ${formatSize(frameworkSize)}`)
-  checkLimit('framework', frameworkSize, LIMITS.framework)
-  console.log('')
-
-  // Check app route sizes
-  if (fs.existsSync(appBuildManifest)) {
-    checkAppRoutes()
-  }
-
-  console.log(`${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`)
+function readJson(jsonPath) {
+  return JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
 }
 
-function checkAppRoutes() {
-  const nextMetaPath = path.join(process.cwd(), '.next/build-manifest.json')
-  const buildMetaDir = path.join(process.cwd(), '.next/server/app')
+function resolveNextAssetPath(assetPath) {
+  if (typeof assetPath !== 'string' || assetPath.length === 0) return null
 
-  if (!fs.existsSync(buildMetaDir)) {
-    return
-  }
+  let normalized = assetPath
+  if (normalized.startsWith('/_next/')) normalized = normalized.slice('/_next/'.length)
+  if (normalized.startsWith('/')) normalized = normalized.slice(1)
 
-  console.log(`${colors.blue}Page Routes:${colors.reset}\n`)
-
-  // Estimate from .next output (this is approximate)
-  const routes = [
-    { path: '/', name: 'Homepage', limit: LIMITS.homepage },
-    { path: '/admin', name: 'Admin Dashboard', limit: LIMITS.adminPages },
-    { path: '/dashboard', name: 'User Dashboard', limit: LIMITS.otherPages },
-    { path: '/pricing', name: 'Pricing Page', limit: LIMITS.otherPages },
-  ]
-
-  routes.forEach(route => {
-    // This is a simplified check - real implementation would parse Next.js metadata
-    const estimatedSize = 296 // KB - from build output
-    console.log(`  ${route.name} (${route.path}):`)
-    console.log(`    Estimated: ${formatSize(estimatedSize)}`)
-    checkLimit(route.name, estimatedSize, route.limit)
-    console.log('')
-  })
+  return path.join(nextDir, normalized)
 }
 
-function calculateChunkSize(chunks) {
-  // This would need actual file size calculation
-  // For now, return a placeholder based on build output
-  return 167 // KB - from build output
+function gzipSizeKBForAsset(assetPath) {
+  const resolvedPath = resolveNextAssetPath(assetPath)
+  if (!resolvedPath) return 0
+
+  if (sizeCacheKB.has(resolvedPath)) return sizeCacheKB.get(resolvedPath)
+
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Missing build asset: ${assetPath}`)
+  }
+
+  const bytes = fs.readFileSync(resolvedPath)
+  const gzipBytes = zlib.gzipSync(bytes).length
+  const kb = gzipBytes / 1000
+
+  sizeCacheKB.set(resolvedPath, kb)
+  return kb
+}
+
+function sumGzipSizeKB(assets) {
+  return assets.reduce((total, asset) => total + gzipSizeKBForAsset(asset), 0)
+}
+
+function appRouteToManifestKey(routePath) {
+  if (routePath === '/') return '/page'
+  if (routePath.endsWith('/')) return `${routePath.slice(0, -1)}/page`
+  return `${routePath}/page`
 }
 
 function formatSize(kb) {
-  if (kb < 1) {
-    return `${Math.round(kb * 1024)} B`
-  }
-  return `${kb.toFixed(2)} KB`
+  if (kb < 1) return `${Math.round(kb * 1000)} B`
+  return `${kb.toFixed(0)} kB`
 }
 
-function checkLimit(name, size, limit) {
-  const percentage = (size / limit) * 100
+function checkLimit(label, sizeKB, limitKB) {
+  const percentage = (sizeKB / limitKB) * 100
 
-  if (size <= limit) {
-    console.log(`  ${colors.green}✓ PASS${colors.reset} - ${percentage.toFixed(1)}% of limit (${limit} KB)`)
-    return true
-  } else if (size <= limit * 1.1) {
-    console.log(`  ${colors.yellow}⚠ WARNING${colors.reset} - ${percentage.toFixed(1)}% of limit (${limit} KB)`)
-    return true
-  } else {
-    console.log(`  ${colors.red}✗ FAIL${colors.reset} - ${percentage.toFixed(1)}% of limit (${limit} KB)`)
-    return false
+  if (sizeKB <= limitKB) {
+    console.log(
+      `    ${colors.green}PASS${colors.reset} - ${percentage.toFixed(1)}% of limit (${limitKB} kB)`
+    )
+    return 'pass'
+  }
+
+  if (sizeKB <= limitKB * 1.1) {
+    console.log(
+      `    ${colors.yellow}WARN${colors.reset} - ${percentage.toFixed(1)}% of limit (${limitKB} kB)`
+    )
+    return 'warn'
+  }
+
+  console.log(
+    `    ${colors.red}FAIL${colors.reset} - ${percentage.toFixed(1)}% of limit (${limitKB} kB)`
+  )
+  hasFailures = true
+  return 'fail'
+}
+
+function printHeader() {
+  const line = '='.repeat(60)
+  console.log(`\n${colors.cyan}${line}${colors.reset}`)
+  console.log(`${colors.cyan}          PDFLAB BUNDLE SIZE REPORT${colors.reset}`)
+  console.log(`${colors.cyan}${line}${colors.reset}\n`)
+}
+
+function findFirst(assets, predicate) {
+  for (const asset of assets) {
+    if (predicate(asset)) return asset
+  }
+  return null
+}
+
+function reportFrameworkSize(appManifest) {
+  const homepageAssets = appManifest?.pages?.['/page'] || []
+  const frameworkAsset = findFirst(homepageAssets, (asset) =>
+    asset.includes('static/chunks/framework-')
+  )
+
+  if (!frameworkAsset) {
+    console.log(
+      `${colors.yellow}Warning:${colors.reset} framework chunk not found in app manifest.\n`
+    )
+    hasFailures = true
+    return
+  }
+
+  const frameworkSizeKB = gzipSizeKBForAsset(frameworkAsset)
+  console.log(`${colors.blue}Framework Bundle:${colors.reset}`)
+  console.log(`  Size: ${formatSize(frameworkSizeKB)}`)
+  checkLimit('framework', frameworkSizeKB, LIMITS.framework)
+  console.log('')
+}
+
+function reportRouteSize(appManifest, routePath, displayName, limitKB) {
+  const key = appRouteToManifestKey(routePath)
+  const assets = appManifest?.pages?.[key]
+
+  if (!assets) {
+    console.log(
+      `${colors.yellow}Warning:${colors.reset} Route not found in app manifest: ${routePath} (${key})\n`
+    )
+    hasFailures = true
+    return
+  }
+
+  const jsAssets = assets.filter((asset) => asset.endsWith('.js'))
+  const routeSizeKB = sumGzipSizeKB(jsAssets)
+
+  console.log(`  ${displayName} (${routePath}):`)
+  console.log(`    First Load JS: ${formatSize(routeSizeKB)}`)
+  checkLimit(displayName, routeSizeKB, limitKB)
+  console.log('')
+}
+
+function reportAllRoutes(appManifest) {
+  const pages = appManifest?.pages || {}
+  const routes = Object.entries(pages)
+    .filter(([key]) => key === '/page' || key.endsWith('/page'))
+    .map(([key, assets]) => {
+      const routePath = key === '/page' ? '/' : key.replace(/\/page$/, '')
+      const jsAssets = (assets || []).filter((asset) => asset.endsWith('.js'))
+      const kb = sumGzipSizeKB(jsAssets)
+      return { routePath, kb }
+    })
+    .sort((a, b) => b.kb - a.kb)
+
+  console.log(`${colors.blue}All Routes (sorted):${colors.reset}`)
+  for (const route of routes) {
+    console.log(`  ${route.routePath.padEnd(30)} ${formatSize(route.kb)}`)
+  }
+  console.log('')
+}
+
+function parseNextBuildStats() {
+  const args = new Set(process.argv.slice(2))
+  const appBuildManifestPath = path.join(nextDir, 'app-build-manifest.json')
+
+  if (!fs.existsSync(appBuildManifestPath)) {
+    console.error(
+      `${colors.red}Error:${colors.reset} '${appBuildManifestPath}' not found. Run 'npm run build' first.`
+    )
+    process.exit(1)
+  }
+
+  const appManifest = readJson(appBuildManifestPath)
+
+  printHeader()
+  reportFrameworkSize(appManifest)
+
+  console.log(`${colors.blue}Page Routes:${colors.reset}\n`)
+  reportRouteSize(appManifest, '/', 'Homepage', LIMITS.homepage)
+  reportRouteSize(appManifest, '/admin', 'Admin Dashboard', LIMITS.adminPages)
+  reportRouteSize(appManifest, '/dashboard', 'User Dashboard', LIMITS.otherPages)
+  reportRouteSize(appManifest, '/pricing', 'Pricing Page', LIMITS.otherPages)
+
+  if (args.has('--all')) {
+    reportAllRoutes(appManifest)
   }
 }
 
-// Main execution
 try {
   parseNextBuildStats()
 
-  console.log(`${colors.green}Bundle size check completed successfully!${colors.reset}\n`)
-  console.log(`${colors.cyan}Recommendations:${colors.reset}`)
-  console.log(`  • Keep homepage under ${LIMITS.homepage} KB`)
-  console.log(`  • Use dynamic imports for heavy components`)
-  console.log(`  • Monitor bundle size on each build`)
-  console.log(`  • Run 'ANALYZE=true npm run build' for detailed analysis\n`)
+  const summaryColor = hasFailures ? colors.red : colors.green
+  const summaryText = hasFailures ? 'Bundle size check failed.' : 'Bundle size check passed.'
 
-  process.exit(0)
+  console.log(`${summaryColor}${summaryText}${colors.reset}\n`)
+  console.log(`${colors.cyan}Recommendations:${colors.reset}`)
+  console.log(`  - Keep homepage under ${LIMITS.homepage} kB (gzip)`)
+  console.log('  - Use dynamic imports for heavy components')
+  console.log('  - Monitor bundle size on each build')
+  console.log("  - Run 'npm run build:analyze' for detailed analysis\n")
+
+  process.exit(hasFailures ? 1 : 0)
 } catch (error) {
   console.error(`${colors.red}Error checking bundle sizes:${colors.reset}`, error.message)
   process.exit(1)

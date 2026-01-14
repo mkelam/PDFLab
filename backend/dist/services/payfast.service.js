@@ -83,16 +83,19 @@ const PAYFAST_PARAM_ORDER = [
  */
 function generateSignature(data, passphrase = '') {
     // Create parameter string using PayFast's required parameter order
+    // IMPORTANT: PayFast requires URL-encoded values for signature generation
+    // Use encodeURIComponent and replace %20 with + (PayFast uses + for spaces)
     let paramString = '';
     for (const key of PAYFAST_PARAM_ORDER) {
         // Skip signature field and empty/null/undefined values
         if (key !== 'signature' && data[key] !== '' && data[key] !== null && data[key] !== undefined) {
+            // URL encode the value and replace %20 with + for PayFast compatibility
             paramString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`;
         }
     }
     // Remove last ampersand
     paramString = paramString.slice(0, -1);
-    // Add passphrase if provided (only for sandbox mode)
+    // Add passphrase if configured (required for both sandbox and production if set in PayFast dashboard)
     if (passphrase) {
         paramString += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`;
     }

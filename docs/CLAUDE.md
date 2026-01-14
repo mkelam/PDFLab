@@ -852,6 +852,128 @@ curl -s http://localhost:3006/health
 # Should return: {"status":"OK","checks":{"database":"OK","redis":"OK"}}
 ```
 
+### 15. Docker Container Crashes with Empty Logs
+
+**Problem**: Container keeps restarting but `docker logs` returns empty output. Health check shows ECONNREFUSED.
+
+**Symptoms**:
+- Container status shows "Up X seconds" (keeps restarting)
+- `docker logs container-name` returns nothing
+- Health check output shows `ECONNREFUSED` errors
+- Container exits with code 1
+
+**Root Cause**: Container is on the **wrong Docker network** and cannot reach MySQL/Redis. The app crashes immediately on startup before any logs are written because database connection fails.
+
+**Diagnosis Steps**:
+```bash
+# 1. Check which network MySQL/Redis are on
+docker inspect mysql-container --format '{{json .NetworkSettings.Networks}}' | python3 -m json.tool
+# Look for the network name (e.g., "pdflab_pdflab-network")
+
+# 2. Check which network the crashing container is on
+docker inspect backend-container --format '{{json .NetworkSettings.Networks}}' | python3 -m json.tool
+
+# 3. List all networks and their containers
+docker network ls
+docker network inspect <network-name>
+```
+
+**Common Network Naming Issues**:
+- Docker Compose creates networks with prefix: `projectname_networkname`
+- Manual `docker run` might use different network name
+- Multiple similar networks can exist (e.g., `pdflab-network` vs `pdflab_pdflab-network`)
+
+**Fix**:
+```bash
+# Stop and remove the container on wrong network
+docker stop container-name
+docker rm container-name
+
+# Start on the CORRECT network (match MySQL/Redis network)
+docker run -d --name container-name \
+  --network pdflab_pdflab-network \  # <-- Use correct network!
+  -p 3006:3006 \
+  --env-file /path/to/.env.production \
+  image-name:tag
+```
+
+**Prevention**:
+- Always verify network before starting containers
+- Document the correct network name in deployment scripts
+- Use `docker-compose` to ensure consistent networking
+
+**Quick Network Diagnostic**:
+```bash
+# Find which network has MySQL
+docker ps --format '{{.Names}}' | xargs -I {} docker inspect {} --format '{{.Name}}: {{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' | grep mysql
+```
+
+### 16. PayFast ZAR Currency Requirement
+
+**Problem**: PayFast rejects payments with error "subscription recurring amount is outside the limits".
+
+**Root Cause**: PayFast operates in **South African Rand (ZAR)**, not USD. Amounts like $4.55 or $13.50 USD are below PayFast's minimum limits when interpreted as ZAR.
+
+**Solution**: Store both USD and ZAR prices, send ZAR to PayFast:
+```typescript
+const PRICING_PLANS = {
+  starter: {
+    priceUSD: 4.55,    // Display price
+    priceZAR: 82,      // PayFast price (~R18/$1)
+  },
+  pro: {
+    priceUSD: 13.50,
+    priceZAR: 243,
+  }
+}
+
+// In payment initialization
+const paymentData = payfastService.createSubscriptionPaymentData({
+  planPrice: plan.priceZAR,  // Send ZAR to PayFast
+})
+```
+
+**PayFast Limits**:
+- Minimum subscription: ~R50 ZAR
+- Always use ZAR for amount fields
+
+### 17. PayFast Signature Generation
+
+**Problem**: "Generated signature does not match submitted signature" error.
+
+**Two Common Causes**:
+
+1. **Wrong Passphrase**: Backend passphrase must EXACTLY match PayFast dashboard (Settings > Security > Passphrase)
+
+2. **Missing URL Encoding**: PayFast REQUIRES URL-encoded values for signature generation
+
+**Correct Signature Generation**:
+```typescript
+export function generateSignature(data: Record<string, any>, passphrase: string): string {
+  let paramString = ''
+  for (const key of PAYFAST_PARAM_ORDER) {
+    if (data[key] !== undefined && data[key] !== null && data[key] !== '') {
+      // MUST URL-encode and replace %20 with +
+      paramString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`
+    }
+  }
+  paramString = paramString.slice(0, -1)
+  if (passphrase) {
+    paramString += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`
+  }
+  return crypto.createHash('md5').update(paramString).digest('hex').toLowerCase()
+}
+```
+
+**Verification**:
+```bash
+# Test signature generation on server
+docker exec backend-container node -e "
+  const crypto = require('crypto');
+  // ... generate signature and compare with PayFast response
+"
+```
+
 ---
 
 ## CRITICAL DEVELOPMENT PRACTICE
@@ -891,9 +1013,9 @@ curl -s https://pdflab.pro/api/endpoint-name
 
 ---
 
-**Last Updated**: 2025-12-14
+**Last Updated**: 2025-12-15
 **Project Status**: Production (Phase 2 In Progress)
-**Current Version**: 1.4.0 (Founder's Edition)
+**Current Version**: 1.4.1 (Founder's Edition - ZAR Pricing)
 **Production URL**: https://pdflab.pro
 **Phase 1 Report**: See [PHASE_1_IMPLEMENTATION_COMPLETE.md](PHASE_1_IMPLEMENTATION_COMPLETE.md)
 **Comprehensive Review**: See [COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md](COMPREHENSIVE_CODEBASE_REVIEW_2025-11-12.md)

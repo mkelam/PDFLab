@@ -64,56 +64,60 @@ if (process.env.SENTRY_DSN) {
                 return null;
             }
             return event;
-        },
+        }
     });
     logger_1.default.info('Sentry error tracking initialized');
 }
 else {
     logger_1.default.warn('Sentry DSN not configured - error tracking disabled');
 }
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const helmet_1 = __importDefault(require("helmet"));
 const compression_1 = __importDefault(require("compression"));
-const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const path_1 = __importDefault(require("path"));
+const cors_1 = __importDefault(require("cors"));
 const ejs_1 = __importDefault(require("ejs"));
+const express_1 = __importDefault(require("express"));
+const helmet_1 = __importDefault(require("helmet"));
+const morgan_1 = __importDefault(require("morgan"));
+const path_1 = __importDefault(require("path"));
 const database_1 = require("./config/database");
 const redis_1 = require("./config/redis");
-const ratelimit_middleware_1 = require("./middleware/ratelimit.middleware");
 const guest_middleware_1 = require("./middleware/guest.middleware");
-const request_id_middleware_1 = require("./middleware/request-id.middleware");
 const http_logger_middleware_1 = require("./middleware/http-logger.middleware");
+const ratelimit_middleware_1 = require("./middleware/ratelimit.middleware");
+const request_id_middleware_1 = require("./middleware/request-id.middleware");
 // Import models to ensure they're registered with Sequelize
 require("./models/AdminAuditLog");
 require("./models/SystemHealthLog");
 // Import routes
-const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
+const analytics_admin_routes_1 = __importDefault(require("./routes/analytics.admin.routes"));
+const analytics_routes_1 = __importDefault(require("./routes/analytics.routes"));
+const audit_admin_routes_1 = __importDefault(require("./routes/audit.admin.routes"));
 const auth_google_routes_1 = __importDefault(require("./routes/auth.google.routes"));
-const conversion_routes_1 = __importDefault(require("./routes/conversion.routes"));
+const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const batch_routes_1 = __importDefault(require("./routes/batch.routes"));
-const payfast_routes_1 = __importDefault(require("./routes/payfast.routes"));
-const paygenius_routes_1 = __importDefault(require("./routes/paygenius.routes"));
 const beta_routes_1 = __importDefault(require("./routes/beta.routes"));
+const conversion_admin_routes_1 = __importDefault(require("./routes/conversion.admin.routes"));
+const conversion_routes_1 = __importDefault(require("./routes/conversion.routes"));
 const feedback_routes_1 = __importDefault(require("./routes/feedback.routes"));
 const onboarding_routes_1 = __importDefault(require("./routes/onboarding.routes"));
-const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
-const conversion_admin_routes_1 = __importDefault(require("./routes/conversion.admin.routes"));
-const payment_admin_routes_1 = __importDefault(require("./routes/payment.admin.routes"));
-const system_admin_routes_1 = __importDefault(require("./routes/system.admin.routes"));
-const system_circuit_breaker_routes_1 = __importDefault(require("./routes/system.circuit-breaker.routes"));
-const analytics_admin_routes_1 = __importDefault(require("./routes/analytics.admin.routes"));
-const audit_admin_routes_1 = __importDefault(require("./routes/audit.admin.routes"));
-const analytics_routes_1 = __importDefault(require("./routes/analytics.routes"));
-const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
-const test_routes_1 = __importDefault(require("./routes/test.routes"));
 const partner_routes_1 = __importDefault(require("./routes/partner.routes"));
 const partnerApplication_routes_1 = __importDefault(require("./routes/partnerApplication.routes"));
+const payfast_routes_1 = __importDefault(require("./routes/payfast.routes"));
+const paygenius_routes_1 = __importDefault(require("./routes/paygenius.routes"));
+const payment_admin_routes_1 = __importDefault(require("./routes/payment.admin.routes"));
+const paypal_routes_1 = __importDefault(require("./routes/paypal.routes"));
+const profile_routes_1 = __importDefault(require("./routes/profile.routes"));
+const system_admin_routes_1 = __importDefault(require("./routes/system.admin.routes"));
+const system_circuit_breaker_routes_1 = __importDefault(require("./routes/system.circuit-breaker.routes"));
+const test_routes_1 = __importDefault(require("./routes/test.routes"));
+// PDF Tracker removed - now standalone app
+// import pdfTrackerAdminRoutes from './routes/pdf-tracker.admin.routes'
 // Import attribution middleware
 const attribution_middleware_1 = require("./middleware/attribution.middleware");
 // Import metrics middleware
 const metrics_middleware_1 = require("./middleware/metrics.middleware");
+const pdf_editor_routes_1 = __importDefault(require("./routes/pdf.editor.routes"));
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3001');
 // Trust proxy (required for rate limiting behind Nginx)
@@ -239,7 +243,8 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api', auth_google_routes_1.default); // Google OAuth routes (/api/auth/google/*)
 app.use('/api/batch', batch_routes_1.default);
 app.use('/api/payfast', payfast_routes_1.default); // Legacy PayFast routes (for existing subscriptions)
-app.use('/api/paygenius', paygenius_routes_1.default); // New PayGenius payment routes
+app.use('/api/paygenius', paygenius_routes_1.default); // PayGenius payment routes
+app.use('/api/paypal', paypal_routes_1.default); // PayPal payment routes
 app.use('/api/beta', beta_routes_1.default);
 app.use('/api', feedback_routes_1.default);
 app.use('/api/onboarding', onboarding_routes_1.default);
@@ -254,7 +259,10 @@ app.use('/api/admin/system', system_admin_routes_1.default);
 app.use('/api/admin/system', system_circuit_breaker_routes_1.default);
 app.use('/api/admin/analytics', analytics_admin_routes_1.default);
 app.use('/api/admin/audit-logs', audit_admin_routes_1.default);
+// PDF Tracker removed - now standalone app
+// app.use('/api/admin', pdfTrackerAdminRoutes)
 app.use('/api', conversion_routes_1.default);
+app.use('/api', pdf_editor_routes_1.default);
 // Test routes (only in development/staging - NOT production)
 if (process.env.NODE_ENV !== 'production') {
     app.use('/api', test_routes_1.default);

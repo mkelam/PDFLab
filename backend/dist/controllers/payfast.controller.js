@@ -21,17 +21,19 @@ const renderWithLayout = async (view, data = {}) => {
     const body = await ejs_1.default.renderFile(viewPath, data);
     return ejs_1.default.renderFile(layoutPath, { ...data, body });
 };
-// Pricing plans configuration
-// PayFast supports multi-currency via dashboard settings (Settings > Multi-currency)
-// Once enabled, PayFast automatically handles currency conversion and display
+// Pricing plans configuration - Founder's Edition Pricing
+// PayFast operates in ZAR (South African Rand) - prices converted from USD at ~R18/$1
+// USD prices shown for reference, ZAR prices used for PayFast transactions
 const PRICING_PLANS = {
     free: {
         name: 'Free',
-        price: 0, // $0/month USD
-        conversions: 3,
+        priceUSD: 0, // $0/month USD
+        priceZAR: 0, // R0/month ZAR
+        originalPriceUSD: 0,
+        conversions: 10, // 10 conversions per month
         maxFileSize: 10485760, // 10MB
         features: {
-            conversionsPerMonth: 3,
+            conversionsPerMonth: 10,
             maxFileSize: 10485760,
             ocrOverlayAccess: false,
             advancedFeatures: false,
@@ -41,7 +43,9 @@ const PRICING_PLANS = {
     },
     starter: {
         name: 'Starter',
-        price: 9.99, // $9.99/month USD
+        priceUSD: 4.55, // Founder's Edition: $4.55/month USD (was $9.99)
+        priceZAR: 82, // R82/month ZAR (~$4.55 at R18/$1)
+        originalPriceUSD: 9.99,
         conversions: 100,
         maxFileSize: 26214400, // 25MB
         features: {
@@ -55,7 +59,9 @@ const PRICING_PLANS = {
     },
     pro: {
         name: 'Pro',
-        price: 29.99, // $29.99/month USD
+        priceUSD: 13.50, // Founder's Edition: $13.50/month USD (was $29.99)
+        priceZAR: 243, // R243/month ZAR (~$13.50 at R18/$1)
+        originalPriceUSD: 29.99,
         conversions: -1, // Unlimited
         maxFileSize: 104857600, // 100MB
         features: {
@@ -69,7 +75,9 @@ const PRICING_PLANS = {
     },
     enterprise: {
         name: 'Enterprise',
-        price: 99.99, // $99.99/month USD
+        priceUSD: 0, // Custom pricing - contact sales
+        priceZAR: 0, // Custom pricing - contact sales
+        originalPriceUSD: 99.99,
         conversions: -1, // Unlimited
         maxFileSize: 524288000, // 500MB
         features: {
@@ -91,7 +99,8 @@ const getPlans = async (_req, res) => {
         const plans = Object.entries(PRICING_PLANS).map(([id, plan]) => ({
             id,
             name: plan.name,
-            price: plan.price, // USD price - PayFast handles multi-currency display
+            price: plan.priceUSD, // USD price for display
+            priceZAR: plan.priceZAR, // ZAR price for PayFast transactions
             currency: 'USD',
             billing_cycle: 'per month',
             description: `Perfect for ${id === 'free' ? 'getting started' : id === 'starter' ? 'individuals' : id === 'pro' ? 'professionals' : 'businesses'}`,
@@ -151,25 +160,25 @@ const initializePayment = async (req, res) => {
             });
             return;
         }
-        // Create subscription record (USD pricing)
+        // Create subscription record (store USD price for reference)
         const subscription = await subscription_model_1.Subscription.create({
             user_id: user.id,
             plan: planId,
             status: subscription_model_1.SubscriptionStatus.PENDING,
-            amount: plan.price, // USD price
+            amount: plan.priceUSD, // USD price for records
             currency: 'USD',
             started_at: new Date()
         });
-        // Create payment log (USD pricing)
+        // Create payment log (store USD price for reference, ZAR sent to PayFast)
         await payment_log_model_1.PaymentLog.create({
             user_id: user.id,
             subscription_id: subscription.id,
             transaction_id: transactionId,
             payment_type: payment_log_model_1.PaymentType.SUBSCRIPTION,
             status: payment_log_model_1.PaymentStatus.PENDING,
-            amount_gross: plan.price,
+            amount_gross: plan.priceUSD,
             amount_fee: 0,
-            amount_net: plan.price,
+            amount_net: plan.priceUSD,
             currency: 'USD',
             plan: planId,
             name_first: userName || user.name || user.email.split('@')[0],
@@ -180,17 +189,18 @@ const initializePayment = async (req, res) => {
                 plan_id: planId,
                 user_id: user.id,
                 subscription_id: subscription.id,
-                price_usd: plan.price
+                price_usd: plan.priceUSD,
+                price_zar: plan.priceZAR
             }
         });
-        // Generate PayFast payment data with subscription (USD pricing)
-        // PayFast multi-currency handles conversion automatically
+        // Generate PayFast payment data with subscription
+        // PayFast operates in ZAR - send ZAR price
         const paymentData = payfast_service_1.default.createSubscriptionPaymentData({
             userId: user.id,
             userEmail: userEmail || user.email,
             userName: userName || user.name || user.email.split('@')[0],
             planName: plan.name,
-            planPrice: plan.price, // USD price - PayFast handles conversion
+            planPrice: plan.priceZAR, // ZAR price for PayFast
             transactionId
         });
         res.json({

@@ -57,6 +57,10 @@ Object.defineProperty(exports, "UserAttribution", { enumerable: true, get: funct
 Object.defineProperty(exports, "AttributionMethod", { enumerable: true, get: function () { return UserAttribution_1.AttributionMethod; } });
 var PartnerApplication_1 = require("./PartnerApplication");
 Object.defineProperty(exports, "PartnerApplication", { enumerable: true, get: function () { return __importDefault(PartnerApplication_1).default; } });
+// PDF Tracker removed - now standalone app
+// export { default as PdfTrackerReport } from './PdfTrackerReport'
+// export type { TrackerStats, TrackerPost, TrackerComment, SubredditResult, ConfigSnapshot } from './PdfTrackerReport'
+// export { default as PdfTrackerConfig } from './PdfTrackerConfig'
 // Set up model associations
 const User_2 = require("./User");
 const subscription_model_2 = require("./subscription.model");

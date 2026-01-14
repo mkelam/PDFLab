@@ -16,8 +16,7 @@ import {
   MessageSquare,
   UsersRound,
   UserPlus,
-  LogOut,
-  Search
+  LogOut
 } from 'lucide-react'
 
 interface NavItemProps {
@@ -61,8 +60,7 @@ export function AdminNav() {
     { href: '/admin/payments', icon: <CreditCard size={20} />, label: 'Payments' },
     { href: '/admin/system', icon: <Activity size={20} />, label: 'System Health' },
     { href: '/admin/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
-    { href: '/admin/audit-logs', icon: <Shield size={20} />, label: 'Audit Logs' },
-    { href: '/admin/pdf-tracker', icon: <Search size={20} />, label: 'PDF Tracker' }
+    { href: '/admin/audit-logs', icon: <Shield size={20} />, label: 'Audit Logs' }
   ]
 
   return (

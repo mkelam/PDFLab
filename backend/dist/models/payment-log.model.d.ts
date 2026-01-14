@@ -13,7 +13,8 @@ export declare enum PaymentType {
 }
 export declare enum PaymentProvider {
     PAYFAST = "payfast",
-    PAYGENIUS = "paygenius"
+    PAYGENIUS = "paygenius",
+    PAYPAL = "paypal"
 }
 interface PaymentLogAttributes {
     id: string;
@@ -25,6 +26,8 @@ interface PaymentLogAttributes {
     itn_data?: any;
     paygenius_payment_id?: string;
     webhook_data?: any;
+    paypal_payment_id?: string;
+    paypal_order_id?: string;
     payment_type: PaymentType;
     status: PaymentStatus;
     amount_gross: number;
@@ -56,6 +59,8 @@ declare class PaymentLog extends Model<PaymentLogAttributes, PaymentLogCreationA
     itn_data?: any;
     paygenius_payment_id?: string;
     webhook_data?: any;
+    paypal_payment_id?: string;
+    paypal_order_id?: string;
     payment_type: PaymentType;
     status: PaymentStatus;
     amount_gross: number;

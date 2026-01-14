@@ -1,0 +1,1 @@
+{"version":3,"file":"008-add-paypal-fields.d.ts","sourceRoot":"","sources":["../../src/migrations/008-add-paypal-fields.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAa,MAAM,WAAW,CAAA;AAErD;;;;;GAKG;AAEH,wBAAsB,EAAE,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CA4HtE;AAED,wBAAsB,IAAI,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAqCxE"}

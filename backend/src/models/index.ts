@@ -22,10 +22,10 @@ export { PromoCode, DiscountType } from './PromoCode'
 export { UserAttribution, AttributionMethod } from './UserAttribution'
 export { default as PartnerApplication } from './PartnerApplication'
 
-// PDF Tracker
-export { default as PdfTrackerReport } from './PdfTrackerReport'
-export type { TrackerStats, TrackerPost, TrackerComment, SubredditResult, ConfigSnapshot } from './PdfTrackerReport'
-export { default as PdfTrackerConfig } from './PdfTrackerConfig'
+// PDF Tracker removed - now standalone app
+// export { default as PdfTrackerReport } from './PdfTrackerReport'
+// export type { TrackerStats, TrackerPost, TrackerComment, SubredditResult, ConfigSnapshot } from './PdfTrackerReport'
+// export { default as PdfTrackerConfig } from './PdfTrackerConfig'
 
 // Set up model associations
 import { User } from './User'

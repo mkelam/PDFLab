@@ -21,6 +21,7 @@ var PaymentProvider;
 (function (PaymentProvider) {
     PaymentProvider["PAYFAST"] = "payfast";
     PaymentProvider["PAYGENIUS"] = "paygenius";
+    PaymentProvider["PAYPAL"] = "paypal";
 })(PaymentProvider || (exports.PaymentProvider = PaymentProvider = {}));
 class PaymentLog extends sequelize_1.Model {
 }
@@ -58,7 +59,7 @@ PaymentLog.init({
         comment: 'Our internal transaction ID'
     },
     payment_provider: {
-        type: sequelize_1.DataTypes.ENUM('payfast', 'paygenius'),
+        type: sequelize_1.DataTypes.ENUM('payfast', 'paygenius', 'paypal'),
         allowNull: true,
         defaultValue: 'paygenius',
         comment: 'Payment provider used for this transaction'
@@ -72,6 +73,16 @@ PaymentLog.init({
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
         comment: 'PayGenius payment reference'
+    },
+    paypal_payment_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayPal payment or capture ID'
+    },
+    paypal_order_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayPal order ID'
     },
     payment_type: {
         type: sequelize_1.DataTypes.ENUM('subscription', 'subscription_payment', 'one_time', 'refund'),
@@ -179,6 +190,8 @@ PaymentLog.init({
         { fields: ['subscription_id'] },
         { fields: ['payfast_payment_id'] },
         { fields: ['paygenius_payment_id'] },
+        { fields: ['paypal_payment_id'] },
+        { fields: ['paypal_order_id'] },
         { fields: ['status'] },
         { fields: ['created_at'] }
     ]

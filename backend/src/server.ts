@@ -32,63 +32,64 @@ if (process.env.SENTRY_DSN) {
       }
 
       return event
-    },
+    }
   })
   logger.info('Sentry error tracking initialized')
 } else {
   logger.warn('Sentry DSN not configured - error tracking disabled')
 }
 
-import express, { Request, Response, NextFunction } from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
 import compression from 'compression'
-import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
-import path from 'path'
+import cors from 'cors'
 import ejs from 'ejs'
-import { testConnection, syncDatabase } from './config/database'
-import { connectRedis, closeQueues } from './config/redis'
-import { apiLimiter } from './middleware/ratelimit.middleware'
+import express, { NextFunction, Request, Response } from 'express'
+import helmet from 'helmet'
+import morgan from 'morgan'
+import path from 'path'
+import { testConnection } from './config/database'
+import { closeQueues, connectRedis } from './config/redis'
 import { initializeGuestSession } from './middleware/guest.middleware'
-import { requestIdMiddleware } from './middleware/request-id.middleware'
 import { httpLoggerMiddleware } from './middleware/http-logger.middleware'
+import { apiLimiter } from './middleware/ratelimit.middleware'
+import { requestIdMiddleware } from './middleware/request-id.middleware'
 
 // Import models to ensure they're registered with Sequelize
 import './models/AdminAuditLog'
 import './models/SystemHealthLog'
 
 // Import routes
-import authRoutes from './routes/auth.routes'
+import adminRoutes from './routes/admin.routes'
+import analyticsAdminRoutes from './routes/analytics.admin.routes'
+import analyticsRoutes from './routes/analytics.routes'
+import auditAdminRoutes from './routes/audit.admin.routes'
 import googleAuthRoutes from './routes/auth.google.routes'
-import conversionRoutes from './routes/conversion.routes'
+import authRoutes from './routes/auth.routes'
 import batchRoutes from './routes/batch.routes'
-import payfastRoutes from './routes/payfast.routes'
-import paygeniusRoutes from './routes/paygenius.routes'
-import paypalRoutes from './routes/paypal.routes'
 import betaRoutes from './routes/beta.routes'
+import conversionAdminRoutes from './routes/conversion.admin.routes'
+import conversionRoutes from './routes/conversion.routes'
 import feedbackRoutes from './routes/feedback.routes'
 import onboardingRoutes from './routes/onboarding.routes'
-import adminRoutes from './routes/admin.routes'
-import conversionAdminRoutes from './routes/conversion.admin.routes'
-import paymentAdminRoutes from './routes/payment.admin.routes'
-import systemAdminRoutes from './routes/system.admin.routes'
-import circuitBreakerRoutes from './routes/system.circuit-breaker.routes'
-import analyticsAdminRoutes from './routes/analytics.admin.routes'
-import auditAdminRoutes from './routes/audit.admin.routes'
-import analyticsRoutes from './routes/analytics.routes'
-import profileRoutes from './routes/profile.routes'
-import testRoutes from './routes/test.routes'
 import partnerRoutes from './routes/partner.routes'
 import partnerApplicationRoutes from './routes/partnerApplication.routes'
-import metricsRoutes from './routes/metrics.routes'
-import pdfTrackerAdminRoutes from './routes/pdf-tracker.admin.routes'
+import payfastRoutes from './routes/payfast.routes'
+import paygeniusRoutes from './routes/paygenius.routes'
+import paymentAdminRoutes from './routes/payment.admin.routes'
+import paypalRoutes from './routes/paypal.routes'
+import profileRoutes from './routes/profile.routes'
+import systemAdminRoutes from './routes/system.admin.routes'
+import circuitBreakerRoutes from './routes/system.circuit-breaker.routes'
+import testRoutes from './routes/test.routes'
+// PDF Tracker removed - now standalone app
+// import pdfTrackerAdminRoutes from './routes/pdf-tracker.admin.routes'
 
 // Import attribution middleware
 import { captureAttribution } from './middleware/attribution.middleware'
 
 // Import metrics middleware
 import { metricsMiddleware } from './middleware/metrics.middleware'
+import pdfEditorRoutes from './routes/pdf.editor.routes'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
@@ -139,11 +140,11 @@ app.use(helmet())
 // CORS configuration
 const corsOrigins = process.env['CORS_ORIGIN']?.split(',') || [
   'http://localhost:3000',
-  'http://localhost:3001',  // Partner portal local dev
+  'http://localhost:3001', // Partner portal local dev
   'http://localhost:3002',
   'https://pdflab.pro',
   'http://pdflab.pro',
-  'https://partners.pdflab.pro',  // Partner portal production
+  'https://partners.pdflab.pro', // Partner portal production
   'http://partners.pdflab.pro'
 ]
 
@@ -238,11 +239,11 @@ app.get('/health', async (req: Request, res: Response) => {
 // Metrics endpoint (before rate limiting for Prometheus scraping)app.use('/', metricsRoutes)
 // API routes
 app.use('/api/auth', authRoutes)
-app.use('/api', googleAuthRoutes)  // Google OAuth routes (/api/auth/google/*)
+app.use('/api', googleAuthRoutes) // Google OAuth routes (/api/auth/google/*)
 app.use('/api/batch', batchRoutes)
-app.use('/api/payfast', payfastRoutes)  // Legacy PayFast routes (for existing subscriptions)
-app.use('/api/paygenius', paygeniusRoutes)  // PayGenius payment routes
-app.use('/api/paypal', paypalRoutes)  // PayPal payment routes
+app.use('/api/payfast', payfastRoutes) // Legacy PayFast routes (for existing subscriptions)
+app.use('/api/paygenius', paygeniusRoutes) // PayGenius payment routes
+app.use('/api/paypal', paypalRoutes) // PayPal payment routes
 app.use('/api/beta', betaRoutes)
 app.use('/api', feedbackRoutes)
 app.use('/api/onboarding', onboardingRoutes)
@@ -257,8 +258,10 @@ app.use('/api/admin/system', systemAdminRoutes)
 app.use('/api/admin/system', circuitBreakerRoutes)
 app.use('/api/admin/analytics', analyticsAdminRoutes)
 app.use('/api/admin/audit-logs', auditAdminRoutes)
-app.use('/api/admin', pdfTrackerAdminRoutes)
+// PDF Tracker removed - now standalone app
+// app.use('/api/admin', pdfTrackerAdminRoutes)
 app.use('/api', conversionRoutes)
+app.use('/api', pdfEditorRoutes)
 
 // Test routes (only in development/staging - NOT production)
 if (process.env.NODE_ENV !== 'production') {

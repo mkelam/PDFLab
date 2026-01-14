@@ -1,263 +1,276 @@
 // Real API client connecting to PDFLab backend
 // Backend running on http://localhost:3006
 
-import { handleAPIError } from './api-error-handler'
+import { handleAPIError } from "./api-error-handler";
 import {
-  fetchWithEnhancedErrorHandling,
   parseEnhancedAPIError,
   trackErrorEvent,
-  type APIErrorResponse
-} from './enhanced-error-handler'
+  type APIErrorResponse,
+} from "./enhanced-error-handler";
 
 /**
  * Enhanced API Error that carries rich error data
  */
 export class EnhancedAPIError extends Error {
-  constructor(
-    message: string,
-    public errorResponse: APIErrorResponse
-  ) {
-    super(message)
-    this.name = 'EnhancedAPIError'
+  constructor(message: string, public errorResponse: APIErrorResponse) {
+    super(message);
+    this.name = "EnhancedAPIError";
   }
 }
 
 export interface ConversionJob {
   jobId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   progress: number;
   downloadUrl?: string;
   errorMessage?: string;
 }
 
 export interface ConversionResponse {
-  success: boolean
-  message: string
-  outputFile: string
-  originalFile?: string
-  processingTime: string
-  fileCount?: number
-  jobId?: string
-  isGuest?: boolean
+  success: boolean;
+  message: string;
+  outputFile: string;
+  originalFile?: string;
+  processingTime: string;
+  fileCount?: number;
+  jobId?: string;
+  isGuest?: boolean;
 }
 
 export interface ValidationResult {
-  valid: boolean
-  error?: string
+  valid: boolean;
+  error?: string;
 }
 
 // Get API URL from environment or default to localhost:3006
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 /**
  * Validate PDF file before upload
  */
 export function validatePDFFile(file: File): ValidationResult {
   // Check file type
-  if (file.type !== 'application/pdf') {
+  if (file.type !== "application/pdf") {
     return {
       valid: false,
-      error: `Invalid file type: ${file.type}. Only PDF files are accepted.`
-    }
+      error: `Invalid file type: ${file.type}. Only PDF files are accepted.`,
+    };
   }
 
   // Check file size (10MB for free tier, can be configured)
-  const maxSize = 10 * 1024 * 1024 // 10MB
+  const maxSize = 10 * 1024 * 1024; // 10MB
   if (file.size > maxSize) {
-    const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     return {
       valid: false,
-      error: `File too large: ${sizeMB}MB. Free tier limit is 10MB.`
-    }
+      error: `File too large: ${sizeMB}MB. Free tier limit is 10MB.`,
+    };
   }
 
   // Check minimum file size (1KB)
   if (file.size < 1024) {
     return {
       valid: false,
-      error: 'File appears to be empty or corrupted.'
-    }
+      error: "File appears to be empty or corrupted.",
+    };
   }
 
-  return { valid: true }
+  return { valid: true };
 }
 
 /**
  * Format file size for display
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0) return "0 Bytes";
 
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }
 
 /**
  * Get auth token from localStorage
  */
 function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('authToken')
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("authToken");
 }
 
 /**
  * Get refresh token from localStorage
  */
 function getRefreshToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('refreshToken')
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("refreshToken");
 }
 
 /**
  * Set auth tokens in localStorage
  */
 function setAuthTokens(accessToken: string, refreshToken: string): void {
-  if (typeof window === 'undefined') return
-  localStorage.setItem('authToken', accessToken)
-  localStorage.setItem('refreshToken', refreshToken)
+  if (typeof window === "undefined") return;
+  localStorage.setItem("authToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
 }
 
 /**
  * Clear auth tokens from localStorage
  */
 function clearAuthTokens(): void {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem('authToken')
-  localStorage.removeItem('refreshToken')
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("refreshToken");
 }
 
 /**
  * Refresh access token using refresh token
  */
 async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = getRefreshToken()
+  const refreshToken = getRefreshToken();
   if (!refreshToken) {
-    return null
+    return null;
   }
 
   try {
     const response = await fetch(`${API_URL}/api/auth/refresh`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ refresh_token: refreshToken })
-    })
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
 
     if (!response.ok) {
       // Refresh token expired or invalid, clear tokens
-      clearAuthTokens()
-      return null
+      clearAuthTokens();
+      return null;
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     // Store new tokens
-    setAuthTokens(data.token, data.refresh_token)
+    setAuthTokens(data.token, data.refresh_token);
 
-    console.log('✅ Access token refreshed successfully')
-    return data.token
+    console.log("✅ Access token refreshed successfully");
+    return data.token;
   } catch (error) {
-    console.error('❌ Failed to refresh access token:', error)
-    clearAuthTokens()
-    return null
+    console.error("❌ Failed to refresh access token:", error);
+    clearAuthTokens();
+    return null;
   }
 }
 
 /**
  * Enhanced fetch with automatic token refresh on 401
  */
-async function fetchWithTokenRefresh(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = getAuthToken()
+async function fetchWithTokenRefresh(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const token = getAuthToken();
 
   // Add authorization header if token exists
   if (token) {
     options.headers = {
       ...options.headers,
-      'Authorization': `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    };
   }
 
   // Make initial request
-  let response = await fetch(url, options)
+  let response = await fetch(url, options);
 
   // If 401 Unauthorized, try to refresh token and retry
   if (response.status === 401 && token) {
-    console.log('⚠️ Access token expired, attempting refresh...')
+    console.log("⚠️ Access token expired, attempting refresh...");
 
-    const newToken = await refreshAccessToken()
+    const newToken = await refreshAccessToken();
 
     if (newToken) {
       // Retry request with new token
       options.headers = {
         ...options.headers,
-        'Authorization': `Bearer ${newToken}`
-      }
-      response = await fetch(url, options)
-      console.log('✅ Request retried with new token')
+        Authorization: `Bearer ${newToken}`,
+      };
+      response = await fetch(url, options);
+      console.log("✅ Request retried with new token");
     } else {
       // Refresh failed, redirect to login
-      console.log('❌ Token refresh failed, user needs to re-login')
+      console.log("❌ Token refresh failed, user needs to re-login");
       // Note: We don't redirect here to avoid circular dependencies
       // The AuthContext will handle this via useEffect
     }
   }
 
-  return response
+  return response;
 }
 
 /**
  * Poll job status until completion
  */
-async function pollJobStatus(jobId: string, onProgress?: (progress: number) => void): Promise<any> {
-  const maxAttempts = 60 // 60 attempts = 60 seconds max
-  let attempts = 0
+async function pollJobStatus(
+  jobId: string,
+  onProgress?: (progress: number) => void
+): Promise<any> {
+  const maxAttempts = 60; // 60 attempts = 60 seconds max
+  let attempts = 0;
 
   while (attempts < maxAttempts) {
     try {
-      const response = await fetchWithTokenRefresh(`${API_URL}/api/status/${jobId}`)
+      const response = await fetchWithTokenRefresh(
+        `${API_URL}/api/status/${jobId}`
+      );
 
       if (!response.ok) {
-        const errorMessage = handleAPIError(new Error('Status check failed'), response, 'Job Status')
-        throw new Error(errorMessage)
+        const errorMessage = handleAPIError(
+          new Error("Status check failed"),
+          response,
+          "Job Status"
+        );
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       // Update progress callback
       if (onProgress && data.progress) {
-        onProgress(data.progress)
+        onProgress(data.progress);
       }
 
       // Check if job is complete
-      if (data.status === 'completed') {
-        return data
+      if (data.status === "completed") {
+        return data;
       }
 
-      if (data.status === 'failed') {
-        throw new Error(data.error || 'Conversion failed - check the file format and try again')
+      if (data.status === "failed") {
+        throw new Error(
+          data.error ||
+            "Conversion failed - check the file format and try again"
+        );
       }
 
       // Wait 1 second before next poll
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      attempts++
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      attempts++;
     } catch (error) {
       // If it's a network error, throw immediately
-      if (error instanceof Error && error.message.includes('Cannot reach')) {
-        throw error
+      if (error instanceof Error && error.message.includes("Cannot reach")) {
+        throw error;
       }
       // Otherwise, retry
-      attempts++
+      attempts++;
       if (attempts >= maxAttempts) {
-        throw error
+        throw error;
       }
     }
   }
 
-  throw new Error('Conversion timed out after 60 seconds. The file may be too large or complex.')
+  throw new Error(
+    "Conversion timed out after 60 seconds. The file may be too large or complex."
+  );
 }
 
 // Modern API interface matching component expectations
@@ -267,53 +280,57 @@ export const pdflabAPI = {
    */
   async convertPDFToOffice(
     file: File,
-    format: 'pptx' | 'docx' | 'xlsx'
+    format: "pptx" | "docx" | "xlsx"
   ): Promise<ConversionResponse> {
-    const startTime = Date.now()
+    const startTime = Date.now();
 
     // Map format to conversion type
     const conversionTypeMap = {
-      'pptx': 'pdf_to_pptx',
-      'docx': 'pdf_to_docx',
-      'xlsx': 'pdf_to_xlsx'
-    }
+      pptx: "pdf_to_pptx",
+      docx: "pdf_to_docx",
+      xlsx: "pdf_to_xlsx",
+    };
 
     // Upload and start conversion
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('conversion_type', conversionTypeMap[format])
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("conversion_type", conversionTypeMap[format]);
 
-    let uploadResponse
+    let uploadResponse;
     try {
       uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/upload`, {
-        method: 'POST',
-        body: formData
-      })
+        method: "POST",
+        body: formData,
+      });
 
       if (!uploadResponse.ok) {
-        const errorResponse = await parseEnhancedAPIError(uploadResponse)
-        trackErrorEvent(errorResponse, 'PDF to Office Upload')
-        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+        const errorResponse = await parseEnhancedAPIError(uploadResponse);
+        trackErrorEvent(errorResponse, "PDF to Office Upload");
+        throw new EnhancedAPIError(errorResponse.message, errorResponse);
       }
     } catch (error) {
       if (error instanceof EnhancedAPIError) {
-        throw error
+        throw error;
       }
       if (!uploadResponse) {
-        const errorMessage = handleAPIError(error, undefined, 'PDF to Office Upload')
-        throw new Error(errorMessage)
+        const errorMessage = handleAPIError(
+          error,
+          undefined,
+          "PDF to Office Upload"
+        );
+        throw new Error(errorMessage);
       }
-      throw error
+      throw error;
     }
 
-    const uploadData = await uploadResponse.json()
-    const jobId = uploadData.job_id
-    const isGuest = uploadData.is_guest === true
+    const uploadData = await uploadResponse.json();
+    const jobId = uploadData.job_id;
+    const isGuest = uploadData.is_guest === true;
 
     // Poll for completion
-    const result = await pollJobStatus(jobId)
+    const result = await pollJobStatus(jobId);
 
-    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
     return {
       success: true,
@@ -322,111 +339,115 @@ export const pdflabAPI = {
       originalFile: file.name,
       processingTime: `${processingTime} seconds`,
       jobId,
-      isGuest
-    }
+      isGuest,
+    };
   },
 
   /**
    * Convert PDF to images
    */
   async convertPDFToImages(file: File): Promise<ConversionResponse> {
-    const startTime = Date.now()
+    const startTime = Date.now();
 
     // Upload and start conversion
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('conversion_type', 'pdf_to_images')
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("conversion_type", "pdf_to_images");
 
-    let uploadResponse
+    let uploadResponse;
     try {
       uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/upload`, {
-        method: 'POST',
-        body: formData
-      })
+        method: "POST",
+        body: formData,
+      });
 
       if (!uploadResponse.ok) {
-        const errorResponse = await parseEnhancedAPIError(uploadResponse)
-        trackErrorEvent(errorResponse, 'PDF to Images Upload')
-        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+        const errorResponse = await parseEnhancedAPIError(uploadResponse);
+        trackErrorEvent(errorResponse, "PDF to Images Upload");
+        throw new EnhancedAPIError(errorResponse.message, errorResponse);
       }
     } catch (error) {
       if (error instanceof EnhancedAPIError) {
-        throw error
+        throw error;
       }
       if (!uploadResponse) {
-        const errorMessage = handleAPIError(error, undefined, 'PDF to Images Upload')
-        throw new Error(errorMessage)
+        const errorMessage = handleAPIError(
+          error,
+          undefined,
+          "PDF to Images Upload"
+        );
+        throw new Error(errorMessage);
       }
-      throw error
+      throw error;
     }
 
-    const uploadData = await uploadResponse.json()
-    const jobId = uploadData.job_id
-    const isGuest = uploadData.is_guest === true
+    const uploadData = await uploadResponse.json();
+    const jobId = uploadData.job_id;
+    const isGuest = uploadData.is_guest === true;
 
     // Poll for completion
-    const result = await pollJobStatus(jobId)
+    const result = await pollJobStatus(jobId);
 
-    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
     return {
       success: true,
-      message: 'Successfully converted to images',
+      message: "Successfully converted to images",
       outputFile: result.output_file,
       originalFile: file.name,
       processingTime: `${processingTime} seconds`,
       jobId,
-      isGuest
-    }
+      isGuest,
+    };
   },
 
   /**
    * Merge multiple PDFs
    */
   async mergePDFs(files: File[]): Promise<ConversionResponse> {
-    const startTime = Date.now()
+    const startTime = Date.now();
 
     if (files.length < 2) {
-      throw new Error('At least 2 PDF files are required for merging')
+      throw new Error("At least 2 PDF files are required for merging");
     }
 
     // Upload and start merge
-    const formData = new FormData()
-    files.forEach(file => {
-      formData.append('files', file)
-    })
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
-    let uploadResponse
+    let uploadResponse;
     try {
       uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/merge`, {
-        method: 'POST',
-        body: formData
-      })
+        method: "POST",
+        body: formData,
+      });
 
       if (!uploadResponse.ok) {
-        const errorResponse = await parseEnhancedAPIError(uploadResponse)
-        trackErrorEvent(errorResponse, 'PDF Merge')
-        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+        const errorResponse = await parseEnhancedAPIError(uploadResponse);
+        trackErrorEvent(errorResponse, "PDF Merge");
+        throw new EnhancedAPIError(errorResponse.message, errorResponse);
       }
     } catch (error) {
       if (error instanceof EnhancedAPIError) {
-        throw error
+        throw error;
       }
       if (!uploadResponse) {
-        const errorMessage = handleAPIError(error, undefined, 'PDF Merge')
-        throw new Error(errorMessage)
+        const errorMessage = handleAPIError(error, undefined, "PDF Merge");
+        throw new Error(errorMessage);
       }
-      throw error
+      throw error;
     }
 
-    const uploadData = await uploadResponse.json()
-    const jobId = uploadData.job_id
-    const isGuest = uploadData.is_guest === true
+    const uploadData = await uploadResponse.json();
+    const jobId = uploadData.job_id;
+    const isGuest = uploadData.is_guest === true;
 
     // Poll for completion
-    const result = await pollJobStatus(jobId)
+    const result = await pollJobStatus(jobId);
 
-    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
     return {
       success: true,
@@ -435,8 +456,8 @@ export const pdflabAPI = {
       processingTime: `${processingTime} seconds`,
       fileCount: files.length,
       jobId,
-      isGuest
-    }
+      isGuest,
+    };
   },
 
   /**
@@ -444,50 +465,62 @@ export const pdflabAPI = {
    */
   async compressPDF(
     file: File,
-    compressionLevel: 'good' | 'recommended' | 'extreme' = 'recommended'
-  ): Promise<ConversionResponse & { originalSize?: number; compressedSize?: number; compressionRatio?: number }> {
-    const startTime = Date.now()
-    const token = getAuthToken()
+    compressionLevel: "good" | "recommended" | "extreme" = "recommended"
+  ): Promise<
+    ConversionResponse & {
+      originalSize?: number;
+      compressedSize?: number;
+      compressionRatio?: number;
+    }
+  > {
+    const startTime = Date.now();
+    const token = getAuthToken();
 
     if (!token) {
-      throw new Error('Authentication required. Please log in to compress PDFs.')
+      throw new Error(
+        "Authentication required. Please log in to compress PDFs."
+      );
     }
 
     // Upload and start compression
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('compression_level', compressionLevel)
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("compression_level", compressionLevel);
 
-    let uploadResponse
+    let uploadResponse;
     try {
       uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/compress`, {
-        method: 'POST',
-        body: formData
-      })
+        method: "POST",
+        body: formData,
+      });
 
       if (!uploadResponse.ok) {
-        const errorResponse = await parseEnhancedAPIError(uploadResponse)
-        trackErrorEvent(errorResponse, 'PDF Compression')
-        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+        const errorResponse = await parseEnhancedAPIError(uploadResponse);
+        trackErrorEvent(errorResponse, "PDF Compression");
+        throw new EnhancedAPIError(errorResponse.message, errorResponse);
       }
     } catch (error) {
       if (error instanceof EnhancedAPIError) {
-        throw error
+        throw error;
       }
       if (!uploadResponse) {
-        const errorMessage = handleAPIError(error, undefined, 'PDF Compression')
-        throw new Error(errorMessage)
+        const errorMessage = handleAPIError(
+          error,
+          undefined,
+          "PDF Compression"
+        );
+        throw new Error(errorMessage);
       }
-      throw error
+      throw error;
     }
 
-    const uploadData = await uploadResponse.json()
-    const jobId = uploadData.job_id
+    const uploadData = await uploadResponse.json();
+    const jobId = uploadData.job_id;
 
     // Poll for completion
-    const result = await pollJobStatus(jobId)
+    const result = await pollJobStatus(jobId);
 
-    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1)
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
     return {
       success: true,
@@ -499,8 +532,8 @@ export const pdflabAPI = {
       isGuest: false,
       originalSize: result.original_size,
       compressedSize: result.compressed_size,
-      compressionRatio: result.compression_ratio
-    }
+      compressionRatio: result.compression_ratio,
+    };
   },
 
   /**
@@ -509,60 +542,65 @@ export const pdflabAPI = {
    */
   async batchConvertPDFs(
     files: File[],
-    format: 'pptx' | 'docx' | 'xlsx' | 'images'
+    format: "pptx" | "docx" | "xlsx" | "images"
   ): Promise<{
-    job_ids: string[]
-    file_count: number
-    total_size: number
-    conversion_type: string
+    job_ids: string[];
+    file_count: number;
+    total_size: number;
+    conversion_type: string;
   }> {
-    const startTime = Date.now()
-    const token = getAuthToken()
+    const startTime = Date.now();
+    const token = getAuthToken();
 
     if (!token) {
-      throw new Error('Authentication required. Please log in to use batch processing.')
+      throw new Error(
+        "Authentication required. Please log in to use batch processing."
+      );
     }
 
     // Map format to conversion type
     const conversionTypeMap = {
-      'pptx': 'pdf_to_pptx',
-      'docx': 'pdf_to_docx',
-      'xlsx': 'pdf_to_xlsx',
-      'images': 'pdf_to_images'
-    }
+      pptx: "pdf_to_pptx",
+      docx: "pdf_to_docx",
+      xlsx: "pdf_to_xlsx",
+      images: "pdf_to_images",
+    };
 
     // Upload files for batch conversion
-    const formData = new FormData()
-    files.forEach(file => {
-      formData.append('files', file)
-    })
-    formData.append('conversion_type', conversionTypeMap[format])
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    formData.append("conversion_type", conversionTypeMap[format]);
 
-    let uploadResponse
+    let uploadResponse;
     try {
-      uploadResponse = await fetchWithTokenRefresh(`${API_URL}/api/batch-convert`, {
-        method: 'POST',
-        body: formData
-      })
+      uploadResponse = await fetchWithTokenRefresh(
+        `${API_URL}/api/batch-convert`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!uploadResponse.ok) {
-        const errorResponse = await parseEnhancedAPIError(uploadResponse)
-        trackErrorEvent(errorResponse, 'Batch Convert')
-        throw new EnhancedAPIError(errorResponse.message, errorResponse)
+        const errorResponse = await parseEnhancedAPIError(uploadResponse);
+        trackErrorEvent(errorResponse, "Batch Convert");
+        throw new EnhancedAPIError(errorResponse.message, errorResponse);
       }
     } catch (error) {
       if (error instanceof EnhancedAPIError) {
-        throw error
+        throw error;
       }
       if (!uploadResponse) {
-        const errorMessage = handleAPIError(error, undefined, 'Batch Convert')
-        throw new Error(errorMessage)
+        const errorMessage = handleAPIError(error, undefined, "Batch Convert");
+        throw new Error(errorMessage);
       }
-      throw error
+      throw error;
     }
 
-    const response = await uploadResponse.json()
-    return response
+    const response = await uploadResponse.json();
+    return response;
   },
 
   /**
@@ -572,37 +610,42 @@ export const pdflabAPI = {
     jobIds: string[],
     onProgress?: (completedJobs: number, totalJobs: number) => void
   ): Promise<Array<{ jobId: string; result?: any; error?: string }>> {
-    console.log(`📊 Starting batch status polling for ${jobIds.length} jobs`)
+    console.log(`📊 Starting batch status polling for ${jobIds.length} jobs`);
 
     // Poll all jobs in parallel
     const pollPromises = jobIds.map(async (jobId, index) => {
       try {
-        console.log(`📡 Polling job ${index + 1}/${jobIds.length}: ${jobId}`)
-        const result = await pollJobStatus(jobId)
-        console.log(`✅ Job ${index + 1}/${jobIds.length} completed: ${jobId}`)
+        console.log(`📡 Polling job ${index + 1}/${jobIds.length}: ${jobId}`);
+        const result = await pollJobStatus(jobId);
+        console.log(`✅ Job ${index + 1}/${jobIds.length} completed: ${jobId}`);
 
         // Call progress callback if provided
         if (onProgress) {
-          onProgress(index + 1, jobIds.length)
+          onProgress(index + 1, jobIds.length);
         }
 
-        return { jobId, result }
+        return { jobId, result };
       } catch (error) {
-        console.error(`❌ Job ${index + 1}/${jobIds.length} failed: ${jobId}`, error)
+        console.error(
+          `❌ Job ${index + 1}/${jobIds.length} failed: ${jobId}`,
+          error
+        );
         return {
           jobId,
-          error: error instanceof Error ? error.message : 'Conversion failed'
-        }
+          error: error instanceof Error ? error.message : "Conversion failed",
+        };
       }
-    })
+    });
 
     // Wait for all jobs to complete
-    const allResults = await Promise.all(pollPromises)
+    const allResults = await Promise.all(pollPromises);
 
-    const successCount = allResults.filter(r => !r.error).length
-    console.log(`🎉 Batch polling complete: ${successCount}/${jobIds.length} successful`)
+    const successCount = allResults.filter((r) => !r.error).length;
+    console.log(
+      `🎉 Batch polling complete: ${successCount}/${jobIds.length} successful`
+    );
 
-    return allResults
+    return allResults;
   },
 
   /**
@@ -610,100 +653,125 @@ export const pdflabAPI = {
    * @param jobIds - Array of job IDs from batch conversion
    * @param batchName - Optional name for the ZIP file
    */
-  async downloadBatchConversionZip(jobIds: string[], batchName?: string): Promise<void> {
-    const token = getAuthToken()
+  async downloadBatchConversionZip(
+    jobIds: string[],
+    batchName?: string
+  ): Promise<void> {
+    const token = getAuthToken();
 
     // Build query string with job IDs
     const queryParams = new URLSearchParams({
-      job_ids: jobIds.join(',')
-    })
+      job_ids: jobIds.join(","),
+    });
 
-    const response = await fetch(`${API_URL}/api/download-batch?${queryParams}`, {
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
+    const response = await fetch(
+      `${API_URL}/api/download-batch?${queryParams}`,
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       }
-    })
+    );
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Batch download failed' }))
-      throw new Error(error.error || 'Batch download failed')
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Batch download failed" }));
+      throw new Error(error.error || "Batch download failed");
     }
 
     // Get the blob
-    const blob = await response.blob()
+    const blob = await response.blob();
 
     // Get filename from Content-Disposition or use default
-    const contentDisposition = response.headers.get('Content-Disposition')
-    let downloadFileName = batchName || `pdflab-batch-${jobIds.length}files.zip`
+    const contentDisposition = response.headers.get("Content-Disposition");
+    let downloadFileName =
+      batchName || `pdflab-batch-${jobIds.length}files.zip`;
 
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
       if (filenameMatch && filenameMatch[1]) {
-        downloadFileName = filenameMatch[1]
+        downloadFileName = filenameMatch[1];
       }
     }
 
     // Create download link
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = downloadFileName
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = downloadFileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
 
-    console.log(`✅ Downloaded batch ZIP: ${downloadFileName} (${jobIds.length} files)`)
+    console.log(
+      `✅ Downloaded batch ZIP: ${downloadFileName} (${jobIds.length} files)`
+    );
   },
 
   /**
    * Trigger file download
    */
-  async triggerDownload(outputFile: string, originalFileName: string): Promise<void> {
-    const token = getAuthToken()
+  async triggerDownload(
+    outputFile: string,
+    originalFileName: string
+  ): Promise<void> {
+    const token = getAuthToken();
 
     // Extract job ID from output file path (format: /download/JOB_ID)
-    const jobId = outputFile.replace('/download/', '')
+    const jobId = outputFile.replace("/download/", "");
 
     const response = await fetch(`${API_URL}/api/download/${jobId}`, {
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      }
-    })
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Download failed' }))
-      throw new Error(error.error || 'Download failed')
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Download failed" }));
+      throw new Error(error.error || "Download failed");
     }
 
     // Get the blob and content-disposition header
-    const blob = await response.blob()
+    const blob = await response.blob();
 
     // Try to get filename from Content-Disposition header
-    const contentDisposition = response.headers.get('Content-Disposition')
-    let downloadFileName = originalFileName
+    const contentDisposition = response.headers.get("Content-Disposition");
+    let downloadFileName = originalFileName;
 
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
       if (filenameMatch && filenameMatch[1]) {
-        downloadFileName = filenameMatch[1]
-        console.log('✅ Using filename from Content-Disposition:', downloadFileName)
+        downloadFileName = filenameMatch[1];
+        console.log(
+          "✅ Using filename from Content-Disposition:",
+          downloadFileName
+        );
       } else {
-        console.log('⚠️ Content-Disposition found but no filename extracted:', contentDisposition)
+        console.log(
+          "⚠️ Content-Disposition found but no filename extracted:",
+          contentDisposition
+        );
       }
     } else {
-      console.log('❌ No Content-Disposition header found, using original filename:', originalFileName)
+      console.log(
+        "❌ No Content-Disposition header found, using original filename:",
+        originalFileName
+      );
     }
 
     // Create download link
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = downloadFileName
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = downloadFileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   },
 
   /**
@@ -711,126 +779,242 @@ export const pdflabAPI = {
    */
   async uploadBatch(
     files: File[],
-    operationType: 'convert' | 'compress' | 'merge',
+    operationType: "convert" | "compress" | "merge",
     options: {
-      batchName?: string
-      outputFormat?: 'pptx' | 'docx' | 'xlsx' | 'png'
-      compressionLevel?: 'good' | 'recommended' | 'extreme'
+      batchName?: string;
+      outputFormat?: "pptx" | "docx" | "xlsx" | "png";
+      compressionLevel?: "good" | "recommended" | "extreme";
     }
   ): Promise<{
-    batch_id: string
-    batch_name: string
-    operation_type: string
-    total_files: number
-    status: string
-    conversion_job_ids: string[]
+    batch_id: string;
+    batch_name: string;
+    operation_type: string;
+    total_files: number;
+    status: string;
+    conversion_job_ids: string[];
   }> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     if (!token) {
-      throw new Error('Authentication required. Please log in to use batch processing.')
+      throw new Error(
+        "Authentication required. Please log in to use batch processing."
+      );
     }
 
-    const formData = new FormData()
-    files.forEach(file => {
-      formData.append('files', file)
-    })
-    formData.append('operation_type', operationType)
-    if (options.batchName) formData.append('batch_name', options.batchName)
-    if (options.outputFormat) formData.append('output_format', options.outputFormat)
-    if (options.compressionLevel) formData.append('compression_level', options.compressionLevel)
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    formData.append("operation_type", operationType);
+    if (options.batchName) formData.append("batch_name", options.batchName);
+    if (options.outputFormat)
+      formData.append("output_format", options.outputFormat);
+    if (options.compressionLevel)
+      formData.append("compression_level", options.compressionLevel);
 
     const response = await fetch(`${API_URL}/api/batch/upload`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
-      body: formData
-    })
+      body: formData,
+    });
 
     if (!response.ok) {
-      const errorResponse = await parseEnhancedAPIError(response)
-      trackErrorEvent(errorResponse, 'Batch Upload')
-      throw new EnhancedAPIError(errorResponse.message, errorResponse)
+      const errorResponse = await parseEnhancedAPIError(response);
+      trackErrorEvent(errorResponse, "Batch Upload");
+      throw new EnhancedAPIError(errorResponse.message, errorResponse);
     }
 
-    return await response.json()
+    return await response.json();
   },
 
   /**
    * Get batch job status with individual file progress
    */
   async getBatchStatus(batchId: string): Promise<{
-    batch_id: string
-    batch_name: string
-    operation_type: string
-    status: string
-    progress: number
-    total_files: number
-    completed_files: number
-    failed_files: number
-    success_rate: number
+    batch_id: string;
+    batch_name: string;
+    operation_type: string;
+    status: string;
+    progress: number;
+    total_files: number;
+    completed_files: number;
+    failed_files: number;
+    success_rate: number;
     files: Array<{
-      job_id: string
-      file_name: string
-      status: string
-      progress: number
-      error_message?: string
-    }>
+      job_id: string;
+      file_name: string;
+      status: string;
+      progress: number;
+      error_message?: string;
+    }>;
   }> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     if (!token) {
-      throw new Error('Authentication required.')
+      throw new Error("Authentication required.");
     }
 
     const response = await fetch(`${API_URL}/api/batch/status/${batchId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    })
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to get batch status')
+      throw new Error("Failed to get batch status");
     }
 
-    return await response.json()
+    return await response.json();
+  },
+
+  /**
+   * Add text to PDF using PDF.co integration
+   */
+  async addTextToPDF(
+    file: File,
+    options: {
+      text: string;
+      x: number;
+      y: number;
+      pages?: string;
+    }
+  ): Promise<ConversionResponse & { url?: string }> {
+    const startTime = Date.now();
+
+    // Upload and start processing
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("text", options.text);
+    formData.append("x", options.x.toString());
+    formData.append("y", options.y.toString());
+    if (options.pages) formData.append("pages", options.pages);
+
+    let response;
+    try {
+      response = await fetchWithTokenRefresh(`${API_URL}/api/edit/add-text`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorResponse = await parseEnhancedAPIError(response);
+        trackErrorEvent(errorResponse, "PDF Add Text");
+        throw new EnhancedAPIError(errorResponse.message, errorResponse);
+      }
+    } catch (error) {
+      if (error instanceof EnhancedAPIError) {
+        throw error;
+      }
+      if (!response) {
+        const errorMessage = handleAPIError(error, undefined, "PDF Add Text");
+        throw new Error(errorMessage);
+      }
+      throw error;
+    }
+
+    const result = await response.json();
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+    return {
+      success: true,
+      message: result.message || "Successfully added text to PDF",
+      outputFile: result.url, // The result is a direct URL from PDF.co
+      originalFile: file.name,
+      processingTime: `${processingTime} seconds`,
+      url: result.url,
+    };
+  },
+
+  /**
+   * Analyze PDF to get JSON text map
+   */
+  async analyzePdf(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetchWithTokenRefresh(
+      `${API_URL}/api/edit/analyze`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const errorResponse = await parseEnhancedAPIError(response);
+      throw new EnhancedAPIError(errorResponse.message, errorResponse);
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * Replace text in PDF
+   */
+  async replacePdfText(
+    file: File,
+    searchString: string,
+    replacementString: string
+  ): Promise<any> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("searchString", searchString);
+    formData.append("replacementString", replacementString);
+
+    const response = await fetchWithTokenRefresh(
+      `${API_URL}/api/edit/replace-text`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const errorResponse = await parseEnhancedAPIError(response);
+      throw new EnhancedAPIError(errorResponse.message, errorResponse);
+    }
+
+    return await response.json();
   },
 
   /**
    * Download batch ZIP file
    */
   async downloadBatchZip(batchId: string, batchName: string): Promise<void> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     if (!token) {
-      throw new Error('Authentication required.')
+      throw new Error("Authentication required.");
     }
 
     const response = await fetch(`${API_URL}/api/batch/download/${batchId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    })
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Download failed' }))
-      throw new Error(error.error || 'Download failed')
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Download failed" }));
+      throw new Error(error.error || "Download failed");
     }
 
     // Get the blob
-    const blob = await response.blob()
+    const blob = await response.blob();
 
     // Create download link
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${batchName.replace(/[^a-z0-9]/gi, '_')}.zip`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-  }
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${batchName.replace(/[^a-z0-9]/gi, "_")}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  },
 };
 
 export class ApiClient {
@@ -842,102 +1026,102 @@ export class ApiClient {
 
   // Convert PDF to format
   async convertPDF(file: File, outputFormat: string): Promise<ConversionJob> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('conversion_type', `pdf_to_${outputFormat}`)
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("conversion_type", `pdf_to_${outputFormat}`);
 
     const response = await fetch(`${this.baseUrl}/api/upload`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: formData
-    })
+      body: formData,
+    });
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Conversion failed')
+      const error = await response.json();
+      throw new Error(error.error || "Conversion failed");
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     return {
       jobId: data.job_id,
-      status: 'pending',
+      status: "pending",
       progress: 0,
     };
   }
 
   // Merge PDFs
   async mergePDFs(files: File[]): Promise<ConversionJob> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
-    const formData = new FormData()
-    files.forEach(file => {
-      formData.append('files', file)
-    })
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
     const response = await fetch(`${this.baseUrl}/api/merge`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: formData
-    })
+      body: formData,
+    });
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Merge failed')
+      const error = await response.json();
+      throw new Error(error.error || "Merge failed");
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     return {
       jobId: data.job_id,
-      status: 'pending',
+      status: "pending",
       progress: 0,
     };
   }
 
   // Check job status
   async getJobStatus(jobId: string): Promise<ConversionJob> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     const response = await fetch(`${this.baseUrl}/api/status/${jobId}`, {
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      }
-    })
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to get job status')
+      throw new Error("Failed to get job status");
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     return {
       jobId: data.job_id,
       status: data.status,
       progress: data.progress,
       downloadUrl: data.output_file,
-      errorMessage: data.error
+      errorMessage: data.error,
     };
   }
 
   // Download file
   async downloadFile(jobId: string): Promise<Blob> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     const response = await fetch(`${this.baseUrl}/api/download/${jobId}`, {
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      }
-    })
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('Download failed')
+      throw new Error("Download failed");
     }
 
     return await response.blob();
@@ -945,23 +1129,25 @@ export class ApiClient {
 
   // Generic POST request
   async post(endpoint: string, data: any): Promise<any> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: JSON.stringify(data)
-    })
+      body: JSON.stringify(data),
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Request failed' }))
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: "Request failed" }));
       // Throw error with response structure for compatibility with form error handlers
-      const error: any = new Error(errorData.message || 'Request failed')
-      error.response = { data: errorData }
-      throw error
+      const error: any = new Error(errorData.message || "Request failed");
+      error.response = { data: errorData };
+      throw error;
     }
 
     return await response.json();
@@ -969,20 +1155,22 @@ export class ApiClient {
 
   // Generic GET request
   async get(endpoint: string): Promise<any> {
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      }
-    })
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Request failed' }))
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: "Request failed" }));
       // Throw error with response structure for compatibility with form error handlers
-      const error: any = new Error(errorData.message || 'Request failed')
-      error.response = { data: errorData }
-      throw error
+      const error: any = new Error(errorData.message || "Request failed");
+      error.response = { data: errorData };
+      throw error;
     }
 
     return await response.json();
@@ -992,4 +1180,11 @@ export class ApiClient {
 export const api = new ApiClient();
 
 // Export token management functions for use in AuthContext
-export { getAuthToken, getRefreshToken, setAuthTokens, clearAuthTokens, refreshAccessToken, fetchWithTokenRefresh };
+export {
+  clearAuthTokens,
+  fetchWithTokenRefresh,
+  getAuthToken,
+  getRefreshToken,
+  refreshAccessToken,
+  setAuthTokens,
+};

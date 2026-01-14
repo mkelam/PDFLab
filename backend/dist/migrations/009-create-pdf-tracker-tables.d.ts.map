@@ -1,0 +1,1 @@
+{"version":3,"file":"009-create-pdf-tracker-tables.d.ts","sourceRoot":"","sources":["../../src/migrations/009-create-pdf-tracker-tables.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAa,MAAM,WAAW,CAAA;AAErD,wBAAsB,EAAE,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAiItE;AAED,wBAAsB,IAAI,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAGxE"}

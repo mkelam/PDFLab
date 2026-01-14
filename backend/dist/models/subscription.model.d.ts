@@ -14,7 +14,8 @@ export declare enum PlanType {
 }
 export declare enum PaymentProvider {
     PAYFAST = "payfast",
-    PAYGENIUS = "paygenius"
+    PAYGENIUS = "paygenius",
+    PAYPAL = "paypal"
 }
 interface SubscriptionAttributes {
     id: string;
@@ -26,6 +27,8 @@ interface SubscriptionAttributes {
     payfast_subscription_id?: string;
     paygenius_reference?: string;
     paygenius_subscription_id?: string;
+    paypal_subscription_id?: string;
+    paypal_order_id?: string;
     amount: number;
     currency: string;
     billing_date?: Date;
@@ -50,6 +53,8 @@ declare class Subscription extends Model<SubscriptionAttributes, SubscriptionCre
     payfast_subscription_id?: string;
     paygenius_reference?: string;
     paygenius_subscription_id?: string;
+    paypal_subscription_id?: string;
+    paypal_order_id?: string;
     amount: number;
     currency: string;
     billing_date?: Date;

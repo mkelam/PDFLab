@@ -84,6 +84,9 @@ const nextConfig = {
         },
       }
     }
+    // React-PDF requires 'canvas' to be available, but it's a node module that shouldn't be bundled for the browser
+    config.resolve.alias.canvas = false
+    
     return config
   },
 }

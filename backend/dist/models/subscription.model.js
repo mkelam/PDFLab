@@ -22,6 +22,7 @@ var PaymentProvider;
 (function (PaymentProvider) {
     PaymentProvider["PAYFAST"] = "payfast";
     PaymentProvider["PAYGENIUS"] = "paygenius";
+    PaymentProvider["PAYPAL"] = "paypal";
 })(PaymentProvider || (exports.PaymentProvider = PaymentProvider = {}));
 class Subscription extends sequelize_1.Model {
 }
@@ -53,7 +54,7 @@ Subscription.init({
         defaultValue: 'pending'
     },
     payment_provider: {
-        type: sequelize_1.DataTypes.ENUM('payfast', 'paygenius'),
+        type: sequelize_1.DataTypes.ENUM('payfast', 'paygenius', 'paypal'),
         allowNull: true,
         defaultValue: 'paygenius',
         comment: 'Payment provider used for this subscription'
@@ -77,6 +78,16 @@ Subscription.init({
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
         comment: 'PayGenius subscription reference for recurring payments'
+    },
+    paypal_subscription_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayPal subscription ID for recurring payments'
+    },
+    paypal_order_id: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'PayPal order ID for one-time payments'
     },
     amount: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
@@ -146,6 +157,8 @@ Subscription.init({
         { fields: ['payfast_token'] },
         { fields: ['paygenius_reference'] },
         { fields: ['paygenius_subscription_id'] },
+        { fields: ['paypal_subscription_id'] },
+        { fields: ['paypal_order_id'] },
         { fields: ['next_billing_date'] }
     ]
 });

@@ -1,0 +1,687 @@
+{
+  "name": "PDFLab Social Content Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [-200, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://lifehacker.com/rss"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "RSS Lifehacker",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.theverge.com/rss/index.xml"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "name": "RSS The Verge",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [0, 200],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.calnewport.com/blog/feed/"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "name": "RSS Cal Newport",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [0, 400],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 3
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000004",
+      "name": "Merge All Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [300, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simple hash function (djb2 algorithm)\nfunction hashString(str) {\n  let hash = 5381;\n  for (let i = 0; i < str.length; i++) {\n    hash = ((hash << 5) + hash) + str.charCodeAt(i);\n    hash = hash & hash;\n  }\n  return (hash >>> 0).toString(16).padStart(8, '0');\n}\n\nfunction truncate(str, maxLength = 5000) {\n  if (!str) return '';\n  str = String(str);\n  if (str.length <= maxLength) return str;\n  return str.substring(0, maxLength - 3) + '...';\n}\n\nfunction stripHtml(html) {\n  if (!html) return '';\n  return String(html)\n    .replace(/<[^>]*>/g, '')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// Virality scoring function\nfunction calculateViralityScore(title, description, source, pubDate) {\n  let score = 0;\n  const titleLower = (title || '').toLowerCase();\n  const descLower = (description || '').toLowerCase();\n  const combined = titleLower + ' ' + descLower;\n  \n  // Title keywords (max +40)\n  const viralKeywords = {\n    'breaking': 10, 'exclusive': 10, 'revealed': 8, 'leaked': 8,\n    'urgent': 7, 'warning': 7, 'finally': 6, 'secret': 6,\n    'why': 5, 'how': 5, 'what': 4, '?': 3\n  };\n  for (const [keyword, points] of Object.entries(viralKeywords)) {\n    if (titleLower.includes(keyword)) score += points;\n  }\n  // Numbers in title boost engagement\n  if (/\\d+/.test(title)) score += 5;\n  // Cap title keywords at 40\n  score = Math.min(score, 40);\n  \n  // Source weight (max +25)\n  const sourceWeights = {\n    'verge': 25, 'theverge': 25,\n    'lifehacker': 20,\n    'calnewport': 15\n  };\n  const sourceLower = (source || '').toLowerCase();\n  for (const [src, points] of Object.entries(sourceWeights)) {\n    if (sourceLower.includes(src)) {\n      score += points;\n      break;\n    }\n  }\n  \n  // Topic relevance for PDFLab (max +25)\n  const relevantKeywords = {\n    'pdf': 10, 'document': 8, 'adobe': 7, 'acrobat': 7,\n    'productivity': 6, 'focus': 5, 'distraction': 5,\n    'privacy': 5, 'data': 4, 'subscription': 4,\n    'study': 4, 'notes': 4, 'student': 4,\n    'slow': 3, 'lag': 3, 'bloat': 3\n  };\n  let topicScore = 0;\n  for (const [keyword, points] of Object.entries(relevantKeywords)) {\n    if (combined.includes(keyword)) topicScore += points;\n  }\n  score += Math.min(topicScore, 25);\n  \n  // Recency bonus (max +10)\n  if (pubDate) {\n    try {\n      const ageHours = (Date.now() - new Date(pubDate).getTime()) / (1000 * 60 * 60);\n      if (ageHours < 6) score += 10;\n      else if (ageHours < 12) score += 8;\n      else if (ageHours < 24) score += 6;\n      else if (ageHours < 48) score += 4;\n      else if (ageHours < 72) score += 2;\n    } catch (e) {}\n  }\n  \n  return Math.min(score, 100);\n}\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  \n  let url = data.link || data.url || data.guid || '';\n  if (!url) continue;\n  \n  // Clean URL of tracking params\n  try {\n    const urlObj = new URL(url);\n    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',\n     'ref', 'source', 'fbclid', 'gclid', 'mc_cid', 'mc_eid'].forEach(param => {\n      urlObj.searchParams.delete(param);\n    });\n    url = urlObj.toString().replace(/\\/$/, '');\n  } catch (e) {}\n  \n  // Generate hash\n  const urlHash = hashString(url) + hashString(url.split('').reverse().join('')) + url.length.toString(16);\n  \n  // Detect source\n  let source = 'unknown';\n  try {\n    const hostname = new URL(url).hostname.toLowerCase();\n    if (hostname.includes('lifehacker')) source = 'lifehacker';\n    else if (hostname.includes('theverge') || hostname.includes('verge')) source = 'verge';\n    else if (hostname.includes('calnewport')) source = 'calnewport';\n    else source = hostname.replace('www.', '').split('.')[0];\n  } catch (e) {}\n  \n  // Parse date\n  let pubDate = data.pubDate || data.published || data.date || data.isoDate || null;\n  let pubTimestamp = null;\n  if (pubDate) {\n    try { pubTimestamp = new Date(pubDate).getTime(); } catch (e) {}\n  }\n  \n  // Clean text fields\n  let description = stripHtml(data.description || data.summary || data.content || '');\n  description = truncate(description, 2000);\n  let title = truncate(data.title || '', 500);\n  \n  // Calculate virality score\n  const virality_score = calculateViralityScore(title, description, source, pubDate);\n  \n  results.push({\n    json: {\n      urlHash,\n      url: truncate(url, 2000),\n      title,\n      description,\n      source,\n      pubDate,\n      pubTimestamp,\n      virality_score\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000005",
+      "name": "Compute Dedup Key",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 200]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $env.GOOGLE_SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "processed_urls"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "url_hash",
+              "lookupValue": "={{ $json.urlHash }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sheets-check-dedup",
+      "name": "Check Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [650, 200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $input.all().length > 0 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-dedup-check",
+      "name": "Is Duplicate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, 200]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $env.GOOGLE_SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "processed_urls"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url_hash": "={{ $json.urlHash }}",
+            "url": "={{ $json.url }}",
+            "title": "={{ $json.title }}",
+            "description": "={{ $json.description }}",
+            "source": "={{ $json.source }}",
+            "virality_score": "={{ $json.virality_score }}",
+            "status": "queued",
+            "collected_at": "={{ new Date().toISOString() }}",
+            "posted_at": "",
+            "platform": "",
+            "content_type": ""
+          }
+        },
+        "options": {}
+      },
+      "id": "sheets-insert-dedup",
+      "name": "Log to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [950, 200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rand = Math.random() * 100;\nlet contentType;\n\nif (rand < 60) {\n  contentType = 'pure_value';\n} else if (rand < 85) {\n  contentType = 'soft_integration';\n} else {\n  contentType = 'direct_promotion';\n}\n\nconst items = $input.all();\nreturn items.map(item => ({\n  json: {\n    ...item.json,\n    content_type: contentType\n  }\n}));"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000006",
+      "name": "Content Type Selector",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const text = ((item.json.title || '') + ' ' + (item.json.description || '')).toLowerCase();\n  const keywords = /pdf|document|study|notes|adobe|acrobat|subscription|privacy|breach|focus|productivity|distraction|slow|lag/;\n  \n  if (keywords.test(text)) {\n    results.push(item);\n  }\n}\n\nreturn results;"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000007",
+      "name": "Keyword Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst linkedinItems = [];\nconst instagramItems = [];\n\nfor (const item of items) {\n  linkedinItems.push({\n    json: { ...item.json, target_platform: 'linkedin' }\n  });\n  instagramItems.push({\n    json: { ...item.json, target_platform: 'instagram' }\n  });\n}\n\nreturn [linkedinItems, instagramItems];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000008",
+      "name": "Platform Splitter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are a privacy advocate and tech professional who believes in data ownership, local-first software, and user rights. You write for LinkedIn.\\n\\nINPUT: {{ $json.title }} - {{ $json.description }}\\nCONTENT TYPE: {{ $json.content_type }}\\n\\nTASK: Transform this into a professional LinkedIn post.\\n\\nCONTENT TYPE RULES:\\n- If content_type is 'pure_value': Do NOT mention PDFLab at all. Focus purely on the insight/tip.\\n- If content_type is 'soft_integration': Mention PDFLab naturally as part of your workflow, not as a pitch.\\n- If content_type is 'direct_promotion': Feature PDFLab prominently with specific benefits.\\n\\nGENERAL RULES:\\n1. Open with a 1-sentence hook that grabs attention\\n2. Provide brief analysis (why this matters)\\n3. Keep it between 150-300 words\\n4. End with exactly 2 hashtags\\n5. Include a thought-provoking question at the end\\n6. No emojis in the opening line\\n\\nTONE: Professional, slightly contrarian, data-conscious, thought leadership style.\\n\\nOUTPUT ONLY THE POST TEXT.\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 500\n  }\n}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000009",
+      "name": "LinkedIn AI Transform",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1600, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are a helpful, slightly cynical senior college student who's been through it all - the 3am study sessions, the laptop meltdowns, the PDF nightmares. You write for Instagram.\\n\\nINPUT: {{ $json.title }} - {{ $json.description }}\\nCONTENT TYPE: {{ $json.content_type }}\\n\\nTASK: Transform this into a short, engaging Instagram caption.\\n\\nCONTENT TYPE RULES:\\n- If content_type is 'pure_value': Do NOT mention PDFLab at all.\\n- If content_type is 'soft_integration': Mention PDFLab casually.\\n- If content_type is 'direct_promotion': Feature PDFLab as the main topic.\\n\\nGENERAL RULES:\\n1. Keep it under 150 words\\n2. Start with a hook\\n3. Use 3-5 hashtags (studytok, collegehacks)\\n4. Use casual language\\n5. End with engagement bait ('Double tap if you feel this')\\n\\nTONE: Relatable, authentic, tired of corporate BS.\\n\\nOUTPUT ONLY THE CAPTION TEXT.\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.8,\n    \"maxOutputTokens\": 400\n  }\n}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000010",
+      "name": "Instagram AI Transform",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1600, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const text = item.json.candidates?.[0]?.content?.parts?.[0]?.text || '';\n  return {\n    json: {\n      ...item.json,\n      ai_generated_post: text,\n      source_title: item.json.title,\n      source_url: item.json.link\n    }\n  };\n});"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000011",
+      "name": "Extract LinkedIn Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1800, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const text = item.json.candidates?.[0]?.content?.parts?.[0]?.text || '';\n  return {\n    json: {\n      ...item.json,\n      ai_generated_post: text,\n      source_title: item.json.title,\n      source_url: item.json.link\n    }\n  };\n});"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000012",
+      "name": "Extract Instagram Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1800, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://us-central1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us-central1/publishers/google/models/imagegeneration@006:predict",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"instances\": [{\n    \"prompt\": \"Create a clean, professional social media graphic. Theme: {{ $json.content_type }}. Style: Modern, minimalist, tech-forward. Brand colors: Purple and blue gradient background. Include subtle PDF or document imagery. Do NOT include: faces, text overlays, cluttered elements, watermarks.\"\n  }],\n  \"parameters\": {\n    \"sampleCount\": 1,\n    \"aspectRatio\": \"16:9\"\n  }\n}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000013",
+      "name": "Generate Image LinkedIn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2000, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://us-central1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us-central1/publishers/google/models/imagegeneration@006:predict",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"instances\": [{\n    \"prompt\": \"Create a clean, professional social media graphic. Theme: {{ $json.content_type }}. Style: Modern, minimalist, tech-forward. Brand colors: Purple and blue gradient background. Include subtle PDF or document imagery. Do NOT include: faces, text overlays, cluttered elements, watermarks.\"\n  }],\n  \"parameters\": {\n    \"sampleCount\": 1,\n    \"aspectRatio\": \"1:1\"\n  }\n}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000014",
+      "name": "Generate Image Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const json = item.json;\n  const base64Data = json?.predictions?.[0]?.bytesBase64Encoded || json?.predictions?.[0]?.imageBytes;\n  \n  if (!base64Data) {\n    throw new Error('No image bytes found in Imagen response');\n  }\n  \n  const timestamp = Date.now();\n  const platform = json.target_platform || 'social';\n  const fileName = `pdflab_${platform}_${timestamp}.png`;\n  \n  results.push({\n    json: {\n      ...json,\n      fileName: fileName,\n      publicUrl: `https://pdflab.pro/assets/social-images/${fileName}`\n    },\n    binary: {\n      image: {\n        data: base64Data,\n        mimeType: 'image/png',\n        fileName: fileName\n      }\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000015",
+      "name": "Process Image LinkedIn",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2200, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const json = item.json;\n  const base64Data = json?.predictions?.[0]?.bytesBase64Encoded || json?.predictions?.[0]?.imageBytes;\n  \n  if (!base64Data) {\n    throw new Error('No image bytes found in Imagen response');\n  }\n  \n  const timestamp = Date.now();\n  const platform = json.target_platform || 'social';\n  const fileName = `pdflab_${platform}_${timestamp}.png`;\n  \n  results.push({\n    json: {\n      ...json,\n      fileName: fileName,\n      publicUrl: `https://pdflab.pro/assets/social-images/${fileName}`\n    },\n    binary: {\n      image: {\n        data: base64Data,\n        mimeType: 'image/png',\n        fileName: fileName\n      }\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000016",
+      "name": "Process Image Instagram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "path": "=/public_html/assets/social-images/{{ $json.fileName }}",
+        "binaryPropertyName": "image"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000017",
+      "name": "FTP Upload LinkedIn",
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [2400, 100],
+      "credentials": {
+        "ftp": {
+          "id": "FTP_CREDENTIAL_ID",
+          "name": "PDFLab FTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "path": "=/public_html/assets/social-images/{{ $json.fileName }}",
+        "binaryPropertyName": "image"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000018",
+      "name": "FTP Upload Instagram",
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [2400, 300],
+      "credentials": {
+        "ftp": {
+          "id": "FTP_CREDENTIAL_ID",
+          "name": "PDFLab FTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000019",
+      "name": "Merge for Slack",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [2600, 200]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $env.SLACK_REVIEW_CHANNEL || '#pdflab-content-review' }}",
+        "text": "=*New PDFLab Post Ready*\n\n*Platform:* {{ $json.target_platform }}\n*Content Type:* {{ $json.content_type }}\n*Source:* {{ $json.source_title }}\n\n*Draft:*\n{{ $json.ai_generated_post }}\n\n*Image:* {{ $json.publicUrl }}",
+        "blocksUi": {
+          "blocksValues": [
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "*New PDFLab Post Ready for Review*\n\n*Source:* {{ $json.source_title }}\n*Platform:* {{ $json.target_platform }}\n\n*Draft Post:*\n{{ $json.ai_generated_post }}"
+              }
+            },
+            {
+              "type": "image",
+              "imageUrl": "={{ $json.publicUrl }}",
+              "altText": "Generated social image for PDFLab"
+            },
+            {
+              "type": "actions",
+              "elements": [
+                {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Approve",
+                    "emoji": true
+                  },
+                  "style": "primary",
+                  "value": "={{ Buffer.from(JSON.stringify({ action: 'approve', platform: $json.target_platform, postText: $json.ai_generated_post, imageUrl: $json.publicUrl })).toString('base64') }}",
+                  "actionId": "approve_post"
+                },
+                {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Edit",
+                    "emoji": true
+                  },
+                  "value": "={{ Buffer.from(JSON.stringify({ action: 'edit', platform: $json.target_platform, postText: $json.ai_generated_post, imageUrl: $json.publicUrl })).toString('base64') }}",
+                  "actionId": "edit_post"
+                },
+                {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Reject",
+                    "emoji": true
+                  },
+                  "style": "danger",
+                  "value": "reject",
+                  "actionId": "reject_post"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000020",
+      "name": "Slack Review",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [2800, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "SLACK_CREDENTIAL_ID",
+          "name": "Slack Bot Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "slack-actions",
+        "responseMode": "responseNode"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000021",
+      "name": "Slack Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 600],
+      "webhookId": "slack-actions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nlet payload;\n\ntry {\n  if (typeof body.payload === 'string') {\n    payload = JSON.parse(body.payload);\n  } else {\n    payload = body.payload || body;\n  }\n} catch (e) {\n  payload = body;\n}\n\n// Handle Modal Submission (Edit)\nif (payload.type === 'view_submission') {\n  const values = payload.view.state.values;\n  let newText = '';\n  for (const blockId in values) {\n    for (const actionId in values[blockId]) {\n      if (values[blockId][actionId].value) {\n         newText = values[blockId][actionId].value;\n      }\n    }\n  }\n  \n  const metadata = JSON.parse(payload.view.private_metadata || '{}');\n  \n  return [{\n    json: {\n      action: 'submit_edit',\n      platform: metadata.platform,\n      postText: newText,\n      imageUrl: metadata.imageUrl,\n      user: payload.user.name,\n      responseUrl: null\n    }\n  }];\n}\n\n// Handle Buttons - decode base64 payload\nconst action = payload.actions?.[0] || {};\nconst actionId = action.action_id || '';\nconst actionValue = action.value || '';\n\nlet platform = '';\nlet postText = '';\nlet imageUrl = '';\n\n// Decode base64 encoded button value\nif (actionValue && actionValue !== 'reject') {\n  try {\n    const decoded = JSON.parse(Buffer.from(actionValue, 'base64').toString('utf-8'));\n    platform = decoded.platform || '';\n    postText = decoded.postText || '';\n    imageUrl = decoded.imageUrl || '';\n  } catch (e) {\n    // Fallback for legacy pipe-delimited format\n    if (actionValue.includes('|')) {\n      const parts = actionValue.split('|');\n      if (parts.length >= 3) {\n        platform = parts[0];\n        postText = parts[1];\n        imageUrl = parts[2];\n      }\n    }\n  }\n}\n\nreturn [{\n  json: {\n    action: actionId,\n    trigger_id: payload.trigger_id,\n    platform,\n    postText,\n    imageUrl,\n    user: payload.user?.name || 'unknown',\n    responseUrl: payload.response_url\n  }\n}];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000022",
+      "name": "Parse Slack Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 600]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.action }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "approve_post"
+            },
+            {
+              "value2": "edit_post"
+            },
+            {
+              "value2": "submit_edit"
+            },
+            {
+              "value2": "reject_post"
+            }
+          ]
+        }
+      },
+      "id": "switch-action-router",
+      "name": "Action Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [400, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/views.open",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"trigger_id\": \"{{ $json.trigger_id }}\",\n  \"view\": {\n    \"type\": \"modal\",\n    \"callback_id\": \"edit_post_modal\",\n    \"title\": {\n      \"type\": \"plain_text\",\n      \"text\": \"Edit Post\"\n    },\n    \"submit\": {\n      \"type\": \"plain_text\",\n      \"text\": \"Publish\"\n    },\n    \"private_metadata\": \"{{ JSON.stringify({ platform: $json.platform, imageUrl: $json.imageUrl }) }}\",\n    \"blocks\": [\n      {\n        \"type\": \"input\",\n        \"block_id\": \"post_block\",\n        \"element\": {\n          \"type\": \"plain_text_input\",\n          \"action_id\": \"post_input\",\n          \"multiline\": true,\n          \"initial_value\": \"{{ $json.postText.replace(/\\\"/g, '\\\\\"') }}\"\n        },\n        \"label\": {\n          \"type\": \"plain_text\",\n          \"text\": \"Post Text\"\n        }\n      }\n    ]\n  }\n}"
+      },
+      "id": "slack-open-modal",
+      "name": "Open Edit Modal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst platform = item.json.platform;\n\nif (platform === 'linkedin') {\n  return [[item], []];\n} else {\n  return [[], [item]];\n}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000024",
+      "name": "Route Platform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [800, 600]
+    },
+    {
+      "parameters": {
+        "person": "={{ $env.LINKEDIN_PERSON_URN }}",
+        "text": "={{ $json.postText }}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000025",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [1000, 500],
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "LINKEDIN_CREDENTIAL_ID",
+          "name": "LinkedIn OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "create",
+        "instagramAccountId": "={{ $env.INSTAGRAM_ACCOUNT_ID }}",
+        "caption": "={{ $json.postText }}",
+        "imageUrl": "={{ $json.imageUrl }}"
+      },
+      "id": "post-instagram-node",
+      "name": "Post to Instagram",
+      "type": "n8n-nodes-base.instagram",
+      "typeVersion": 1,
+      "position": [1000, 700],
+      "credentials": {
+        "instagramBasicApi": {
+          "id": "INSTAGRAM_CREDENTIAL_ID",
+          "name": "Instagram Graph API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.responseUrl }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replace_original\": true,\n  \"text\": \"Published to {{ $json.platform }}!\"\n}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000027",
+      "name": "Slack Confirm",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1200, 600]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": ""
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000028",
+      "name": "Respond Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1400, 600]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          { "node": "RSS Lifehacker", "type": "main", "index": 0 },
+          { "node": "RSS The Verge", "type": "main", "index": 0 },
+          { "node": "RSS Cal Newport", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS Lifehacker": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 0 }]]
+    },
+    "RSS The Verge": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 1 }]]
+    },
+    "RSS Cal Newport": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 2 }]]
+    },
+    "Merge All Sources": {
+      "main": [[{ "node": "Compute Dedup Key", "type": "main", "index": 0 }]]
+    },
+    "Compute Dedup Key": {
+      "main": [[{ "node": "Check Sheet", "type": "main", "index": 0 }]]
+    },
+    "Check Sheet": {
+      "main": [[{ "node": "Is Duplicate?", "type": "main", "index": 0 }]]
+    },
+    "Is Duplicate?": {
+      "main": [[], [{ "node": "Log to Sheet", "type": "main", "index": 0 }]]
+    },
+    "Log to Sheet": {
+      "main": [
+        [{ "node": "Content Type Selector", "type": "main", "index": 0 }]
+      ]
+    },
+    "Content Type Selector": {
+      "main": [[{ "node": "Keyword Filter", "type": "main", "index": 0 }]]
+    },
+    "Keyword Filter": {
+      "main": [[{ "node": "Platform Splitter", "type": "main", "index": 0 }]]
+    },
+    "Platform Splitter": {
+      "main": [
+        [{ "node": "LinkedIn AI Transform", "type": "main", "index": 0 }],
+        [{ "node": "Instagram AI Transform", "type": "main", "index": 0 }]
+      ]
+    },
+    "LinkedIn AI Transform": {
+      "main": [
+        [{ "node": "Extract LinkedIn Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Instagram AI Transform": {
+      "main": [
+        [{ "node": "Extract Instagram Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extract LinkedIn Response": {
+      "main": [
+        [{ "node": "Generate Image LinkedIn", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extract Instagram Response": {
+      "main": [
+        [{ "node": "Generate Image Instagram", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Image LinkedIn": {
+      "main": [
+        [{ "node": "Process Image LinkedIn", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Image Instagram": {
+      "main": [
+        [{ "node": "Process Image Instagram", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process Image LinkedIn": {
+      "main": [[{ "node": "FTP Upload LinkedIn", "type": "main", "index": 0 }]]
+    },
+    "Process Image Instagram": {
+      "main": [[{ "node": "FTP Upload Instagram", "type": "main", "index": 0 }]]
+    },
+    "FTP Upload LinkedIn": {
+      "main": [[{ "node": "Merge for Slack", "type": "main", "index": 0 }]]
+    },
+    "FTP Upload Instagram": {
+      "main": [[{ "node": "Merge for Slack", "type": "main", "index": 1 }]]
+    },
+    "Merge for Slack": {
+      "main": [[{ "node": "Slack Review", "type": "main", "index": 0 }]]
+    },
+    "Slack Webhook": {
+      "main": [[{ "node": "Parse Slack Action", "type": "main", "index": 0 }]]
+    },
+    "Parse Slack Action": {
+      "main": [[{ "node": "Action Router", "type": "main", "index": 0 }]]
+    },
+    "Action Router": {
+      "main": [
+        [{ "node": "Route Platform", "type": "main", "index": 0 }],
+        [{ "node": "Open Edit Modal", "type": "main", "index": 0 }],
+        [{ "node": "Route Platform", "type": "main", "index": 0 }],
+        [{ "node": "Respond Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route Platform": {
+      "main": [
+        [{ "node": "Post to LinkedIn", "type": "main", "index": 0 }],
+        [{ "node": "Post to Instagram", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to LinkedIn": {
+      "main": [[{ "node": "Slack Confirm", "type": "main", "index": 0 }]]
+    },
+    "Post to Instagram": {
+      "main": [[{ "node": "Slack Confirm", "type": "main", "index": 0 }]]
+    },
+    "Slack Confirm": {
+      "main": [[{ "node": "Respond Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "3"
+}

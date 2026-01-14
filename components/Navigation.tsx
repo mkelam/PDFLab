@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { FileText, LogOut, User } from "lucide-react";
+import { Edit3, FileText, LogOut, User } from "lucide-react";
 import Link from "next/link";
 
 export function Navigation() {
@@ -33,6 +33,12 @@ export function Navigation() {
             <Link href="/features">
               <Button variant="ghost" size="sm" className="text-sm">
                 Features
+              </Button>
+            </Link>
+            <Link href="/features/pdf-editor">
+              <Button variant="ghost" size="sm" className="text-sm">
+                <Edit3 className="w-4 h-4 mr-1" />
+                Editor
               </Button>
             </Link>
             <Link href="/comparison">
